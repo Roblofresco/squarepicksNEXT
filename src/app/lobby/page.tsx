@@ -417,7 +417,7 @@ export default function LobbyPage() {
                         </>
                       ) : (
                         // Show a loading state while authenticating
-                         <div className="text-center text-white py-10">Authenticating...</div>
+                         (<div className="text-center text-white py-10">Authenticating...</div>)
                       )}
                     </>
                   ) : (
@@ -452,13 +452,13 @@ export default function LobbyPage() {
             )}
         </div> 
         </main>
-      </div> 
-      <BottomNav user={user} onProtectedAction={handleProtectedAction} /> 
+      </div>
+      <BottomNav user={user} onProtectedAction={handleProtectedAction} />
       {(isLoginModalOpen || isWalletSetupDialogOpen || isDepositDialogOpen) && <StarfieldBackground className="z-40" />}
       {/* Dialogs (as before) */}
       <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}><DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] to-[#5855e4] to-15% border-accent-1/50 text-white py-8"><DialogHeader className="text-center items-center"><DialogTitle className="text-2xl font-bold mb-2">Login Required</DialogTitle><DialogDescription className="text-gray-300 opacity-90">You need to be logged in or create an account to perform this action.</DialogDescription></DialogHeader><div className="flex flex-col sm:flex-row gap-3 mt-6 mb-2"><Button onClick={() => router.push('/login')} className="flex-1 bg-accent-1 hover:bg-accent-1/80 text-white font-semibold">Login</Button><Button onClick={() => router.push('/signup')} variant="outline" className="flex-1 bg-transparent border-gray-500 hover:bg-gray-500/20 text-gray-300 font-semibold hover:text-gray-300">Sign Up</Button></div></DialogContent></Dialog>
       <Dialog open={isWalletSetupDialogOpen} onOpenChange={setIsWalletSetupDialogOpen}><DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] to-[#5855e4] to-15% border-accent-1/50 text-white py-8"><DialogHeader className="text-center items-center"><DialogTitle className="flex items-center justify-center text-2xl font-bold mb-2">Wallet Setup Required</DialogTitle><DialogDescription className="text-gray-300 opacity-90">You need to set up your wallet before you can deposit funds or enter contests.</DialogDescription></DialogHeader><div className="flex flex-col sm:flex-row gap-3 mt-6 mb-2"><Button onClick={() => { setIsWalletSetupDialogOpen(false); router.push('/wallet-setup/location'); }} className="flex-1 bg-accent-1 hover:bg-accent-1/80 text-white font-semibold">Go to Wallet Setup</Button><Button type="button" variant="outline" onClick={() => setIsWalletSetupDialogOpen(false)} className="flex-1 bg-transparent border-gray-500 hover:bg-gray-500/20 text-gray-300 font-semibold hover:text-gray-300">Cancel</Button></div></DialogContent></Dialog>
       <Dialog open={isDepositDialogOpen} onOpenChange={setIsDepositDialogOpen}><DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] to-[#5855e4] to-15% border-accent-1/50 text-white py-8"><DialogHeader><DialogTitle className="flex items-center text-xl font-semibold">Insufficient Funds</DialogTitle><DialogDescription className="text-gray-300 opacity-90 pt-2">You need at least ${requiredDepositAmount.toFixed(2)} more to enter this board.</DialogDescription></DialogHeader><DialogFooter className="mt-4 gap-2 sm:justify-center"><Button type="button" variant="outline" onClick={() => setIsDepositDialogOpen(false)} className="border-gray-500 hover:bg-gray-500/20 text-gray-300 hover:text-gray-300">Cancel</Button><Button type="button" onClick={() => { setIsDepositDialogOpen(false); router.push('/wallet'); }} className="bg-accent-1 hover:bg-accent-1/80 text-white font-semibold">Add Funds</Button></DialogFooter></DialogContent></Dialog>
-          </div>
+    </div>
   );
 } 

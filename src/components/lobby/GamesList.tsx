@@ -99,28 +99,25 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
   const { timeStr, dateStr } = formatStartTime(game.start_time);
 
   return (
-    <Link 
-      href={`/game/${game.id}`} 
+    <Link
+      href={`/game/${game.id}`}
       onClick={handleClick}
       className={`relative flex flex-row items-center justify-between flex-shrink-0 w-[240px] h-[90px] rounded-lg text-white ${shadowStyle} overflow-hidden hover:ring-2 hover:ring-accent-1 transition-all duration-200 p-2`}
-    >
+      legacyBehavior>
       {/* Background Layer */}
       <div 
         className={`absolute inset-0 ${gradientStyle} opacity-85 z-0 rounded-lg`}
       ></div>
-
       {/* Live Badge */}
       {game.is_live && (
         <div className="absolute top-1 right-1 bg-red-600 text-white text-[0.5rem] font-bold px-1.5 py-0.5 rounded-full uppercase z-20">
           Live
         </div>
       )}
-
       {/* Left Column: Team A */}
       <div className="relative w-1/4 flex items-center justify-center h-full z-10"> 
         <TeamDisplay team={game.teamA} />
       </div>
-
       {/* Center Column: Game Details */}
       <div className="relative flex flex-col items-center justify-center w-1/2 text-center px-1 z-10"> 
         {/* Score or VS */}
@@ -142,7 +139,6 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
           </span>
         )}
       </div>
-
       {/* Right Column: Team B */}
       <div className="relative w-1/4 flex items-center justify-center h-full z-10"> 
         <TeamDisplay team={game.teamB} />
@@ -166,12 +162,12 @@ const GamesList = memo(({ games, user, onProtectedAction }: GamesListProps) => {
             </div>
           ) : (
             // Add index to map function
-            games.map((game, index) => (
+            (games.map((game, index) => (
               // Apply margin-left only to the first card (index === 0)
-              <div key={game.id} className={`${index === 0 ? 'ml-2' : ''}`}> 
-                 <GameCard game={game} user={user} onProtectedAction={onProtectedAction} />
-              </div>
-            ))
+              (<div key={game.id} className={`${index === 0 ? 'ml-2' : ''}`}>
+                <GameCard game={game} user={user} onProtectedAction={onProtectedAction} />
+              </div>)
+            )))
           )}
         </div>
       </div>

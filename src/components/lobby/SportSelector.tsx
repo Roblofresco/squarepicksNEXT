@@ -151,7 +151,7 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
         <AnimatePresence mode="wait" initial={false}>
           {selectedSportId === 'sweepstakes' ? (
             // --- Sweepstakes Active State wrapped in motion.div ---
-            <motion.div 
+            (<motion.div 
               key="sweepstakes-view" 
               className="flex w-full space-x-3" 
               initial="hidden" animate="visible" exit="exit" variants={variants}
@@ -193,7 +193,6 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                   </span>
                 </div>
               </button>
-
               {/* "More" Button */}
               {/* Apply background directly here too for consistency */}
               <button
@@ -222,10 +221,10 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                   </span>
                 </div>
               </button>
-            </motion.div>
+            </motion.div>)
           ) : (
             // --- Normal State wrapped in motion.div --- 
-            <motion.div 
+            (<motion.div 
               key="all-sports-view"
               className="flex justify-center space-x-3" // Maintain spacing
               initial="hidden" animate="visible" exit="exit" variants={variants}
@@ -290,7 +289,7 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                   </button>
                 );
               })}
-            </motion.div>
+            </motion.div>)
           )}
         </AnimatePresence>
       </div>

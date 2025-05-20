@@ -286,20 +286,20 @@ const AccountSettingsPage = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
             <Shield size={20} className="mr-2 text-accent-1" /> Security
           </h2>
-          <Link 
+          <Link
             href="/profile/settings/change-password"
             className="flex items-center justify-between w-full p-3 bg-white hover:bg-gray-50 rounded-md border border-gray-400 transition-colors duration-150 text-gray-800 active:scale-95 focus:scale-105 transition-all outline-none"
-          >
+            legacyBehavior>
             <div className="flex items-center">
                 <KeyRound size={18} className="mr-3 text-gray-500"/>
                 Change Password
             </div>
             <ArrowRight size={16} className="text-gray-500" />
           </Link>
-          <Link 
+          <Link
             href="/profile/settings/personal-details"
             className="mt-4 flex items-center justify-between w-full p-3 bg-white hover:bg-gray-50 rounded-md border border-gray-400 transition-colors duration-150 text-gray-800 active:scale-95 focus:scale-105 transition-all outline-none"
-          >
+            legacyBehavior>
             <div className="flex items-center">
                 <User size={18} className="mr-3 text-gray-500"/>
                 Edit Personal Details
@@ -309,7 +309,6 @@ const AccountSettingsPage = () => {
         </div>
 
       </div>
-
       {/* Change Email Modal */}
       {showChangeEmailModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
@@ -392,7 +391,6 @@ const AccountSettingsPage = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

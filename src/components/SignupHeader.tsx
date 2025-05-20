@@ -46,7 +46,7 @@ export default function SignupHeader() {
 
   return (
     <div ref={headerRef} className="w-full flex justify-start items-center z-20 !bg-background-primary pl-4 py-2">
-      <Link href="/" aria-label="Go to Welcome Page">
+      <Link href="/" aria-label="Go to Welcome Page" legacyBehavior>
         <div className="flex items-center justify-center">
           <div style={{ 
             height: '2rem', 

@@ -12,7 +12,7 @@ const LobbyHeader = () => {
     <header className="sticky top-0 z-30 w-full bg-background/80 backdrop-blur-sm border-b border-border/40 px-4 sm:px-6 py-3">
       <div className="flex items-center justify-between">
         {/* Logo */}
-        <Link href="/lobby" className="flex items-center gap-2">
+        <Link href="/lobby" className="flex items-center gap-2" legacyBehavior>
           {/* Use your actual logo */}
            <Image
                 src="/brandkit/logos/sp-logo-text-white.svg"

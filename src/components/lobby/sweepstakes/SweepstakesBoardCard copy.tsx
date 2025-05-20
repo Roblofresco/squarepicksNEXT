@@ -102,15 +102,15 @@ const SweepstakesMiniGrid = memo(({
         }
 
         return (
-        // Cells have no border of their own; lines are formed by the parent grid's background visible through gaps.
-        <div key={sq} className={cn(
-            `aspect-square flex items-center justify-center text-[7px] sm:text-[8px] font-mono cursor-pointer transition-colors`,
-            currentSquareBg, 
-            currentTextColor,
-            cellBorderRadius // Apply dynamic cell rounding
-        )}>
+          // Cells have no border of their own; lines are formed by the parent grid's background visible through gaps.
+          <div key={sq} className={cn(
+              `aspect-square flex items-center justify-center text-[7px] sm:text-[8px] font-mono cursor-pointer transition-colors`,
+              currentSquareBg, 
+              currentTextColor,
+              cellBorderRadius // Apply dynamic cell rounding
+          )}>
             {String(sq).padStart(2, '0')}
-        </div>
+          </div>
         );
       })}
     </div>
@@ -273,7 +273,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
         {/* Conditional Buttons */} 
         {!(currentStage === 'confirming' && isActive) && (
             // ENTER Button: Larger size
-            <Button
+            (<Button
                 onClick={processEnterOrConfirm}
                 disabled={walletIsLoading || inputValue.trim() === '' || (allTakenSet.has(parseInt(inputValue,10)) && !currentUserSquaresSet.has(parseInt(inputValue,10)))}
           className={cn(
@@ -281,28 +281,28 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
                     'bg-yellow-700/80 hover:bg-yellow-600/80 border-yellow-800/90 text-yellow-200/90 disabled:bg-yellow-800/50 disabled:border-yellow-900/50 disabled:text-yellow-300/50 disabled:cursor-not-allowed' 
                 )}
             >
-                 {walletIsLoading && <Loader2 className="h-4 w-4 animate-spin mr-1 inline-block" />}ENTER {/* Adjusted loader size */} 
-             </Button>
+              {walletIsLoading && <Loader2 className="h-4 w-4 animate-spin mr-1 inline-block" />}ENTER {/* Adjusted loader size */}
+            </Button>)
         )}
         {currentStage === 'confirming' && isActive && (
             // Confirm/Cancel Buttons: Adjusted height to match input
-            <div className="flex space-x-2">
-                  <Button
-                    onClick={processEnterOrConfirm}
-                    disabled={walletIsLoading}
-                     className="px-4 py-2 text-sm font-semibold rounded-md border bg-green-600 hover:bg-green-700 border-green-700/80 text-white h-10" // Increased size
-                 >
-                     {walletIsLoading && <Loader2 className="h-4 w-4 animate-spin mr-1 inline-block" />}CONFIRM
-                 </Button>
-                 <Button
-                     onClick={handleCancelConfirm}
-                    disabled={walletIsLoading}
-                     variant="outline"
-                     className="px-4 py-2 text-sm font-semibold rounded-md border bg-red-600 hover:bg-red-700 border-red-700/80 text-white h-10" // Increased size
-                 >
-                     CANCEL
-                 </Button>
-             </div>
+            (<div className="flex space-x-2">
+              <Button
+                onClick={processEnterOrConfirm}
+                disabled={walletIsLoading}
+                 className="px-4 py-2 text-sm font-semibold rounded-md border bg-green-600 hover:bg-green-700 border-green-700/80 text-white h-10" // Increased size
+             >
+                 {walletIsLoading && <Loader2 className="h-4 w-4 animate-spin mr-1 inline-block" />}CONFIRM
+             </Button>
+              <Button
+                  onClick={handleCancelConfirm}
+                 disabled={walletIsLoading}
+                  variant="outline"
+                  className="px-4 py-2 text-sm font-semibold rounded-md border bg-red-600 hover:bg-red-700 border-red-700/80 text-white h-10" // Increased size
+              >
+                  CANCEL
+              </Button>
+            </div>)
         )}
       </div>
       {/* Grid Indentation Wrapper - Adjusted for potentially larger input bar */}

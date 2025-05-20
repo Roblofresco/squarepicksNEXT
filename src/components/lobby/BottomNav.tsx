@@ -42,11 +42,11 @@ const NavItemComponent = ({ href, icon: Icon, label, isActive, user, onProtected
       )}
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
-    >
+      legacyBehavior>
       <Icon 
         className="w-6 h-6 mb-0.5" 
         strokeWidth={isActive ? 2.5 : 2} 
-      /> 
+      />
     </Link>
   );
 };

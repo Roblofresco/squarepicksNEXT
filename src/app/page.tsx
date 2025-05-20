@@ -224,7 +224,6 @@ export default function Home() {
         className="fixed inset-0 -z-1 pointer-events-none"
         id="constellation-canvas"
       />
-
       {/* Cursor Spotlight Effect */}
       <div
         className="pointer-events-none fixed inset-0 z-0 transition duration-300"
@@ -232,14 +231,17 @@ export default function Home() {
           background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
         }}
       />
-
       <main className="container mx-auto px-4 relative z-10">
         {/* Navigation */}
         <nav className="py-6 flex justify-between items-center">
           <LogoIcon size="md" />
           
           <div className="flex space-x-2">
-            <Link href="/login" passHref onClick={() => handleNavClick('/login')}>
+            <Link
+              href="/login"
+              passHref
+              onClick={() => handleNavClick('/login')}
+              legacyBehavior>
               <motion.button 
                 whileHover={{ scale: navigatingTo === '/login' ? 1 : 1.05 }}
                 whileTap={{ scale: navigatingTo === '/login' ? 1 : 0.95 }}
@@ -253,7 +255,11 @@ export default function Home() {
                 Log In
               </motion.button>
             </Link>
-            <Link href="/signup/email" passHref onClick={() => handleNavClick('/signup/email')}>
+            <Link
+              href="/signup/email"
+              passHref
+              onClick={() => handleNavClick('/signup/email')}
+              legacyBehavior>
               <motion.button
                 whileHover={{ scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
                 whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
@@ -305,7 +311,11 @@ export default function Home() {
               variants={fadeIn}
               className="flex flex-row gap-4 justify-center items-center"
             >
-              <Link href="/signup/email" passHref onClick={() => handleNavClick('/signup/email')}>
+              <Link
+                href="/signup/email"
+                passHref
+                onClick={() => handleNavClick('/signup/email')}
+                legacyBehavior>
                 <motion.button
                   whileHover={{ boxShadow: navigatingTo === '/signup/email' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
                   whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
@@ -469,7 +479,11 @@ export default function Home() {
               variants={fadeIn}
               className="flex flex-row gap-4 justify-center items-center"
             >
-              <Link href="/signup/email" passHref onClick={() => handleNavClick('/signup/email')}>
+              <Link
+                href="/signup/email"
+                passHref
+                onClick={() => handleNavClick('/signup/email')}
+                legacyBehavior>
                 <motion.button
                   whileHover={{ boxShadow: navigatingTo === '/signup/email' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
                   whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}

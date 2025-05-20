@@ -133,7 +133,6 @@ export default function UsernamePage() {
 
           {/* Checkbox container is MOVED to footer */}
       </div>
-
       {/* Footer block matching email */}
       <div className="w-full max-w-sm mx-auto px-5 pb-8">
         {/* Checkbox and Terms - Moved here, remove mt-4, add mb-4 */}

@@ -87,11 +87,10 @@ const InAppHeaderComponent = () => {
           <LogoImage />
         </div>
       ) : (
-        <Link href="/login" aria-label="Go to Login Page">
+        <Link href="/login" aria-label="Go to Login Page" legacyBehavior>
           <LogoImage />
         </Link>
       )}
-
       {user && (
         <div className="flex items-center space-x-3">
           <NotificationIcon />

@@ -168,11 +168,10 @@ export default function TermsPage() {
           background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
         }}
       />
-
       <main className="container mx-auto px-4 py-12 relative z-10">
         {/* Simplified Header */}
         <nav className="py-6 flex justify-between items-center">
-          <Link href="/">
+          <Link href="/" legacyBehavior>
             <Image 
               src="/brandkit/logos/sp-logo-icon-default-text-white.svg" 
               alt="SquarePicks Logo"

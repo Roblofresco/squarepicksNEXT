@@ -35,7 +35,7 @@ export default function LogoCube({
 
   return (
     // Container div - Needs perspective
-    <div className={`${styles.scene} ${className}`}> 
+    <div className={`${styles.scene} ${className}`}>
       {/* The cube itself - Needs transform-style: preserve-3d */}
       <div ref={cubeRef} className={styles.cube}>
         {/* Define the 6 faces of the cube */}
@@ -48,5 +48,5 @@ export default function LogoCube({
         <div className={`${styles.face} ${styles.bottom}`}></div>
       </div>
     </div>
-  )
+  );
 } 

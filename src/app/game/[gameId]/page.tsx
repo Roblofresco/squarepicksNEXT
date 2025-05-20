@@ -360,7 +360,7 @@ function GamePageContent() {
 
   // --- Render Component ---
   return (
-    <Suspense fallback={<div>Loading game page...</div>}> 
+    <Suspense fallback={<div>Loading game page...</div>}>
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-background-secondary">
         <main className="flex-grow container mx-auto px-4 py-6">
           {/* Back Button */}
@@ -467,7 +467,7 @@ function GamePageContent() {
                          <Button type="button" variant="outline">Cancel</Button>
                     </DialogClose>
                     <Button type="button" asChild> 
-                       <Link href={promptType === 'setup' ? '/wallet' : '/deposit'}>
+                       <Link href={promptType === 'setup' ? '/wallet' : '/deposit'} legacyBehavior>
                            {promptType === 'setup' ? 'Go to Wallet' : 'Deposit Funds'}
                         </Link>
                     </Button>

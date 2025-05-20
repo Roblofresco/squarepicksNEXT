@@ -189,11 +189,10 @@ export default function LoginPage() {
           background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
         }}
       />
-
       {/* Header container - Adjust padding slightly */}
       <div className="w-full px-6 pt-6 z-10 flex items-center justify-between">
           {/* Add onClick, disabled, and conditional classes */}
-          <Link href="/" passHref onClick={() => handleNavClick('/')}>
+          <Link href="/" passHref onClick={() => handleNavClick('/')} legacyBehavior>
             <button 
               // Apply motion if needed, or just basic button
               className={`flex items-center px-4 py-1.5 rounded-md transition duration-300 text-sm 
@@ -208,7 +207,11 @@ export default function LoginPage() {
             </button>
           </Link>
           {/* Add onClick, disabled, and conditional classes */}
-          <Link href="/lobby" passHref onClick={() => handleNavClick('/lobby')}>
+          <Link
+            href="/lobby"
+            passHref
+            onClick={() => handleNavClick('/lobby')}
+            legacyBehavior>
              <button
                className={`px-4 py-1.5 rounded-md transition duration-300 text-sm 
                 ${navigatingTo === '/lobby'
@@ -221,7 +224,6 @@ export default function LoginPage() {
             </button>
           </Link>
       </div>
-
       {/* Main content wrapper - Centered */}
       <div className="relative flex-grow flex flex-col items-center justify-center p-5">
         {/* Outer container for positioning background and content */}
@@ -306,5 +308,5 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
-  )
+  );
 } 

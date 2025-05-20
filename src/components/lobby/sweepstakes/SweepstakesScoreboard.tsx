@@ -72,7 +72,7 @@ function SweepstakesScoreboardComponent({
             style={logoFilterStyle}
           />
         ) : (
-          <div className="w-10 h-10 bg-gray-700 rounded-full mb-1 flex items-center justify-center text-white text-xs italic">?</div> // Placeholder
+          (<div className="w-10 h-10 bg-gray-700 rounded-full mb-1 flex items-center justify-center text-white text-xs italic">?</div>) // Placeholder
         )}
         <span className="text-xs text-gray-300 font-medium mt-1 truncate max-w-[100px]">{team.fullName}</span>
       </div>

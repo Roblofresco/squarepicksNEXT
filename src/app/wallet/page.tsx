@@ -135,12 +135,18 @@ const WalletPage = () => {
 
             {/* Action Buttons */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-              <Link href="/deposit" className="flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% rounded-lg shadow hover:shadow-md transition-shadow text-center text-gray-900 hover:bg-gray-100 active:scale-95 focus:scale-105 transition-all duration-150 outline-none">
+              <Link
+                href="/deposit"
+                className="flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% rounded-lg shadow hover:shadow-md transition-shadow text-center text-gray-900 hover:bg-gray-100 active:scale-95 focus:scale-105 transition-all duration-150 outline-none"
+                legacyBehavior>
                 <ArrowDownCircle className="w-8 h-8 mb-2 text-accent-2" />
                 <span className="font-medium">Deposit Funds</span>
               </Link>
               {/* TODO: Implement Withdraw page/functionality */}
-              <Link href="/withdraw" className="flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% rounded-lg shadow hover:shadow-md transition-shadow text-center text-gray-900 hover:bg-gray-100 active:scale-95 focus:scale-105 transition-all duration-150 outline-none">
+              <Link
+                href="/withdraw"
+                className="flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% rounded-lg shadow hover:shadow-md transition-shadow text-center text-gray-900 hover:bg-gray-100 active:scale-95 focus:scale-105 transition-all duration-150 outline-none"
+                legacyBehavior>
                 <ArrowUpCircle className="w-8 h-8 mb-2 text-accent-3" />
                 <span className="font-medium">Withdraw Funds</span>
               </Link>

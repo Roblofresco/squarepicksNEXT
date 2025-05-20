@@ -312,7 +312,6 @@ export default function LoadingPage() {
         className="absolute inset-0 -z-1 pointer-events-none" // Use z-index: -1
         id="center-starfield-canvas"
       />
-      
       {/* LogoCube container - Control size here */}
       <div 
         style={{
@@ -356,7 +355,6 @@ export default function LoadingPage() {
           </motion.div>
         )}
       </div>
-
       {/* Display dynamic loading text */}
       <p className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-gray-400 text-base animate-pulse z-10 pointer-events-none"> {/* Added pointer-events-none */}
         {loadingText}

@@ -204,7 +204,7 @@ const ProfilePage = () => {
                   style={{}}
                   tabIndex={0}
                   aria-disabled={isWalletLoading}
-                >
+                  legacyBehavior>
                   {isWalletLoading && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
                   Manage
                 </Link>
@@ -256,7 +256,11 @@ const ProfilePage = () => {
                {/* Use via stop at 5% */}
                 <div className="rounded-xl overflow-hidden bg-gradient-to-b from-background-primary via-background-primary via-5% to-background-secondary divide-y divide-gray-700/50 shadow-md">
                     {accountMenuItems.map((item) => (
-                      <Link key={item.label} href={item.href} className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group">
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group"
+                        legacyBehavior>
                         <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
                         <span className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</span>
                         <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
@@ -287,7 +291,11 @@ const ProfilePage = () => {
                         <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
                      </a>
                    ) : (
-                     <Link key={item.label} href={item.href} className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group">
+                     <Link
+                       key={item.label}
+                       href={item.href}
+                       className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group"
+                       legacyBehavior>
                        <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
                        <span className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</span>
                        <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
@@ -302,19 +310,16 @@ const ProfilePage = () => {
           </>
         ) : (
           // Fallback if userProfile is null but not loading and no error (should not happen if logic is correct)
-          <div className="text-center py-10 text-text-secondary">
+          (<div className="text-center py-10 text-text-secondary">
             <p>Could not load profile information.</p>
-          </div>
+          </div>)
         )}
 
       </div>
-
       {/* Spacer for fixed BottomNav */}
       <div className="h-16" />
-
       {/* Bottom Navigation */}
       <BottomNav user={currentUser} onProtectedAction={handleProtectedAction} />
-
       {/* Login Required Modal */}
       <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
          <DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] to-[#5855e4] to-15% border-accent-1/50 text-white py-8">
@@ -341,7 +346,6 @@ const ProfilePage = () => {
             </div>
          </DialogContent>
       </Dialog>
-
     </div>
   );
 };

@@ -192,7 +192,7 @@ export default function MyBoardsPage() {
 
   const renderQuarterScoreboard = (board: Board) => (
     // Added max-w-md and mx-auto for consistent width and centering
-    <div className="grid grid-cols-4 gap-1.5 mb-4 p-1.5 rounded-lg border border-gray-700/50 bg-background-primary shadow-md max-w-md mx-auto">
+    (<div className="grid grid-cols-4 gap-1.5 mb-4 p-1.5 rounded-lg border border-gray-700/50 bg-background-primary shadow-md max-w-md mx-auto">
       {board.quarters.map((q) => (
         <div key={q.period} className="bg-background-secondary/60 rounded p-2 text-center relative shadow-inner border border-gray-700/30 flex flex-col justify-between min-h-[70px]">
           <div className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-1">{q.period}</div>
@@ -217,7 +217,7 @@ export default function MyBoardsPage() {
           </div>
         </div>
       ))}
-    </div>
+    </div>)
   );
 
   const renderBoardGrid = (board: Board) => {

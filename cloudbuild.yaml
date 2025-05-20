@@ -1,0 +1,66 @@
+steps:
+  # 1. Install dependencies
+  - name: 'node:18' # Or your preferred Node.js version
+    entrypoint: npm
+    args: ['install']
+
+  # 2. Build the Next.js production app
+  - name: 'node:18'
+    entrypoint: npm
+    args: ['run', 'build']
+    env:
+      # Pass Build-time Environment Variables if needed (e.g., for static generation)
+      # - 'NEXT_PUBLIC_SOME_VAR=some_value'
+
+  # 3. Build the Docker image using the Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA',
+        '.',
+        '-f',
+        'Dockerfile',
+      ]
+
+  # 4. Push the Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA',
+      ]
+
+  # 5. Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      [
+        'run',
+        'deploy',
+        '${_SERVICE_NAME}', # Your Cloud Run service name
+        '--image',
+        '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA',
+        '--region',
+        '${_LOCATION}', # e.g., us-central1
+        '--platform',
+        'managed',
+        '--allow-unauthenticated', # Or use --no-allow-unauthenticated
+        # Add other flags as needed: --port, --set-env-vars, --set-secrets, etc.
+        # Example: '--set-env-vars=NEXT_PUBLIC_FIREBASE_PROJECT_ID=$PROJECT_ID'
+      ]
+
+# Define images to be pushed
+images:
+  - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$COMMIT_SHA'
+
+# Define substitutions (replace _VARIABLE_NAME with your values, e.g., in a trigger)
+# Default values can be provided here or set in the trigger.
+substitutions:
+  _SERVICE_NAME: 'squarepicks-app' # Default Cloud Run service name
+  _REPOSITORY: 'squarepicks-repo' # Default Artifact Registry repository name
+  _LOCATION: 'us-central1'      # Default GCP region
+
+options:
+  logging: CLOUD_LOGGING_ONLY

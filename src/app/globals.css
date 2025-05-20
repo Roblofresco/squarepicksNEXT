@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset complete */
+
+@layer base {
+  /* Define CSS variables for colors based on theme */
+  :root {
+    --color-background-primary: 10 14 27; /* Updated Hex: #0a0e1b */
+    --color-background-secondary: 31 41 55; /* Updated Hex: #1f2937 */
+    --color-text-primary: 238 238 238; /* Updated Hex: #eeeeee */
+    --color-text-secondary: 100 116 139; /* Updated Hex: #64748b */
+  }
+
+  .dark {
+    /* Dark theme uses the same variables */
+    --color-background-primary: 10 14 27; /* Updated Hex: #0a0e1b */
+    --color-background-secondary: 31 41 55; /* Updated Hex: #1f2937 */
+    --color-text-primary: 238 238 238; /* Updated Hex: #eeeeee */
+    --color-text-secondary: 100 116 139; /* Updated Hex: #64748b */
+  }
+
+  /* Apply base body styles */
+  body {
+    background-color: rgb(var(--color-background-primary));
+    color: rgb(var(--color-text-primary));
+  }
+}
+
+/* Define the tumbling animation */
+@keyframes tumble {
+  0% {
+    transform: translateX(-150%) rotate(-90deg);
+    opacity: 0;
+  }
+  25% {
+      opacity: 1;
+  }
+  75% {
+    transform: translateX(150%) rotate(270deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(200%) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Add rule for no-scroll class - make it more specific */
+html.no-scroll-html,
+body.no-scroll {
+  overflow: hidden !important;
+}
+
+@layer utilities {
+  .text-shadow-glow {
+    /* Reduced opacity for a subtler glow */
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5), 0 0 12px rgba(0, 178, 255, 0.2);
+  }
+}
+
+/* --- Add New Keyframes and Animation Utility --- */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.7;
+    box-shadow: 0 0 10px 2px rgba(27, 176, 242, 0.3); /* Less intense accent-1 shadow */
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 25px 5px rgba(27, 176, 242, 0.5); /* More intense accent-1 shadow */
+  }
+}
+
+@layer utilities {
+  .animate-pulse-glow {
+    animation: pulse-glow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+/* --- End Add --- */
+
+/* Constellation Background Styles were here - REMOVED */

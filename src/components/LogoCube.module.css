@@ -1,0 +1,65 @@
+/* Size of the cube - Default value */
+:root {
+  --cube-size: 2rem; 
+}
+
+.scene {
+  width: var(--cube-size);
+  height: var(--cube-size);
+  perspective: calc(var(--cube-size) * 4); /* Adjust perspective depth */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cube {
+  width: var(--cube-size);
+  height: var(--cube-size);
+  position: relative;
+  transform-style: preserve-3d;
+  /* Define --half-cube-size here, calculated based on current --cube-size */
+  --half-cube-size: calc(var(--cube-size) / 2);
+  /* Add a transition for smoother rotation */
+  transition: transform 0.1s linear;
+}
+
+.face {
+  position: absolute;
+  width: var(--cube-size);
+  height: var(--cube-size);
+  /* Add a subtle border or background for visibility if needed */
+  /* background-color: rgba(255, 255, 255, 0.1); */
+  /* border: 1px solid rgba(255, 255, 255, 0.2); */
+  backface-visibility: hidden; /* Hide back of faces */
+  background-size: contain; /* Scale logo to fit */
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Position each face using the locally calculated --half-cube-size */
+.front  { 
+  transform: rotateY(  0deg) translateZ(var(--half-cube-size));
+  /* Apply logo to the front face */
+  background-image: url('/brandkit/logos/sp-logo-icon-default.png');
+}
+.back   { 
+  transform: rotateY(180deg) translateZ(var(--half-cube-size));
+  /* You might want the logo on the back too? */
+  background-image: url('/brandkit/logos/sp-logo-icon-default.png');
+}
+.right  { 
+  transform: rotateY( 90deg) translateZ(var(--half-cube-size));
+  background-image: url('/brandkit/logos/sp-logo-icon-default.png');
+}
+.left   { 
+  transform: rotateY(-90deg) translateZ(var(--half-cube-size));
+  background-image: url('/brandkit/logos/sp-logo-icon-default.png');
+}
+.top    { 
+  transform: rotateX( 90deg) translateZ(var(--half-cube-size));
+  background-image: url('/brandkit/logos/sp-logo-icon-default.png');
+}
+.bottom { 
+  transform: rotateX(-90deg) translateZ(var(--half-cube-size));
+  background-image: url('/brandkit/logos/sp-logo-icon-default.png');
+} 

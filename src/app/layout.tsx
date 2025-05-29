@@ -38,7 +38,7 @@ export default function RootLayout({
         >
           <NotificationProvider>
             <main className="flex-grow">
-              <BodyScrollManager>{children}</BodyScrollManager>
+          <BodyScrollManager>{children}</BodyScrollManager>
             </main>
             <Toaster richColors position="top-right" />
           </NotificationProvider>

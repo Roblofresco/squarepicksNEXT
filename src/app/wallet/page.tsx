@@ -137,16 +137,14 @@ const WalletPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
               <Link
                 href="/deposit"
-                className="flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% rounded-lg shadow hover:shadow-md transition-shadow text-center text-gray-900 hover:bg-gray-100 active:scale-95 focus:scale-105 transition-all duration-150 outline-none"
-                legacyBehavior>
+                className="flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% rounded-lg shadow hover:shadow-md transition-shadow text-center text-gray-900 hover:bg-gray-100 active:scale-95 focus:scale-105 transition-all duration-150 outline-none">
                 <ArrowDownCircle className="w-8 h-8 mb-2 text-accent-2" />
                 <span className="font-medium">Deposit Funds</span>
               </Link>
               {/* TODO: Implement Withdraw page/functionality */}
               <Link
                 href="/withdraw"
-                className="flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% rounded-lg shadow hover:shadow-md transition-shadow text-center text-gray-900 hover:bg-gray-100 active:scale-95 focus:scale-105 transition-all duration-150 outline-none"
-                legacyBehavior>
+                className="flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% rounded-lg shadow hover:shadow-md transition-shadow text-center text-gray-900 hover:bg-gray-100 active:scale-95 focus:scale-105 transition-all duration-150 outline-none">
                 <ArrowUpCircle className="w-8 h-8 mb-2 text-accent-3" />
                 <span className="font-medium">Withdraw Funds</span>
               </Link>
@@ -191,7 +189,7 @@ const WalletPage = () => {
 
             {/* Link to Full Transaction History - UPDATED */}
             <div className="text-center">
-              <Link href="/transactions" passHref legacyBehavior>
+              <Link href="/transactions">
                 <Button variant="outline" className="border-accent-4 text-accent-4 hover:bg-accent-4/10 hover:text-accent-4 active:scale-95 focus:scale-105 transition-all duration-150">
                    <History className="w-4 h-4 mr-2" />
                    View All Transactions

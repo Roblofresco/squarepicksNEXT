@@ -10,6 +10,8 @@ import { useWallet } from '@/hooks/useWallet';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { cn } from "@/lib/utils";
 import { getAuth } from "firebase/auth"; // Import Firebase auth
+import { getFunctions, httpsCallable } from 'firebase/functions'; // Added for httpsCallable
+import { getApp } from 'firebase/app'; // Import getApp
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
@@ -42,7 +44,13 @@ export default function DepositPage() {
       value = `${decimalParts[0]}.${decimalParts[1].slice(0, 2)}`;
     }
     setAmount(value);
-    setError(null);
+
+    const numericValue = parseFloat(value);
+    if (value && numericValue < 5) {
+      setError("Minimum deposit amount is $5.00");
+    } else {
+      setError(null);
+    }
   };
 
   const createPayPalOrder = async (data: any, actions: any): Promise<string> => {
@@ -53,6 +61,10 @@ export default function DepositPage() {
     if (isNaN(depositAmount) || depositAmount <= 0) {
         setError("Invalid deposit amount for PayPal.");
         throw new Error("Invalid amount");
+    }
+    if (depositAmount < 5) {
+        setError("Minimum deposit amount is $5.00.");
+        throw new Error("Amount below minimum");
     }
     // TODO: Add min/max checks 
 
@@ -90,27 +102,26 @@ export default function DepositPage() {
         throw new Error("User not authenticated. Cannot capture order.");
       }
 
-      const idToken = await user.getIdToken(); // Get Firebase ID token
+      // const idToken = await user.getIdToken(); // No longer needed for httpsCallable
       
-      // Call the deployed Cloud Function endpoint
-      const response = await fetch('https://capturepaypalorder-kjetjvm2ja-uc.a.run.app', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}` // Send auth token
-        },
-        body: JSON.stringify({ orderID: data.orderID }) // Only send orderID
-      });
+      const app = getApp(); // Get the default Firebase app instance
+      const functions = getFunctions(app, 'us-east1'); // Get functions instance for us-east1
+      const capturePayPalOrderCallable = httpsCallable(functions, 'capturePayPalOrder'); // Specify function name
 
-      const result = await response.json();
-      if (!response.ok) {
-         // Try to get a more specific error from the function response
-         const errorMessage = result.error || result.message || "Failed to capture order";
-         console.error("Capture Error Response:", result);
-         throw new Error(errorMessage);
+      const result = await capturePayPalOrderCallable({ orderID: data.orderID }); // Call the function
+
+      // httpsCallable wraps the response in a 'data' object.
+      // Assuming your cloud function returns the actual result directly (not nested further under another 'data' property)
+      const captureResult = result.data as any; // Cast to 'any' or a more specific type if known
+
+      // Check for backend errors based on your function's response structure
+      // This part might need adjustment based on how your callable function signals success/error
+      if (captureResult.error) { // Example: if your function returns { error: 'some error' }
+         console.error("Capture Error Response:", captureResult);
+         throw new Error(captureResult.error || captureResult.message || "Failed to capture order");
       }
 
-      console.log("Capture successful:", result);
+      console.log("Capture successful:", captureResult);
       console.log("Deposit via PayPal successful. User profile updated by backend.");
       // Optionally trigger a refresh of wallet balance in context/hook
       // TODO: Maybe show a success message before redirecting?
@@ -118,7 +129,18 @@ export default function DepositPage() {
     } catch (err: any) {
         console.error("Error capturing PayPal order:", err);
         // Display the specific error message if available
-        setError(err.message || "Failed to finalize PayPal deposit.");
+        let errorMessage = "Failed to finalize PayPal deposit.";
+        if (err.message) {
+            errorMessage = err.message;
+        } else if (typeof err === 'string') {
+            errorMessage = err;
+        }
+        // Check for Firebase Functions specific error codes or details
+        if (err.code && err.details) {
+          console.error(`Firebase Functions Error Code: ${err.code}, Details: ${err.details}`);
+          // Potentially refine errorMessage based on err.code
+        }
+        setError(errorMessage);
         // Ensure loading state is turned off on error
         setIsSubmitting(false); 
     }
@@ -215,10 +237,10 @@ export default function DepositPage() {
                      createOrder={createPayPalOrder} 
                      onApprove={onPayPalApprove}
                      onError={onPayPalError}
-                     disabled={isSubmitting || !amount || parseFloat(amount) <= 0} 
+                     disabled={isSubmitting || !amount || parseFloat(amount) < 5} 
                      onInit={(data, actions) => {
                          console.log("PayPal Buttons Initialized. Disabled state:", 
-                           isSubmitting || !amount || parseFloat(amount) <= 0, 
+                           isSubmitting || !amount || parseFloat(amount) < 5, 
                            { isSubmitting, amount: amount, parsedAmount: parseFloat(amount) }
                          );
                      }}

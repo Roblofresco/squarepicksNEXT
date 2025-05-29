@@ -203,10 +203,11 @@ const ProfilePage = () => {
                   className={`text-accent-1 text-xs font-semibold cursor-pointer flex items-center transition-colors duration-150 ${isWalletLoading ? 'pointer-events-none opacity-70' : 'hover:underline hover:text-accent-1/80 active:text-accent-1/90'}`}
                   style={{}}
                   tabIndex={0}
-                  aria-disabled={isWalletLoading}
-                  legacyBehavior>
-                  {isWalletLoading && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
-                  Manage
+                  aria-disabled={isWalletLoading}>
+                  <span>
+                    {isWalletLoading && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
+                    Manage
+                  </span>
                 </Link>
               </div>
               <div className="relative w-24 h-24 mb-3 group">
@@ -259,8 +260,7 @@ const ProfilePage = () => {
                       <Link
                         key={item.label}
                         href={item.href}
-                        className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group"
-                        legacyBehavior>
+                        className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group">
                         <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
                         <span className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</span>
                         <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
@@ -294,8 +294,7 @@ const ProfilePage = () => {
                      <Link
                        key={item.label}
                        href={item.href}
-                       className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group"
-                       legacyBehavior>
+                       className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group">
                        <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
                        <span className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</span>
                        <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />

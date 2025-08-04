@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User, sendEmailVerification } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 
 interface WalletState {
@@ -11,6 +11,7 @@ interface WalletState {
   isLoading: boolean;
   error: string | null;
   userId: string | null;
+  emailVerified: boolean | null;
 }
 
 export function useWallet() {
@@ -20,12 +21,25 @@ export function useWallet() {
     isLoading: true,
     error: null,
     userId: null,
+    emailVerified: null,
   });
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      console.log("[useWallet] onAuthStateChanged triggered. User:", user ? user.uid : null, "Email Verified:", user ? user.emailVerified : null);
       if (user) {
-        setWalletState((prevState) => ({ ...prevState, userId: user.uid, isLoading: true, error: null }));
+        if (user.emailVerified) {
+          console.warn("[useWallet] User is VERIFIED:", user.uid, "Email:", user.email);
+        } else {
+          console.log("[useWallet] User is NOT verified:", user.uid, "Email:", user.email);
+        }
+        setWalletState((prevState) => ({ 
+          ...prevState, 
+          userId: user.uid, 
+          emailVerified: user.emailVerified,
+          isLoading: true,
+          error: null 
+        }));
         const userDocRef = doc(db, 'users', user.uid);
 
         const unsubscribeSnapshot = onSnapshot(userDocRef, (docSnap) => {
@@ -33,8 +47,9 @@ export function useWallet() {
             const data = docSnap.data();
             setWalletState({
               userId: user.uid,
-              hasWallet: data.hasWallet === true, // Check specifically for true
-              balance: data.balance ?? 0, // Default to 0 if balance is undefined/null
+              emailVerified: user.emailVerified,
+              hasWallet: data.hasWallet === true,
+              balance: data.balance ?? 0,
               isLoading: false,
               error: null,
             });
@@ -42,6 +57,7 @@ export function useWallet() {
             // User document doesn't exist, meaning no wallet setup yet
             setWalletState({
               userId: user.uid,
+              emailVerified: user.emailVerified,
               hasWallet: false,
               balance: 0,
               isLoading: false,
@@ -52,7 +68,8 @@ export function useWallet() {
           console.error("Error fetching wallet data:", err);
           setWalletState({
             userId: user.uid,
-            hasWallet: null, // Error state
+            emailVerified: user.emailVerified,
+            hasWallet: null,
             balance: 0,
             isLoading: false,
             error: 'Failed to load wallet data.',
@@ -64,12 +81,14 @@ export function useWallet() {
 
       } else {
         // No user logged in
+        console.log("[useWallet] onAuthStateChanged: No user logged in. Setting isLoading to false.");
         setWalletState({
           hasWallet: null,
           balance: 0,
           isLoading: false,
           error: null,
           userId: null,
+          emailVerified: null,
         });
       }
     });
@@ -117,6 +136,23 @@ export function useWallet() {
     }
   };
 
+  // Function to resend verification email
+  const resendVerificationEmail = async (): Promise<{ success: boolean; message: string }> => {
+    if (!auth.currentUser) {
+      return { success: false, message: 'No user logged in to resend verification email.' };
+    }
+    try {
+      await sendEmailVerification(auth.currentUser);
+      return { success: true, message: 'Verification email sent! Please check your inbox (and spam folder).' };
+    } catch (error: any) {
+      console.error("Error resending verification email:", error);
+      // Firebase often has built-in rate limiting (auth/too-many-requests)
+      if (error.code === 'auth/too-many-requests') {
+        return { success: false, message: 'Verification email already sent recently. Please wait a few minutes before trying again.' };
+      }
+      return { success: false, message: error.message || 'Failed to resend verification email.' };
+    }
+  };
 
-  return { ...walletState, initializeWallet };
+  return { ...walletState, initializeWallet, resendVerificationEmail };
 } 

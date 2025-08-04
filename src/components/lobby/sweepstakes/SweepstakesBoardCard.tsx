@@ -6,9 +6,7 @@ import { Board } from '@/types/lobby'; // Import Board type
 import { Board as BoardType, TeamInfo, SquareEntry } from '@/types/lobby';
 import { User as FirebaseUser } from 'firebase/auth'; // Import User from firebase/auth
 import { Button } from '@/components/ui/button';
-import { Loader2, Ticket } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, DocumentData, DocumentReference, doc } from 'firebase/firestore';
+import { Loader2, Ticket, X as XIcon } from 'lucide-react';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { toast } from 'react-hot-toast';
 
@@ -22,21 +20,16 @@ interface EntryInteractionState {
 interface SweepstakesBoardCardProps {
   board: BoardType;
   user: FirebaseUser | null;
-  currentUserId?: string | null;
   onProtectedAction: () => void; 
   entryInteraction: EntryInteractionState;
   handleBoardAction: (action: string, boardId: string, value?: any) => void;
-  openWalletDialog: (type: 'setup' | 'deposit', reqAmount?: number, boardIdToEnter?: string | null) => void;
+  openWalletDialog: (type: 'setup' | 'deposit' | 'sweepstakes', reqAmount?: number, boardIdToEnter?: string | null) => void;
   walletHasWallet: boolean | null;
   walletBalance: number;
   walletIsLoading: boolean;
 }
 
-// Define SweepstakesMiniGrid props
-interface SweepstakesMiniGridProps {
-  highlightedNumber?: number | string;
-  allTakenSet?: Set<number>;
-  takenByUserSet?: Set<number>;
+interface SweepstakesMiniGridThemeProps {
   gridLineColor?: string;
   unselectedSquareBg?: string;
   unselectedSquareTextColor?: string;
@@ -51,25 +44,52 @@ interface SweepstakesMiniGridProps {
   cellBorderRadius?: string;
 }
 
-// --- Sweepstakes Mini Grid Component (Internal or separate file) ---
-// Renders the visual grid, similar to BoardMiniGrid
+interface SweepstakesMiniGridProps {
+  highlightedNumber?: number | string;
+  allTakenSet?: Set<number>;
+  takenByUserSet?: Set<number>;
+  theme?: SweepstakesMiniGridThemeProps;
+  onSquareClick?: (squareNumber: number) => void;
+}
+
+const defaultMiniGridTheme: Required<SweepstakesMiniGridThemeProps> = {
+  gridLineColor: 'bg-black/10',
+  unselectedSquareBg: 'bg-gradient-to-br from-black/10 to-black/20',
+  unselectedSquareTextColor: 'text-[#B8860B]',
+  otherUserSelectedSquareBg: 'bg-gradient-to-br from-black/30 to-black/40',
+  otherUserSelectedSquareTextColor: 'text-gray-500',
+  takenByUserSquareBg: 'bg-gradient-to-br from-[#B8860B] to-[#A0740A]',
+  takenByUserSquareTextColor: 'text-white',
+  highlightedSquareBaseBg: 'bg-gradient-to-br from-black/10 to-yellow-700/20',
+  highlightedSquareBaseTextColor: 'text-[#B8860B]',
+  highlightedSquareGlowClass: 'shadow-[0_0_12px_2px_rgba(184,134,11,0.6)]',
+  highlightedSquareTextSizeClass: 'text-sm sm:text-base',
+  cellBorderRadius: 'rounded'
+};
+
 const SweepstakesMiniGrid = memo(({
   highlightedNumber,
   allTakenSet,
   takenByUserSet,
-  gridLineColor = 'bg-black/10',
-  unselectedSquareBg = 'bg-black/10',
-  unselectedSquareTextColor = 'text-[#B8860B]',
-  otherUserSelectedSquareBg = 'bg-black/30',
-  otherUserSelectedSquareTextColor = 'text-gray-500',
-  takenByUserSquareBg = 'bg-[#B8860B]',
-  takenByUserSquareTextColor = 'text-[#eeeeee]',
-  highlightedSquareBaseBg = 'bg-black/10',
-  highlightedSquareBaseTextColor = 'text-[#B8860B]',
-  highlightedSquareGlowClass = 'shadow-[0_0_12px_2px_rgba(184,134,11,0.6)]',
-  highlightedSquareTextSizeClass = 'text-xs sm:text-sm',
-  cellBorderRadius = 'rounded'
+  theme = {},
+  onSquareClick
 }: SweepstakesMiniGridProps) => {
+  const currentTheme = { ...defaultMiniGridTheme, ...theme };
+  const {
+    gridLineColor,
+    unselectedSquareBg,
+    unselectedSquareTextColor,
+    otherUserSelectedSquareBg,
+    otherUserSelectedSquareTextColor,
+    takenByUserSquareBg,
+    takenByUserSquareTextColor,
+    highlightedSquareBaseBg,
+    highlightedSquareBaseTextColor,
+    highlightedSquareGlowClass,
+    highlightedSquareTextSizeClass,
+    cellBorderRadius
+  } = currentTheme;
+
   const squares = Array.from({ length: 100 }, (_, i) => i);
   const highlightedSq = highlightedNumber !== undefined && highlightedNumber !== '' ? parseInt(String(highlightedNumber), 10) : null;
 
@@ -90,19 +110,21 @@ const SweepstakesMiniGrid = memo(({
 
         let currentSquareBg = unselectedSquareBg;
         let currentTextColor = unselectedSquareTextColor;
-        let currentTextSizeClass = 'text-[7px] sm:text-[8px]';
+        let currentTextSizeClass = 'text-[9px] sm:text-[10px]';
         let currentGlowClass = '';
+        let squareContent = String(sq).padStart(2, '0');
 
         if (isTakenByUser) {
             currentSquareBg = takenByUserSquareBg;
             currentTextColor = takenByUserSquareTextColor;
+            currentTextSizeClass = highlightedSquareTextSizeClass;
             if (isHighlightedByInput) {
-                currentTextSizeClass = highlightedSquareTextSizeClass;
                 currentGlowClass = highlightedSquareGlowClass;
             }
         } else if (isTakenByOther) {
             currentSquareBg = otherUserSelectedSquareBg;
             currentTextColor = otherUserSelectedSquareTextColor;
+            squareContent = 'X';
         } else if (isHighlightedByInput) {
             currentSquareBg = highlightedSquareBaseBg;
             currentTextColor = highlightedSquareBaseTextColor;
@@ -113,16 +135,18 @@ const SweepstakesMiniGrid = memo(({
         return (
         <div
           key={sq}
+          onClick={() => onSquareClick && onSquareClick(sq)}
           className={cn(
-            `aspect-square flex items-center justify-center font-mono cursor-pointer transition-all duration-150 ease-in-out`,
+            `aspect-square flex items-center justify-center font-mono transition-all duration-150 ease-in-out`,
             `border border-black/20`,
+            onSquareClick ? 'cursor-pointer' : 'cursor-default',
             currentSquareBg,
             currentTextColor,
             currentTextSizeClass,
             currentGlowClass,
             cellBorderRadius
         )}>
-            {String(sq).padStart(2, '0')}
+            {squareContent}
         </div>
         );
       })}
@@ -135,14 +159,13 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
    const {
   board,
   user, 
-    currentUserId,
   onProtectedAction, 
   entryInteraction,
   handleBoardAction,
-    openWalletDialog,
+  openWalletDialog,
   walletHasWallet,
   walletBalance,
-    walletIsLoading
+  walletIsLoading
   } = props;
 
   const [currentUserSquaresSet, setCurrentUserSquaresSet] = useState<Set<number>>(new Set());
@@ -160,112 +183,71 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
 
   const allTakenSet = useMemo(() => new Set((board?.selected_indexes as number[] | undefined) || []), [board?.selected_indexes]);
 
-  // Add these logs to see prop and state changes
-  console.log('[SweepstakesBoardCard] Rendering. Board Prop Selected Indexes:', board?.selected_indexes);
-  console.log('[SweepstakesBoardCard] Current currentUserSquaresSet state:', currentUserSquaresSet);
-
   useEffect(() => {
-    // Ensure we have the necessary IDs
-    if (!board?.id || !currentUserId) {
-      console.log("[SweepstakesBoardCardComponent Fetch Selections] Missing boardId or currentUserId.");
-      setCurrentUserSquaresSet(new Set()); // Clear squares if IDs are missing
+    if (!board?.id || !user?.uid) {
+      setCurrentUserSquaresSet(new Set()); 
       setIsLoadingSelections(false);
       setSelectionError(null);
       return;
     }
 
-    // Function to fetch selections
     const fetchUserSelections = async () => {
-      console.log(`[SweepstakesBoardCardComponent Fetch Selections] Fetching for board ${board.id}, user ${currentUserId}`);
       setIsLoadingSelections(true);
       setSelectionError(null);
-      setCurrentUserSquaresSet(new Set()); // Clear previous selections during fetch
+      setCurrentUserSquaresSet(new Set()); 
 
       try {
-        const functions = getFunctions(undefined, "us-east1"); // Ensure region is correct
+        const functions = getFunctions(undefined, "us-east1"); 
         const getSelectionsFn = httpsCallable(functions, 'getBoardUserSelections');
-
-        // Call the function with the boardID
         const result = await getSelectionsFn({ boardID: board.id });
-
-        // Process the result
-        const data = result.data as { selectedIndexes?: number[] }; // Type assertion
+        const data = result.data as { selectedIndexes?: number[] }; 
         if (data?.selectedIndexes && Array.isArray(data.selectedIndexes)) {
           setCurrentUserSquaresSet(new Set(data.selectedIndexes));
-          console.log(`[SweepstakesBoardCardComponent Fetch Selections] Success for board ${board.id}:`, data.selectedIndexes);
         } else {
-          console.warn(`[SweepstakesBoardCardComponent Fetch Selections] Unexpected data format for board ${board.id}:`, data);
-          setCurrentUserSquaresSet(new Set()); // Set empty on unexpected format
+          setCurrentUserSquaresSet(new Set()); 
         }
       } catch (error: any) {
-        console.error(`[SweepstakesBoardCardComponent Fetch Selections] Error calling getBoardUserSelections for board ${board.id}:`, error);
         setSelectionError(error.message || "Failed to fetch your selections.");
-        setCurrentUserSquaresSet(new Set()); // Clear squares on error
-        // Optionally show a toast for the error
-        // toast.error(error.message || "Failed to fetch your selections.");
+        setCurrentUserSquaresSet(new Set()); 
+        toast.error(error.message || "Failed to load your selections. Please refresh.");
       } finally {
         setIsLoadingSelections(false);
       }
     };
 
     fetchUserSelections();
+  }, [board?.id, user?.uid]);
 
-    // No cleanup function needed as it's a one-time call per dependency change
-
-  }, [board?.id, currentUserId]); // Dependencies: re-fetch if board or user changes
-
-  // ADDED: useEffect to check if user is already a participant
   useEffect(() => {
     const checkParticipation = async () => {
-      // Use user?.uid directly from the prop for current authenticated user
       if (!board?.sweepstakesID || !user?.uid) {
         setIsLoadingParticipantStatus(false);
-        // Ensure isCurrentUserParticipant is also reset if critical IDs are missing
-        if (isCurrentUserParticipant) { // Only log and set if it's changing
-            console.log("[SweepstakesBoardCardComponent CheckParticipation] Resetting isCurrentUserParticipant to false due to missing sweepstakesID or user UID.");
+        if (isCurrentUserParticipant) { 
             setIsCurrentUserParticipant(false);
-        } else {
-            // If already false, and IDs missing, it's expected, perhaps less verbose logging or none
-            console.log("[SweepstakesBoardCardComponent CheckParticipation] Missing sweepstakesID or user UID; isCurrentUserParticipant already false or will be set by isLoadingParticipantStatus.");
         }
         return;
       }
 
       setIsLoadingParticipantStatus(true);
-      console.log(`[SweepstakesBoardCardComponent CheckParticipation] Checking for sweepstakes: ${board.sweepstakesID}, user: ${user.uid}`);
 
       try {
-        const functions = getFunctions(undefined, "us-east1"); // Ensure region matches
+        const functions = getFunctions(undefined, "us-east1"); 
         const checkParticipantFn = httpsCallable(functions, 'checkSweepstakesParticipation');
-        
         const result = await checkParticipantFn({ sweepstakesID: board.sweepstakesID });
         const data = result.data as { isParticipant?: boolean };
-
-        console.log(`[SweepstakesBoardCardComponent CheckParticipation] Raw data from checkParticipantFn:`, JSON.stringify(data)); // Log raw data
-
         if (typeof data?.isParticipant === 'boolean') {
-          console.log(`[SweepstakesBoardCardComponent CheckParticipation] About to set isCurrentUserParticipant to: ${data.isParticipant} (from cloud function)`);
           setIsCurrentUserParticipant(data.isParticipant);
-          // Log the state *after* React processes the update (can be tricky due to async nature of setState, but this gives intent)
-          console.log(`[SweepstakesBoardCardComponent CheckParticipation] Intended isCurrentUserParticipant state now: ${data.isParticipant} for sweepstakes ${board.sweepstakesID}`);
         } else {
-          console.warn("[SweepstakesBoardCardComponent CheckParticipation] Unexpected data format from checkSweepstakesParticipation:", data);
-          console.log(`[SweepstakesBoardCardComponent CheckParticipation] About to set isCurrentUserParticipant to: false (due to unexpected format)`);
           setIsCurrentUserParticipant(false);
         }
       } catch (error: any) {
-        console.error("[SweepstakesBoardCardComponent CheckParticipation] Error calling checkSweepstakesParticipation:", error);
-        console.log(`[SweepstakesBoardCardComponent CheckParticipation] About to set isCurrentUserParticipant to: false (due to error)`);
         setIsCurrentUserParticipant(false);
       } finally {
         setIsLoadingParticipantStatus(false);
-        console.log(`[SweepstakesBoardCardComponent CheckParticipation] Finished participation check. isLoadingParticipantStatus: false.`);
       }
     };
-
     checkParticipation();
-
-  }, [board?.sweepstakesID, user?.uid, isCurrentUserParticipant]); // Added isCurrentUserParticipant to deps to re-evaluate if it externally changes, though typically it's internally managed by this effect.
+  }, [board?.sweepstakesID, user?.uid]);
 
   useEffect(() => {
     const centralSelectedStr = entryInteraction.selectedNumber !== null ? String(entryInteraction.selectedNumber) : null;
@@ -297,43 +279,57 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
     handleBoardAction('SET_NUMBER', board.id, numToSend);
   }, [isActive, currentStage, handleBoardAction, board.id]);
 
+  const handleMiniGridSquareClick = useCallback((squareNumber: number) => {
+    if (isLoadingParticipantStatus || isCurrentUserParticipant) return; // Don't allow selection if already entered or loading status
+    if (!user) {
+      onProtectedAction();
+      return;
+    }
+
+    setInputValue(String(squareNumber).padStart(2, '0'));
+
+    // If not already interacting with this board, or in idle state, start interaction
+    if (!isActive || currentStage === 'idle') {
+      handleBoardAction('START_ENTRY', board.id);
+    }
+    // Set the number in the central state
+    handleBoardAction('SET_NUMBER', board.id, squareNumber);
+  }, [user, isActive, currentStage, handleBoardAction, board.id, onProtectedAction, isLoadingParticipantStatus, isCurrentUserParticipant]);
+
   const processEnterOrConfirm = useCallback(async () => {
-    console.log("processEnterOrConfirm called");
     if (isLoadingParticipantStatus || isCurrentUserParticipant) {
-        console.log("processEnterOrConfirm: Aborted due to loading participation status or already participated.");
         return;
     }
     if (!user) {
       onProtectedAction(); 
       return;
     }
-    console.log("User object UID in processEnterOrConfirm:", user?.uid);
-    console.log("Current stage in processEnterOrConfirm:", currentStage);
 
-    // ADDED: Attempt to get a fresh token to ensure auth state is current
+    if (!walletHasWallet) {
+      openWalletDialog('sweepstakes', 0, board.id);
+      return;
+    }
+
     if (typeof user.getIdToken === 'function') {
       try {
-        const token = await user.getIdToken(true); // true forces a refresh
-        console.log("Auth token refreshed successfully. Token for debugging:", token);
+        await user.getIdToken(true); 
       } catch (tokenError) {
-        console.error("Failed to refresh auth token:", tokenError);
-        toast.error("Authentication session issue. Please try signing in again.");
-      onProtectedAction();
-        return; // Stop execution if token refresh fails
+        toast.error("Authentication error. Please sign in again.");
+        onProtectedAction();
+        return; 
       }
     }
-    // END ADDED SECTION
 
     const numToSubmitString = isActive && entryInteraction.selectedNumber !== null 
                                ? String(entryInteraction.selectedNumber) 
                                : inputValue;
 
     if (numToSubmitString === null || numToSubmitString.trim() === '') {
-        toast.error("Please enter a number."); return;
+        toast.error("Please select a number (0-99)."); return;
     }
     const selectedNumInt = parseInt(numToSubmitString, 10);
     if (isNaN(selectedNumInt) || selectedNumInt < 0 || selectedNumInt > 99) {
-        toast.error("Invalid number selected."); return;
+        toast.error("Invalid number. Must be 0-99."); return;
     }
     if (allTakenSet.has(selectedNumInt) && !currentUserSquaresSet.has(selectedNumInt)) {
         toast.error("This number is already taken."); return;
@@ -342,60 +338,39 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
     if (currentStage === 'idle' || currentStage === 'selecting') {
         handleBoardAction('REQUEST_CONFIRM', board.id);
     } else if (currentStage === 'confirming') {
-        const toastId = toast.loading('Entering Sweepstakes...');
+        const toastId = toast.loading('Processing your entry...');
         const functions = getFunctions(undefined, "us-east1");
         const enterBoardFn = httpsCallable(functions, 'enterBoard');
         try {
-            // --- ADD DETAILED LOGGING HERE ---
-            if (user) {
-                console.log('[SweepstakesBoardCard] Current User UID:', user.uid);
-                try {
-                    const currentIdToken = await user.getIdToken(false); // Get current token without forcing refresh initially
-                    console.log('[SweepstakesBoardCard] Current ID Token (no force refresh):', currentIdToken);
-                    // Optionally, decode and log parts of it if you have a client-side JWT decoder, or just log the first few chars
-                    const freshIdToken = await user.getIdToken(true); // Force refresh
-                    console.log('[SweepstakesBoardCard] Fresh ID Token (forced refresh):', freshIdToken);
-                } catch (tokenError) {
-                    console.error('[SweepstakesBoardCard] Error getting ID token:', tokenError);
-                }
-    } else {
-                console.log('[SweepstakesBoardCard] User object is null before calling enterBoardFn.');
-            }
-            console.log(`[SweepstakesBoardCard] Calling enterBoardFn with: boardId: ${board.id}, selectedNumber: ${selectedNumInt}, sweepstakesId: ${board.sweepstakesID}`);
-            // --- END DETAILED LOGGING ---
-
             const payload: { boardId: string; selectedNumber: number; sweepstakesId?: string } = {
                 boardId: board.id,
                 selectedNumber: selectedNumInt,
             };
 
             if (board.sweepstakesID) {
-                payload.sweepstakesId = board.sweepstakesID; // Ensure key is 'sweepstakesId'
+                payload.sweepstakesId = board.sweepstakesID; 
             }
 
             const result = await enterBoardFn(payload);
             toast.dismiss(toastId);
             if ((result.data as any)?.success) {
-                toast.success('Sweepstakes entry successful! Good luck!');
+                toast.success('Entry successful! Good luck!');
                 handleBoardAction('ENTRY_COMPLETED_RESET', board.id);
-                setInputValue(""); // Also reset inputValue locally
+                setInputValue(""); 
                 setIsCurrentUserParticipant(true);
-                // Optimistically update current user's squares
                 setCurrentUserSquaresSet(prev => {
                     const newSet = new Set(prev);
-                    newSet.add(selectedNumInt); // selectedNumInt is available in this scope
-                    console.log('[SweepstakesBoardCard] Optimistically updated currentUserSquaresSet:', newSet); // Log the change
+                    newSet.add(selectedNumInt); 
                     return newSet;
                 });
             } else { throw new Error((result.data as any)?.error || 'Cloud function reported failure.'); }
         } catch (err: any) {
             toast.dismiss(toastId);
-            console.error("SWEEPSTAKES_ENTRY_ERR:", err);
-            toast.error(err.message || "Failed to process entry.");
+            toast.error(err.message || "Entry failed. Please try again.");
             handleBoardAction('CANCEL_CONFIRM', board.id);
         }
     }
-  }, [user, onProtectedAction, isActive, entryInteraction.selectedNumber, inputValue, allTakenSet, currentUserSquaresSet, currentStage, handleBoardAction, board.id, isLoadingParticipantStatus, isCurrentUserParticipant]);
+  }, [user, onProtectedAction, isActive, entryInteraction.selectedNumber, inputValue, allTakenSet, currentUserSquaresSet, currentStage, handleBoardAction, board.id, board.sweepstakesID, isLoadingParticipantStatus, isCurrentUserParticipant, walletHasWallet, openWalletDialog]);
 
   const handleCancelConfirm = useCallback(() => {
     handleBoardAction('CANCEL_CONFIRM', board.id);
@@ -404,29 +379,70 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
   const accentGlowRgb = '184, 134, 11';
   const gradientStyle = { background: `linear-gradient(to bottom, rgb(var(--color-background-primary)) 0%, #B8860B 15%, #B8860B 100%)` };
 
+  const sweepstakesGridTheme: SweepstakesMiniGridThemeProps = {
+    gridLineColor: 'bg-black/10',
+    unselectedSquareBg: 'bg-gradient-to-br from-black/10 to-black/20',
+    unselectedSquareTextColor: 'text-[#B8860B]',
+    otherUserSelectedSquareBg: 'bg-gradient-to-br from-black/30 to-black/40',
+    otherUserSelectedSquareTextColor: 'text-gray-500',
+    takenByUserSquareBg: 'bg-gradient-to-br from-[#B8860B] to-[#A0740A]',
+    takenByUserSquareTextColor: 'text-white',
+    highlightedSquareBaseBg: 'bg-gradient-to-br from-black/10 to-yellow-700/20',
+    highlightedSquareBaseTextColor: 'text-[#B8860B]',
+    highlightedSquareGlowClass: 'shadow-[0_0_12px_2px_rgba(184,134,11,0.7)]',
+    highlightedSquareTextSizeClass: 'text-sm sm:text-base',
+    cellBorderRadius: 'rounded-sm'
+  };
+
+
   return (
     <div 
       className={`p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20`}
       style={gradientStyle}
     >
-      <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center space-x-4 h-16">
-        <span className="text-base text-white font-semibold flex-shrink-0 select-none">
+      <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
+        <span className="text-sm sm:text-base text-white font-semibold select-none min-w-0">
           {isLoadingParticipantStatus ? "Checking status..." :
            isCurrentUserParticipant ? "You're already entered!" :
-           "Choose Your Number 0-99:"}
+           (isActive && currentStage === 'confirming' && entryInteraction.selectedNumber !== null) ?
+            `Selected Pick: ${String(entryInteraction.selectedNumber).padStart(2, '0')}` :
+            "Choose Your Pick 0-99:"}
         </span>
 
         {isLoadingParticipantStatus ? (
-          <div className="flex-1 flex justify-center items-center">
+          <div className="flex-grow flex justify-center items-center">
             <Loader2 className="h-6 w-6 animate-spin text-[#B8860B]" />
           </div>
         ) : !isCurrentUserParticipant ? (
-          <input
-            type="text" inputMode="numeric" pattern="[0-9]*" value={inputValue} onChange={handleInputChange} placeholder="##" maxLength={2}
-            disabled={(currentStage === 'confirming' && isActive) || walletIsLoading || isLoadingSelections}
-            className="w-16 h-10 text-center bg-black/10 text-[#B8860B] font-mono text-2xl rounded-md border-none placeholder:text-[#B8860B]/70 focus:ring-2 focus:ring-[#B8860B] outline-none transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed shadow-inner"
-          />
+          // User is not a participant yet
+          (isActive && currentStage === 'confirming') ? (
+            // In confirming stage, input is replaced by confirm/cancel buttons (which are to the right and will expand)
+            <div className="w-0 h-10 flex-shrink-0" /> // Empty, non-visible placeholder
+          ) : (
+            // Not confirming, show the input field
+            <div className="relative w-20 h-10 flex-shrink-0">
+              <input
+                type="text" inputMode="numeric" pattern="[0-9]*" value={inputValue} onChange={handleInputChange} placeholder="##" maxLength={2}
+                disabled={(currentStage === 'confirming' && isActive) || walletIsLoading || isLoadingSelections}
+                className="w-full h-full text-center bg-black/10 text-[#B8860B] font-mono text-2xl rounded-md border-none placeholder:text-[#B8860B]/70 focus:ring-2 focus:ring-[#B8860B] outline-none transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed shadow-inner"
+              />
+              {inputValue && !((currentStage === 'confirming' && isActive) || walletIsLoading || isLoadingSelections) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputValue("");
+                    handleBoardAction('SET_NUMBER', board.id, null);
+                  }}
+                  className="absolute top-[-6px] right-[-6px] p-0.5 bg-black/20 rounded-full text-[#B8860B]/70 hover:text-[#B8860B] hover:bg-black/40 transition-all z-10"
+                  aria-label="Clear input"
+                >
+                  <XIcon className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          )
         ) : (
+          // User IS a participant
           <div className="flex-1 flex justify-center items-center">
             <Ticket className="h-7 w-7 text-green-400" /> 
             <span className="ml-2 text-green-400 font-semibold">Good Luck!</span>
@@ -434,10 +450,10 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
         )}
 
         <div className={cn(
-            'flex-1 min-w-0 flex',
-            currentStage === 'confirming' && isActive && !isCurrentUserParticipant && !isLoadingParticipantStatus
-                ? 'flex-col items-end space-y-1' 
-                : 'items-center justify-end'
+            'flex items-center',
+            (isActive && currentStage === 'confirming' && !isCurrentUserParticipant && !isLoadingParticipantStatus)
+                ? 'flex-grow justify-evenly space-x-2' // Adjusted space-x-1 to space-x-2 for consistency
+                : 'flex-shrink-0 justify-end'
         )}>
             {!isLoadingParticipantStatus && !isCurrentUserParticipant && (
                 (currentStage === 'confirming' && isActive) ? (
@@ -445,15 +461,15 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
                         <Button
                             onClick={processEnterOrConfirm}
                             disabled={walletIsLoading || isLoadingSelections}
-                            className="px-4 py-1 text-xs font-semibold rounded-md border h-6 bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors w-full"
+                            className="px-3 py-2 text-sm font-semibold rounded-md border h-auto bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors flex-1 min-w-0"
                         >
-                            {(walletIsLoading || isLoadingSelections) && <Loader2 className="h-3 w-3 animate-spin mr-1 inline-block" />}CONFIRM
+                            {(walletIsLoading || isLoadingSelections) && <Loader2 className="h-4 w-4 animate-spin mr-1 inline-block" />}CONFIRM
                         </Button>
                         <Button
                             onClick={handleCancelConfirm}
                             disabled={walletIsLoading || isLoadingSelections}
                             variant="outline"
-                            className="px-4 py-1 text-xs font-semibold rounded-md border h-6 border-[#B8860B]/70 text-[#B8860B] hover:bg-[#B8860B]/20 hover:text-yellow-300 transition-colors w-full"
+                            className="px-3 py-2 text-sm font-semibold rounded-md border h-auto border-[#B8860B]/70 text-[#B8860B] hover:bg-[#B8860B]/20 hover:text-yellow-300 transition-colors flex-1 min-w-0"
                         >
                             CANCEL
                         </Button>
@@ -469,7 +485,9 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
                         }
                  className={cn(
                             `px-4 py-2 text-sm font-semibold rounded-md border transition-colors h-10`,
-                            'bg-yellow-700/80 hover:bg-yellow-600/80 border-yellow-800/90 text-yellow-200/90 disabled:bg-yellow-800/50 disabled:border-yellow-900/50 disabled:text-yellow-300/50 disabled:cursor-not-allowed'
+                            'text-white border-yellow-700 hover:border-yellow-600',
+                            'bg-gradient-to-br from-yellow-600 via-yellow-700 to-yellow-800 hover:from-yellow-500 hover:via-yellow-600 hover:to-yellow-700',
+                            'disabled:bg-gradient-to-br disabled:from-yellow-800/50 disabled:via-yellow-900/50 disabled:to-yellow-950/50 disabled:border-yellow-900/60 disabled:text-yellow-300/60 disabled:cursor-not-allowed'
                         )}
                     >
                         {(walletIsLoading || isLoadingSelections) && <Loader2 className="h-4 w-4 animate-spin mr-1 inline-block" />}ENTER
@@ -484,6 +502,8 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
               highlightedNumber={finalNumberToHighlight}
               allTakenSet={allTakenSet}
               takenByUserSet={currentUserSquaresSet}
+              theme={sweepstakesGridTheme}
+              onSquareClick={handleMiniGridSquareClick}
            />
       </div>
       <style jsx>{`
@@ -494,4 +514,4 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
 } 
 
 SweepstakesBoardCardComponent.displayName = 'SweepstakesBoardCard';
-export default memo(SweepstakesBoardCardComponent); 
+export default memo(SweepstakesBoardCardComponent);

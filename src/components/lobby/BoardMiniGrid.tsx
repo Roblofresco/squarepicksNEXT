@@ -1,65 +1,22 @@
-import React, { memo, useState, useEffect, useMemo } from 'react';
-import { db } from '@/lib/firebase'; // Firebase instance
-import { collection, query, where, onSnapshot, DocumentData, DocumentReference, doc } from 'firebase/firestore';
-import { Board as BoardType, SquareEntry } from '@/types/lobby'; // Import BoardType if needed, and SquareEntry
-
-// Assuming Board type might be needed if boardData prop is more structured
-// import { Board } from '@/types/lobby'; 
+import React, { memo, useState, useEffect, useMemo, CSSProperties } from 'react';
+// import { db } from '@/lib/firebase'; // No longer needed for direct DB access
+// import { collection, query, where, onSnapshot, DocumentData, DocumentReference, doc } from 'firebase/firestore'; // No longer needed
+import { Board as BoardType, SquareEntry } from '@/types/lobby'; // DocumentData no longer needed from here
 
 interface BoardMiniGridProps {
-  // Receive the full BoardType object (or relevant parts)
-  boardData?: BoardType | DocumentData | null; 
-  currentUserId?: string | null;
-  highlightedNumber?: number | string; // For temporary UI highlight during selection process
+  boardData?: BoardType | null; // Simplified DocumentData away as BoardType should be used
+  // currentUserId?: string | null; // No longer needed for internal fetching
+  currentUserSelectedSquares?: Set<number>; // Squares purchased by current user
+  highlightedNumber?: number | string; // Square pre-selected by current user for action
 }
 
-const BoardMiniGrid = memo(({ boardData, currentUserId, highlightedNumber }: BoardMiniGridProps) => {
-  const [currentUserSquaresSet, setCurrentUserSquaresSet] = useState<Set<number>>(new Set());
-  // const [isLoadingUserSquares, setIsLoadingUserSquares] = useState<boolean>(true);
-  // const [userSquaresError, setUserSquaresError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!boardData?.id || !currentUserId) {
-      setCurrentUserSquaresSet(new Set()); // Reset if no board or user
-      // setIsLoadingUserSquares(false);
-      return () => {}; // Return empty cleanup
-    }
-
-    // setIsLoadingUserSquares(true);
-    // setUserSquaresError(null);
-
-    const squaresSubcollectionRef = collection(db, 'boards', boardData.id, 'squares');
-    // Create a DocumentReference to the user document
-    const userDocRef = doc(db, 'users', currentUserId);
-    // Query by DocumentReference equality on the 'userID' field
-    const userSquaresQuery = query(squaresSubcollectionRef, where("userID", "==", userDocRef)); 
-    // Make sure the field name in your squares documents is exactly "userID" and stores a DocumentReference.
-
-    const unsubscribe = onSnapshot(userSquaresQuery, (snapshot) => {
-      const squares = new Set<number>();
-      snapshot.forEach(docSnap => { // Renamed doc to docSnap to avoid conflict with imported doc
-        const data = docSnap.data() as Partial<SquareEntry>;
-        if (typeof data.squareIndex === 'number') { 
-          squares.add(data.squareIndex);
-        }
-      });
-      setCurrentUserSquaresSet(squares);
-      // setIsLoadingUserSquares(false);
-    }, (error) => {
-      console.error(`Error fetching user squares for board ${boardData.id}:`, error);
-      // setUserSquaresError("Failed to load your squares.");
-      // setIsLoadingUserSquares(false);
-      setCurrentUserSquaresSet(new Set()); // Reset on error
-    });
-
-    return () => unsubscribe(); // Cleanup listener
-
-  }, [boardData?.id, currentUserId]); // Re-run if board or user changes
+const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlightedNumber }: BoardMiniGridProps) => {
+  // const [currentUserSquaresSet, setCurrentUserSquaresSet] = useState<Set<number>>(new Set()); // Removed
+  // Internal useEffect for fetching user squares is REMOVED
 
   const squares = Array.from({ length: 100 }, (_, i) => i);
-  const highlightedSq = highlightedNumber !== undefined && highlightedNumber !== '' ? parseInt(String(highlightedNumber), 10) : null;
+  const preSelectedSq = highlightedNumber !== undefined && highlightedNumber !== '' ? parseInt(String(highlightedNumber), 10) : null;
   
-  // Get all taken squares from the main board document prop
   const allTakenSet = useMemo(() => 
     new Set((boardData?.selected_indexes as number[] | undefined) || [])
   , [boardData?.selected_indexes]);
@@ -67,33 +24,51 @@ const BoardMiniGrid = memo(({ boardData, currentUserId, highlightedNumber }: Boa
   return (
     <div className="grid grid-cols-10 gap-px p-1 bg-black/20 border border-white rounded-sm">
       {squares.map((sq) => {
-        const isHighlighted = highlightedSq !== null && sq === highlightedSq;
-        // Use the live state for current user's squares
-        const isCurrentUserSelected = currentUserSquaresSet.has(sq); 
-        // Derive others' selections from the main board data prop
-        const isTakenByOther = allTakenSet.has(sq) && !isCurrentUserSelected;
+        const isCurrentUserPurchased = currentUserSelectedSquares ? currentUserSelectedSquares.has(sq) : false; 
+        const isPreSelectedByCurrentUser = preSelectedSq !== null && sq === preSelectedSq;
+        const isTakenByOther = allTakenSet.has(sq) && !isCurrentUserPurchased;
         
-        let squareStyle = 'bg-green-700/60 hover:bg-green-600/80';
-        let textColor = 'text-white';
+        let squareStyle = '';
+        let textColor = '';
+        let textStyle: CSSProperties = {};
+        let squareContent = String(sq).padStart(2, '0');
+        let additionalClasses = '';
 
-        if (isCurrentUserSelected) {
-          squareStyle = 'bg-[#d43dae]'; 
+        if (isCurrentUserPurchased) {
+          // Game Page `isPurchasedByCurrentUser` style
+          squareStyle = 'bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]'; 
           textColor = 'text-white';
+          additionalClasses = 'font-semibold opacity-90';
+          textStyle = {}; 
         } else if (isTakenByOther) {
-          squareStyle = 'bg-[#1bb0f2]'; 
+          // Darker/duller green with X style, further increased opacity
+          squareStyle = 'bg-gradient-to-br from-green-900/60 to-green-950/60'; 
+          textColor = 'text-slate-400'; 
+          squareContent = 'X';
+          textStyle = {};
+          additionalClasses = ''; // Reset any unintended carry-over
+        } else if (isPreSelectedByCurrentUser) {
+          // Game Page `isSelectedByCurrentUserPreConfirmation` style
+          squareStyle = 'bg-gradient-to-br from-[#d43dae] to-[#c02090]'; 
           textColor = 'text-white';
-        } else if (isHighlighted) {
-          squareStyle = 'bg-yellow-400 hover:bg-yellow-500';
-          textColor = 'text-black font-bold';
+          additionalClasses = 'ring-2 ring-[#d43dae]'; 
+          textStyle = { textShadow: '0px 0px 5px rgba(255, 255, 255, 0.7)' }; 
+        } else {
+          // Reverted to original BoardMiniGrid available square style - hover effects removed
+          squareStyle = 'bg-gradient-to-br from-green-700/70 to-green-900/70';
+          textColor = 'text-white';
+          textStyle = {};
+          additionalClasses = '';
         }
 
         return (
         <div 
           key={sq} 
-            className={`aspect-square flex items-center justify-center ${textColor} text-[7px] font-mono rounded-[1px] cursor-pointer transition-colors border border-white/10 
-                        ${squareStyle}`}
+            className={`aspect-square flex items-center justify-center text-[9px] font-mono rounded-[1px] cursor-pointer transition-all duration-150 ease-in-out border border-white/10 
+                        ${squareStyle} ${textColor} ${additionalClasses}`}
+          style={textStyle}
           >
-            {String(sq).padStart(2, '0')}
+            {squareContent}
         </div>
         );
       })}

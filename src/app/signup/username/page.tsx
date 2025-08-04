@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSignupContext } from '@/context/SignupContext';
 import Link from 'next/link';
@@ -8,94 +8,152 @@ import { FiCheck } from 'react-icons/fi'; // Remove unused icons
 import SignupProgressDots from '@/components/SignupProgressDots'; // Import dots
 // Firebase Imports
 import { auth, db } from '@/lib/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { toast } from 'react-hot-toast';
+import { MailCheck, Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 export default function UsernamePage() {
   const router = useRouter();
   const { signupData, setSignupData } = useSignupContext();
   const [username, setUsername] = useState(signupData.username || '');
   const [termsAccepted, setTermsAccepted] = useState(signupData.termsAccepted || false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false); // Loading state for final submission
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<null | boolean>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
 
   const totalSteps = 4;
   const currentStep = 4; // Step 4
+
+  // Async check for username availability
+  useEffect(() => {
+    if (!username || username.length < 3) {
+      setUsernameAvailable(null);
+      return;
+    }
+    let isCancelled = false;
+    setCheckingUsername(true);
+    setUsernameAvailable(null);
+    const check = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/check-username', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        const data = await res.json();
+        if (!isCancelled) setUsernameAvailable(!data.exists);
+      } catch {
+        if (!isCancelled) setUsernameAvailable(null);
+      } finally {
+        if (!isCancelled) setCheckingUsername(false);
+      }
+    }, 500); // debounce
+    return () => { isCancelled = true; clearTimeout(check); };
+  }, [username]);
 
   const validateInput = () => {
     if (!username.trim()) return 'Please enter a username.';
     if (username.length < 3 || username.length > 20) return 'Username must be between 3 and 20 characters.';
     if (!/^[a-zA-Z0-9]+$/.test(username)) return 'Username can only contain letters and numbers (no spaces).';
-    // TODO: Add async username availability check here (query Firestore)
+    if (usernameAvailable === false) return 'This username is already taken.';
     if (!termsAccepted) return 'You must accept the terms and privacy policy.';
     return '';
   };
 
   const handleComplete = async () => {
-    const validationError = validateInput();
-    if (validationError) {
-      setError(validationError);
+    setIsLoading(true);
+    setError(null);
+
+    if (!signupData.email || !signupData.password) {
+      setError("Email or password missing from signup data.");
+      setIsLoading(false);
       return;
     }
-    setError('');
-    setIsLoading(true);
-
-    // Make sure email and password exist in context
-    if (!signupData.email || !signupData.password) {
-        setError('Missing email or password from previous steps. Please go back.');
-        setIsLoading(false);
-        return;
+    if (username.length < 3) { // Basic validation, adjust as needed
+      setError("Username must be at least 3 characters long.");
+      setIsLoading(false);
+      return;
+    }
+    if (!termsAccepted) {
+      setError("You must accept the terms and conditions.");
+      setIsLoading(false);
+      return;
     }
 
     try {
-        // 1. Create user in Firebase Auth
-        const userCredential = await createUserWithEmailAndPassword(auth, signupData.email, signupData.password);
-        const user = userCredential.user;
-        console.log("Firebase Auth user created:", user.uid);
+      // 1. Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, signupData.email, signupData.password);
+      const user = userCredential.user;
+      console.log("Firebase Auth user created:", user.uid);
 
-        // Update context with final username & terms (optional, as we are redirecting)
-        setSignupData({ ...signupData, username, termsAccepted });
+      // 2. Send verification email with explicit actionCodeSettings for local testing
+      const actionCodeSettings = {
+        url: 'http://localhost:3000/email-verified', // For local testing
+        handleCodeInApp: true,
+      };
+      await sendEmailVerification(user, actionCodeSettings);
+      console.log("Verification email sent with actionCodeSettings pointing to localhost.");
 
-        // 2. Create user profile document in Firestore
-        const userDocRef = doc(db, "users", user.uid);
+      // 3. Create user document in Firestore (as before)
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, {
+        email: signupData.email.toLowerCase(),
+        display_name: username, // Use the local username state confirmed on this page
+        created_at: serverTimestamp(),
+        hasWallet: false,
+        balance: 0,
+      });
+      console.log("Firestore user document created.");
 
-        // Prepare profile data (ensure all required fields from context are included)
-        const userProfile = {
-            email: signupData.email, // Store email in profile as well
-            username: username.trim(), // Store the validated username
-            firstName: signupData.firstName || '', // Get from context
-            lastName: signupData.lastName || '', // Get from context
-            dob: signupData.dob || null, // Get from context (ensure format is consistent or use Timestamp)
-            createdAt: serverTimestamp(), // Add a creation timestamp
-            termsAccepted: termsAccepted
-            // Add any other relevant profile fields from signupData
-        };
+      // 4. SIGN THE USER OUT IMMEDIATELY
+      await signOut(auth);
+      console.log("[SignupPage] User signed out. auth.currentUser:", auth.currentUser);
 
-        await setDoc(userDocRef, userProfile);
-        console.log("Firestore user profile created for:", user.uid);
+      // 5. Show success message and then redirect to login
+      setShowSuccessMessage(true);
+      toast.success("Signup successful! Please check your email to verify your account before logging in.", { duration: 4000 });
+      console.log("[SignupPage] Success message shown. Redirecting to /login in 4 seconds...");
+      
+      setTimeout(() => {
+        console.log("[SignupPage] Executing redirect to /login NOW.");
+        router.push('/login');
+      }, 4000);
 
-        // 3. Redirect to a logged-in page (e.g., lobby or profile)
-        router.push('/lobby'); // Or '/profile' or wherever you want users to land
-
-    } catch (firebaseError: any) {
-        // Handle Firebase errors
-        console.error("Signup Error:", firebaseError);
-        let errorMessage = "Signup failed. Please try again.";
-        if (firebaseError.code === 'auth/email-already-in-use') {
-            errorMessage = "This email address is already in use. Try logging in.";
-        } else if (firebaseError.code === 'auth/weak-password') {
-            errorMessage = "Password is too weak. Please choose a stronger password.";
-        } else if (firebaseError.code) {
-             errorMessage = firebaseError.message; // Use the default firebase error message
-        }
-        setError(errorMessage);
-        setIsLoading(false);
+    } catch (err: any) {
+      console.error("Error during final signup step:", err);
+      // Firebase errors (like email-already-in-use) have a 'code' property
+      if (err.code === 'auth/email-already-in-use') {
+        setError("This email is already registered. Please try logging in or use a different email.");
+      } else {
+        setError(err.message || "An unexpected error occurred. Please try again.");
+      }
+      setIsLoading(false); // Ensure loading is stopped on error
     }
-    // Note: setIsLoading(false) is handled within the try/catch blocks now
+    // Do not set isLoading to false here if success path leads to unmount/redirect
   };
 
+  if (showSuccessMessage) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 text-center">
+        <MailCheck className="h-16 w-16 text-green-500 mb-6" />
+        <h1 className="text-2xl font-semibold text-foreground mb-3">Signup Successful!</h1>
+        <p className="text-muted-foreground mb-8 max-w-sm">
+          A verification email has been sent to <strong className="text-foreground">{signupData.email}</strong>. 
+          Please click the link in the email to verify your account before logging in.
+        </p>
+        <p className="text-sm text-muted-foreground">
+          You will be redirected to the login page shortly...
+        </p>
+        <Loader2 className="h-6 w-6 animate-spin text-primary mt-4" />
+      </div>
+    );
+  }
+
   return (
-    <>
+    <div className="min-h-screen flex flex-col justify-between bg-background">
       {/* Main content block matching email */}
       <div className="flex-grow flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
           <h1 className="text-2xl font-semibold text-white mb-6">Choose a username</h1>
@@ -123,11 +181,22 @@ export default function UsernamePage() {
                 maxLength={20}
                 pattern="^[a-zA-Z0-9]*$" // Letters and numbers only
                 className="w-full appearance-none bg-transparent border border-text-secondary text-white placeholder-gray-400 text-base p-3 rounded-lg focus:outline-none focus:border-blue-500 shadow-[0_0_0_1px_rgba(255,255,255,0.5)]"
+                aria-invalid={usernameAvailable === false}
               />
+              {checkingUsername && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-blue-400">Checking...</span>}
+              {username && username.length >= 3 && usernameAvailable === true && !checkingUsername && (
+                <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 text-green-400 h-5 w-5" aria-label="Username available" />
+              )}
+              {username && username.length >= 3 && usernameAvailable === false && !checkingUsername && (
+                <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 text-red-400 h-5 w-5" aria-label="Username taken" />
+              )}
             </div>
             
             {/* Error message area */}
             {error && <p className="text-red-500 text-sm text-left -mt-4 mb-4">{error}</p>}
+            {username && username.length >= 3 && usernameAvailable === false && !checkingUsername && !error && (
+              <p className="text-red-500 text-sm text-left -mt-4 mb-4">This username is already taken. Please choose another.</p>
+            )}
 
           </form>
 
@@ -171,6 +240,6 @@ export default function UsernamePage() {
           <Link href="/signup/identity" className="text-sm text-gray-400 hover:text-white hover:underline">Back</Link>
         </div>
       </div>
-    </>
+    </div>
   );
 } 

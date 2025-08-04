@@ -2,11 +2,13 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { UserCircle, Wallet } from 'lucide-react'; // Example icons
+import { useWallet } from '@/hooks/useWallet';
 
 const LobbyHeader = () => {
-  // TODO: Fetch actual user data (username, balance)
-  const username = 'Player123'; // Placeholder
-  const balance = 100.00; // Placeholder
+  const { balance, isLoading, userId } = useWallet();
+  // Optionally fetch username from user profile if available
+  // For now, just show userId or 'Guest'
+  const username = userId ? userId.substring(0, 8) : 'Guest';
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background/80 backdrop-blur-sm border-b border-border/40 px-4 sm:px-6 py-3">
@@ -24,18 +26,16 @@ const LobbyHeader = () => {
               />
         </Link>
 
-        {/* User Info/Balance Placeholder */}
+        {/* User Info/Balance */}
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <UserCircle className="h-4 w-4" />
-            <span>{username}</span>
+            <span>{isLoading ? '...' : username}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Wallet className="h-4 w-4" />
-            {/* Format currency properly later */}
-            <span>${balance.toFixed(2)}</span>
+            <span>{isLoading ? '...' : `$${balance.toFixed(2)}`}</span>
           </div>
-           {/* Optional: Add Logout Button or Profile Link */}
         </div>
       </div>
     </header>

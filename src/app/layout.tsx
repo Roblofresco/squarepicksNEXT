@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import BodyScrollManager from '@/components/BodyScrollManager';
 import { NotificationProvider } from "@/context/NotificationContext";
 import { Toaster } from 'sonner';
+import EmailVerificationBanner from '@/components/ui/EmailVerificationBanner';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,6 +38,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <NotificationProvider>
+            <EmailVerificationBanner />
             <main className="flex-grow">
           <BodyScrollManager>{children}</BodyScrollManager>
             </main>

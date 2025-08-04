@@ -23,7 +23,7 @@ const NavItemComponent = ({ href, icon: Icon, label, isActive, user, onProtected
   const activeTextColor = 'text-white'; 
   const inactiveTextColor = 'text-text-secondary';
 
-  const handleClick = useCallback((event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>) => {
+  const handleClick = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
     if (isProtected && !user) {
       event.preventDefault(); 
       onProtectedAction(); 
@@ -42,7 +42,7 @@ const NavItemComponent = ({ href, icon: Icon, label, isActive, user, onProtected
       )}
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
-      legacyBehavior>
+    >
       <Icon 
         className="w-6 h-6 mb-0.5" 
         strokeWidth={isActive ? 2.5 : 2} 

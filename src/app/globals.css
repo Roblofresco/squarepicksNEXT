@@ -77,6 +77,15 @@ body.no-scroll {
     animation: pulse-glow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+.animate-shake {
+  animation: shake 0.5s;
+}
 /* --- End Add --- */
 
 /* Constellation Background Styles were here - REMOVED */

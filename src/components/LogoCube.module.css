@@ -1,6 +1,6 @@
 /* Size of the cube - Default value */
-:root {
-  --cube-size: 2rem; 
+.cubeRoot {
+  --cube-size: 2rem;
 }
 
 .scene {

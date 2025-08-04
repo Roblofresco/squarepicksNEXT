@@ -2,10 +2,11 @@ import React, { memo, useMemo, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { User as FirebaseUser } from 'firebase/auth';
-import { Board as BoardType, Game as GameType, TeamInfo } from '@/types/lobby';
+import { Board as BoardType, Game as GameType, TeamInfo, SquareEntry } from '@/types/lobby';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, limit, DocumentData, DocumentReference, doc } from 'firebase/firestore';
 import { BOARD_STATUS_OPEN } from '@/config/lobbyConfig';
+import { useRouter } from 'next/navigation';
 
 import BoardMiniGrid from './BoardMiniGrid';
 import QuickEntrySelector from './QuickEntrySelector';
@@ -19,8 +20,8 @@ interface EntryInteractionState {
 
 interface BoardCardProps {
     game: GameType; // Receives the full game object (with resolved teams)
-    teamA: TeamInfo; // Redundant if game.teamA is guaranteed by LobbyPage
-    teamB: TeamInfo; // Redundant if game.teamB is guaranteed by LobbyPage
+    // teamA: TeamInfo; // Redundant if game.teamA is guaranteed by LobbyPage - REMOVED
+    // teamB: TeamInfo; // Redundant if game.teamB is guaranteed by LobbyPage - REMOVED
     user: FirebaseUser | null;
     currentUserId?: string | null;
     onProtectedAction: () => void;
@@ -35,8 +36,8 @@ interface BoardCardProps {
 const BoardCard = memo((props: BoardCardProps) => {
   const {
     game,
-    // teamA, // Use game.teamA directly
-    // teamB, // Use game.teamB directly
+    // teamA, // Use game.teamA directly - ALREADY COMMENTED
+    // teamB, // Use game.teamB directly - ALREADY COMMENTED
     user,
     currentUserId,
     onProtectedAction,
@@ -48,17 +49,21 @@ const BoardCard = memo((props: BoardCardProps) => {
     openWalletDialog
   } = props;
 
+  const router = useRouter();
+
   // State for the single active board associated with this game
   const [activeBoard, setActiveBoard] = useState<BoardType | null>(null);
   const [isLoadingBoard, setIsLoadingBoard] = useState<boolean>(true);
   const [boardError, setBoardError] = useState<string | null>(null);
+  const [boardCardCurrentUserSquaresSet, setBoardCardCurrentUserSquaresSet] = useState<Set<number>>(new Set()); // New state for user's squares
+  const [purchaseTrigger, setPurchaseTrigger] = useState<number>(0); // Added for re-fetching
 
   // Effect to listen for the active board for this game
   useEffect(() => {
     if (!game?.id) {
       setIsLoadingBoard(false);
       setActiveBoard(null);
-      return () => {}; // Return empty cleanup
+      return () => {}; // Explicit no-op cleanup
     }
 
     setIsLoadingBoard(true);
@@ -70,10 +75,11 @@ const BoardCard = memo((props: BoardCardProps) => {
       boardsRef, 
       where("gameID", "==", doc(db, 'games', game.id)), // Query using DocumentReference
       where("status", "==", BOARD_STATUS_OPEN), 
+      where("amount", "==", 1), // Only $1 boards
       limit(1)
     );
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const unsubscribeBoard = onSnapshot(q, (querySnapshot) => {
       if (!querySnapshot.empty) {
         const boardDoc = querySnapshot.docs[0];
         const boardData = boardDoc.data();
@@ -103,9 +109,38 @@ const BoardCard = memo((props: BoardCardProps) => {
       setActiveBoard(null);
     });
 
-    return () => unsubscribe(); // Cleanup listener on unmount or game change
+    return () => unsubscribeBoard(); // Cleanup listener on unmount or game change
 
-  }, [game.id, game.teamA, game.teamB]); // Depend on game.id and resolved teams
+  }, [game.id, game.teamA, game.teamB, purchaseTrigger]); // Added purchaseTrigger
+
+  // New effect to fetch current user's squares for the activeBoard
+  useEffect(() => {
+    if (!activeBoard?.id || !currentUserId) {
+      setBoardCardCurrentUserSquaresSet(new Set()); // Reset if no board or user
+      return () => {}; // Explicit no-op cleanup for early exit
+    }
+
+    const squaresSubcollectionRef = collection(db, 'boards', activeBoard.id, 'squares');
+    const userDocRef = doc(db, 'users', currentUserId);
+    const userSquaresQuery = query(squaresSubcollectionRef, where("userID", "==", userDocRef)); 
+
+    const unsubscribeUserSquares = onSnapshot(userSquaresQuery, (snapshot) => {
+      const squares = new Set<number>();
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data() as Partial<SquareEntry>; // Ensure SquareEntry is imported or defined
+        if (typeof data.index === 'number') { 
+          squares.add(data.index);
+        }
+      });
+      setBoardCardCurrentUserSquaresSet(squares);
+    }, (error) => {
+      console.error(`Error fetching user squares for board ${activeBoard.id} in BoardCard:`, error);
+      setBoardCardCurrentUserSquaresSet(new Set()); // Reset on error
+    });
+
+    return () => unsubscribeUserSquares(); // Cleanup listener
+
+  }, [activeBoard?.id, currentUserId, purchaseTrigger]); // Added purchaseTrigger
 
   // Determine if the interaction state applies to *this* card's active board
   const isActiveInteraction = activeBoard ? entryInteraction.boardId === activeBoard.id : false;
@@ -144,6 +179,21 @@ const BoardCard = memo((props: BoardCardProps) => {
   const borderStyle = 'border-[1.5px] border-[#1bb0f2]'; // Consider making border conditional on activeBoard existence?
   const shadowStyle = 'shadow-[0px_0px_40px_-20px_#63c6ff]';
 
+  const handlePurchaseSuccess = (boardId: string) => {
+    if (activeBoard && boardId === activeBoard.id) {
+      setPurchaseTrigger(prev => prev + 1); // Increment to trigger re-fetch
+    }
+  };
+
+  const handleBoardClick = (event: React.MouseEvent<HTMLDivElement>, boardId: string) => {
+    if (!user) {
+      event.preventDefault();
+      onProtectedAction();
+    } else {
+      router.push(`/board/${boardId}`);
+    }
+  };
+
   // --- Render Logic --- 
   if (isLoadingBoard) {
     return (
@@ -155,25 +205,7 @@ const BoardCard = memo((props: BoardCardProps) => {
   }
 
   if (!activeBoard) {
-    // Render game info but indicate no open board
-    return (
-      <div className={`w-full max-w-[390px] h-auto mx-auto p-4 text-white relative overflow-hidden flex flex-col 
-                       ${gradientBg} border border-gray-700/50 ${shadowStyle} ${containerRounding} opacity-70`}>
-          <div className="flex justify-between items-center mb-3">
-              {/* Simplified Team Info Display */} 
-              <div className="flex items-center space-x-2 w-1/3 justify-start">
-                  {teamA?.logo && <Image src={teamA.logo} alt={`${teamA.name} logo`} width={45} height={45} className="rounded-full object-contain flex-shrink-0 opacity-50" />}
-                  <div className="flex flex-col"><div className="font-semibold text-sm text-gray-400 truncate">{teamA?.name}</div><div className="text-xs text-gray-500">{teamA?.record}</div></div>
-              </div>
-              <div className="text-gray-600 font-bold text-xl text-center">@</div>
-              <div className="flex items-center space-x-2 w-1/3 justify-end">
-                  <div className="flex flex-col items-end"><div className="font-semibold text-sm text-gray-400 truncate">{teamB?.name}</div><div className="text-xs text-gray-500">{teamB?.record}</div></div>
-                  {teamB?.logo && <Image src={teamB.logo} alt={`${teamB.name} logo`} width={45} height={45} className="rounded-full object-contain flex-shrink-0 opacity-50" />}
-              </div>
-          </div>
-          <div className="text-center text-gray-500 py-10">No open board currently available for this game.</div>
-      </div>
-    );
+    return null; // If no active (open) board, don't render anything for this game
   }
 
   // --- Render Card with Active Board --- 
@@ -215,12 +247,12 @@ const BoardCard = memo((props: BoardCardProps) => {
         <Link href={`/game/${game.id}?board=${activeBoard.id}`} legacyBehavior passHref>
           <a onClick={handleGridLinkClick} className="block w-[65%] relative bg-transparent rounded-lg overflow-hidden cursor-pointer border-[1.5px] border-slate-300 shadow-[inset_0px_4px_4px_0px_rgba(0,0,0,0.25)] hover:ring-2 hover:ring-accent-1 transition-all duration-200">
             <div className="absolute inset-0 z-0">
-              <Image src="/images/nfl-grid-background.png" alt="Grid background" fill style={{ objectFit: 'cover' }} className="rounded-lg"/>
+              <Image src="/images/nfl-grid-background.png" alt="Grid background" fill priority sizes="100vw" style={{ objectFit: 'cover' }} className="rounded-lg"/>
             </div>
             <div className="relative z-10">
                <BoardMiniGrid 
-                 boardData={activeBoard} // Pass the live board data 
-                 currentUserId={currentUserId} // Pass user ID for its internal query
+                 boardData={activeBoard} 
+                 currentUserSelectedSquares={boardCardCurrentUserSquaresSet} // Pass the fetched set
                  highlightedNumber={currentSelectedNumber !== null ? String(currentSelectedNumber) : undefined} 
                />
             </div>
@@ -240,8 +272,8 @@ const BoardCard = memo((props: BoardCardProps) => {
               walletBalance={walletBalance}
               walletIsLoading={walletIsLoading}
               openWalletDialog={openWalletDialog}
-              gameId={game.id} 
               takenNumbers={takenNumbersSet} // Pass the taken set from the fetched board
+              onPurchaseSuccess={handlePurchaseSuccess} // Pass the new handler
             />
         </div>
       </div>

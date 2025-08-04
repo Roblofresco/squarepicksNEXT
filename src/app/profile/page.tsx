@@ -5,9 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { User, Mail, DollarSign, List, Settings, ShieldCheck, Scale, LogOut, Info, HelpCircle, BookOpen, FileText, ArrowRight, Edit2, Loader2 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
-import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import { useWallet } from '@/hooks/useWallet';
 
 // Import BottomNav
 import BottomNav from '@/components/lobby/BottomNav';
@@ -64,115 +65,139 @@ const ProfilePage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null); // Ref for file input
 
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
-  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null); // For BottomNav
-  const [isLoading, setIsLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false); // For login modal
-  const [isWalletLoading, setIsWalletLoading] = useState(false);
+  const [isWalletLoadingState, setIsWalletLoadingState] = useState(false);
+
+  const { 
+    userId,
+    emailVerified,
+    isLoading: walletIsLoading,
+  } = useWallet();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setCurrentUser(user); // Set current Firebase user
+    if (!walletIsLoading) {
+      if (!userId) {
+        router.push('/login');
+      } else if (emailVerified === false) {
+        router.push('/verify-email');
+      }
+    }
+  }, [userId, emailVerified, walletIsLoading, router]);
+
+  useEffect(() => {
+    if (userId && emailVerified === true) {
+      setProfileLoading(true);
+      const fetchUserProfile = async () => {
         try {
-          const userDocRef = doc(db, 'users', user.uid);
+          const userDocRef = doc(db, 'users', userId);
           const userDocSnap = await getDoc(userDocRef);
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
+            const firebaseUser = auth.currentUser;
             setUserProfile({
               username: userData.display_name || 'User',
-              email: userData.email || user.email || 'N/A',
+              email: userData.email || firebaseUser?.email || 'N/A',
               balance: userData.balance !== undefined ? userData.balance : 0,
               totalWinnings: userData.totalWinnings || 0,
               gamesPlayed: userData.gamesPlayed || 0,
             });
-            if (userData.photoURL || user.photoURL) {
-              setImagePreview(userData.photoURL || user.photoURL);
+            if (userData.photoURL || firebaseUser?.photoURL) {
+              setImagePreview(userData.photoURL || firebaseUser?.photoURL);
             }
           } else {
             setError("User data not found.");
-            console.log("No such document for user:", user.uid);
-            // Set default or redirect
-            setUserProfile({ username: 'User', email: user.email || 'N/A', balance: 0 });
+            console.log("No such document for user:", userId);
+            setUserProfile({ username: 'User', email: auth.currentUser?.email || 'N/A', balance: 0 });
           }
         } catch (err) {
           console.error("Error fetching user data:", err);
           setError("Failed to load profile data.");
-          // Set default or redirect
-          setUserProfile({ username: 'User', email: user.email || 'N/A', balance: 0 });
+          setUserProfile({ username: 'User', email: auth.currentUser?.email || 'N/A', balance: 0 });
         }
-      } else {
-        // User is signed out
-        router.push('/login'); // Redirect to login if not authenticated
-      }
-      setIsLoading(false);
-    });
+        setProfileLoading(false);
+      };
+      fetchUserProfile();
+    } else if (!userId && !walletIsLoading) {
+      setProfileLoading(false);
+      setUserProfile(null);
+    }
+  }, [userId, emailVerified]);
 
-    return () => unsubscribe(); // Cleanup subscription on unmount
-  }, [router]);
-
-  // Implement Firebase logout function
   const handleLogout = async () => {
     try {
         await signOut(auth);
         console.log("User signed out successfully.");
-        // Redirect to login page or home page after logout
-        router.push('/'); // Redirect to root welcome page on logout
+        router.push('/');
     } catch (error) {
         console.error("Error signing out: ", error);
-        // Optionally, show an error message to the user
-        // setError("Failed to sign out. Please try again.");
     }
   };
 
-  // Handle file selection for profile picture
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Create a preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-      // TODO: Add actual upload logic here - send 'file' object to your backend API
       console.log("Selected file:", file);
     }
   };
 
-  // Trigger file input click
-   const handleEditClick = () => {
+  const handleEditClick = () => {
     fileInputRef.current?.click();
-   };
+  };
 
-  // Protected action handler for BottomNav
   const handleProtectedAction = () => {
-    if (!currentUser) {
+    if (!userId) {
       console.log("Protected action triggered on profile page, showing login prompt.");
       setIsLoginModalOpen(true);
     }
   };
 
-  // Wallet manage loading simulation
   const handleManageClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    setIsWalletLoading(true);
-    // Simulate loading, then navigate
+    setIsWalletLoadingState(true);
     setTimeout(() => {
-      setIsWalletLoading(false);
+      setIsWalletLoadingState(false);
       router.push('/wallet');
     }, 900);
     e.preventDefault();
   };
 
+  if (walletIsLoading || (userId && emailVerified === false && !profileLoading)) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-12 w-12 animate-spin text-accent-1" />
+      </div>
+    );
+  }
+
+  if (!userId && !walletIsLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>Redirecting...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-accent-1 ml-2" />
+      </div>
+    );
+  }
+
+  if (userId && emailVerified === true && profileLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-12 w-12 animate-spin text-accent-1" />
+        <p className="ml-3">Loading profile...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-background text-foreground p-4 sm:p-6 lg:p-8 pb-20 flex flex-col min-h-screen">
       <div className="max-w-2xl mx-auto w-full flex-grow">
 
-        {isLoading ? (
-          <div className="flex justify-center items-center min-h-[200px]">
-            <Loader2 className="h-12 w-12 animate-spin text-accent-1" />
-          </div>
-        ) : error ? (
+        {error && !profileLoading ? (
           <div className="bg-destructive/10 text-destructive rounded-lg p-4 my-6 text-center">
             <p>{error}</p>
             <button onClick={() => router.push('/')} className="mt-2 px-4 py-2 bg-accent-1 text-white rounded hover:bg-accent-1/90">
@@ -181,7 +206,6 @@ const ProfilePage = () => {
           </div>
         ) : userProfile ? (
           <>
-            {/* Profile Summary Card UI inlined here */}
             <div
               className="w-full rounded-2xl p-6 flex flex-col items-center mb-6 border relative"
               style={{
@@ -191,26 +215,28 @@ const ProfilePage = () => {
                   'inset 0 2px 12px 0 rgba(255,255,255,0.07), inset 0 -8px 32px 0 rgba(0,0,0,0.18)',
               }}
             >
-              {/* Balance, amount, and manage button in a single row, all bottom aligned */}
-              <div className="absolute top-4 right-4 flex flex-row items-end gap-3">
-                <span className="px-4 py-2 rounded-full bg-[#58513a] flex items-center gap-2" style={{minHeight:'32px'}}>
-                  <span className="text-xs text-text-primary">Balance:</span>
-                  <span className="text-yellow-400 font-bold text-md">${userProfile.balance.toFixed(2)}</span>
+              <div className="absolute top-4 right-4 flex flex-col items-end gap-2 sm:flex-row sm:items-end sm:gap-3 z-10">
+                <span 
+                  className="px-3 py-1.5 text-[11px] sm:px-4 sm:py-2 sm:text-xs rounded-full bg-[#58513a] flex items-center justify-between gap-1 sm:gap-2 shadow-sm"
+                  style={{minHeight: '30px'}}
+                >
+                  <span className="text-text-primary/80">Balance:</span>
+                  <span className="text-yellow-400 font-bold text-sm sm:text-md">${userProfile.balance.toFixed(2)}</span>
                 </span>
                 <Link
                   href="/wallet"
                   onClick={handleManageClick}
-                  className={`text-accent-1 text-xs font-semibold cursor-pointer flex items-center transition-colors duration-150 ${isWalletLoading ? 'pointer-events-none opacity-70' : 'hover:underline hover:text-accent-1/80 active:text-accent-1/90'}`}
-                  style={{}}
+                  className={`text-accent-1 text-[11px] sm:text-xs font-semibold cursor-pointer flex items-center transition-colors duration-150 ${isWalletLoadingState ? 'pointer-events-none opacity-70' : 'hover:underline hover:text-accent-1/80 active:text-accent-1/90'}`}
                   tabIndex={0}
-                  aria-disabled={isWalletLoading}>
+                  aria-disabled={isWalletLoadingState}
+                >
                   <span>
-                    {isWalletLoading && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
+                    {isWalletLoadingState && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
                     Manage
                   </span>
                 </Link>
               </div>
-              <div className="relative w-24 h-24 mb-3 group">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 mb-3 group">
                 {imagePreview ? (
                   <Image
                     src={imagePreview}
@@ -220,11 +246,10 @@ const ProfilePage = () => {
                     className="rounded-full"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center">
-                    <User className="text-gray-400 w-12 h-12" />
+                  <div className="w-full h-full rounded-full bg-gray-700 flex items-center justify-center">
+                    <User className="text-gray-400 w-10 h-10 sm:w-12 sm:h-12" />
                   </div>
                 )}
-                {/* Edit Overlay (shows on hover/tap) */}
                 <button
                   type="button"
                   onClick={handleEditClick}
@@ -235,7 +260,6 @@ const ProfilePage = () => {
                   <Edit2 className="w-6 h-6 text-white mb-1" />
                   <span className="text-xs text-white font-semibold">Edit Photo</span>
                 </button>
-                {/* Hidden File Input */}
                 <input
                   type="file"
                   accept="image/*"
@@ -245,28 +269,24 @@ const ProfilePage = () => {
                   aria-label="Upload profile picture"
                 />
               </div>
-              <div className="text-xl font-bold text-text-primary mb-1">{userProfile.username}</div>
+              <div className="text-lg sm:text-xl font-bold text-text-primary mb-1">{userProfile.username}</div>
               {userProfile.email && <div className="text-xs text-text-secondary mb-2">{userProfile.email}</div>}
-              {/* Removed Current Balance and Rookie text from below avatar */}
             </div>
-            {/* End Profile Summary Card UI */}
 
-            {/* Menu Buttons - Account Actions */}
             <div className="mb-8">
                <h2 className="text-xs uppercase text-text-secondary font-semibold mb-3 px-1">Account</h2>
-               {/* Use via stop at 5% */}
-                <div className="rounded-xl overflow-hidden bg-gradient-to-b from-background-primary via-background-primary via-5% to-background-secondary divide-y divide-gray-700/50 shadow-md">
+               <div className="rounded-xl overflow-hidden bg-gradient-to-b from-background-primary via-background-primary via-5% to-background-secondary divide-y divide-gray-700/50 shadow-md">
                     {accountMenuItems.map((item) => (
                       <Link
                         key={item.label}
                         href={item.href}
-                        className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group">
+                        className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group"
+                      >
                         <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
                         <span className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</span>
                         <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
                       </Link>
                     ))}
-                    {/* Logout Button */}
                      <button
                        onClick={handleLogout}
                        className="w-full p-4 flex items-center hover:bg-red-900/20 text-red-500 hover:text-red-400 focus:text-red-400 active:scale-95 transition-all duration-150 rounded-none outline-none group"
@@ -277,11 +297,8 @@ const ProfilePage = () => {
                 </div>
             </div>
 
-            {/* Menu Buttons - Information & Support */}
-            {/* Enhanced container style */}
              <div>
                <h2 className="text-xs uppercase text-text-secondary font-semibold mb-3 px-1">Information & Support</h2>
-               {/* Use via stop at 5% */}
                <div className="rounded-xl overflow-hidden bg-gradient-to-b from-background-primary via-background-primary via-5% to-background-secondary divide-y divide-gray-700/50 shadow-md">
                  {supportMenuItems.map((item) => (
                    item.isExternal ? (
@@ -294,7 +311,8 @@ const ProfilePage = () => {
                      <Link
                        key={item.label}
                        href={item.href}
-                       className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group">
+                       className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group"
+                     >
                        <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
                        <span className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</span>
                        <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
@@ -304,22 +322,21 @@ const ProfilePage = () => {
                </div>
              </div>
 
-             {/* Stats Preview Section Removed */}
-
           </>
         ) : (
-          // Fallback if userProfile is null but not loading and no error (should not happen if logic is correct)
-          (<div className="text-center py-10 text-text-secondary">
+          <div className="text-center py-10 text-text-secondary">
             <p>Could not load profile information.</p>
-          </div>)
+          </div>
         )}
 
       </div>
-      {/* Spacer for fixed BottomNav */}
       <div className="h-16" />
-      {/* Bottom Navigation */}
-      <BottomNav user={currentUser} onProtectedAction={handleProtectedAction} />
-      {/* Login Required Modal */}
+      <BottomNav 
+        onWalletClick={handleProtectedAction} 
+        onLobbyClick={() => router.push('/lobby')}
+        onProfileClick={() => router.push('/profile')} 
+        currentUser={auth.currentUser}
+      />
       <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
          <DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] to-[#5855e4] to-15% border-accent-1/50 text-white py-8">
             <DialogHeader className="text-center items-center">

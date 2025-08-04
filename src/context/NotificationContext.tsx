@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { toast } from 'sonner';
 import {
   getFirestore, collection, query, where, orderBy, onSnapshot,
-  doc, updateDoc, writeBatch, serverTimestamp, Timestamp 
+  doc, updateDoc, writeBatch, serverTimestamp, Timestamp, limit 
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { db as firestoreInstance } from '@/lib/firebase'; // Assuming db is exported from your firebase config
@@ -39,6 +39,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentFirebaseUser, setCurrentFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [userPreferences, setUserPreferences] = useState<{ prefersEmail: boolean; prefersSMS: boolean } | null>(null);
 
   const auth = getAuth();
   // const db = getFirestore(); // Using imported firestoreInstance
@@ -61,8 +62,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       const notificationsQuery = query(
         collection(firestoreInstance, "notifications"),
         where("userID", "==", currentFirebaseUser.uid),
-        orderBy("timestamp", "desc")
-        // limit(20) // Optional: Consider limiting initial fetch for performance
+        orderBy("timestamp", "desc"),
+        limit(20) // Fetch only the 20 most recent notifications
       );
 
       const unsubscribeFirestore = onSnapshot(notificationsQuery, 
@@ -100,6 +101,25 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [currentFirebaseUser]); // Re-run when currentFirebaseUser changes
 
+  // Fetch user preferences when auth state changes
+  useEffect(() => {
+    if (currentFirebaseUser) {
+      const userDocRef = doc(firestoreInstance, "users", currentFirebaseUser.uid);
+      const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setUserPreferences({
+            prefersEmail: data.prefersEmail || false,
+            prefersSMS: data.prefersSMS || false,
+          });
+        }
+      });
+      return () => unsubscribeUserDoc();
+    } else {
+      setUserPreferences(null);
+    }
+  }, [currentFirebaseUser]);
+
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const addNotification = useCallback((notificationData: Omit<Notification, 'id' | 'timestamp' | 'isRead'> & { toastType?: 'success' | 'error' | 'info' | 'warning' | 'normal' }) => {
@@ -109,8 +129,17 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       isRead: false,
       ...notificationData,
     };
-    // setNotifications(prev => [newNotification, ...prev]); // Only if you want local optimistic updates not driven by Firestore
-    
+
+    // Check user preferences and send notifications accordingly
+    if (userPreferences?.prefersEmail) {
+      // Call function to send email notification
+      sendEmailNotification(newNotification);
+    }
+    if (userPreferences?.prefersSMS) {
+      // Call function to send SMS notification
+      sendSMSNotification(newNotification);
+    }
+
     const { toastType, message, title } = notificationData;
     const toastMessage = title ? `${title}: ${message}` : message;
     if (toastType) {
@@ -119,13 +148,24 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         case 'error': toast.error(toastMessage); break;
         case 'warning': toast.warning(toastMessage); break;
         case 'info':
-        case 'normal': 
+        case 'normal':
         default: toast(toastMessage); break;
       }
     } else {
       toast(toastMessage);
     }
-  }, []);
+  }, [userPreferences]);
+
+  // Placeholder functions for sending notifications
+  const sendEmailNotification = (notification: Notification) => {
+    // Implement email sending logic using Resend
+    console.log('Sending email notification:', notification);
+  };
+
+  const sendSMSNotification = (notification: Notification) => {
+    // Implement SMS sending logic using Twilio
+    console.log('Sending SMS notification:', notification);
+  };
 
   const markAsRead = async (notificationId: string) => {
     if (!currentFirebaseUser) {
@@ -137,6 +177,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     setNotifications(prev => 
       prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
     );
+
+    console.log(`[NotificationContext] Attempting to mark as read. Notification ID: ${notificationId}, User UID: ${currentFirebaseUser.uid}`); // Logging
 
     try {
       const notificationRef = doc(firestoreInstance, "notifications", notificationId);
@@ -165,6 +207,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     // Optimistic update
     const originalNotifications = [...notifications]; // Shallow copy for potential rollback
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })) );
+
+    const unreadIds = unreadNotifications.map(n => n.id).join(', ');
+    console.log(`[NotificationContext] Attempting to mark all as read. Notification IDs: [${unreadIds}], User UID: ${currentFirebaseUser.uid}`); // Logging
 
     try {
       const batch = writeBatch(firestoreInstance);

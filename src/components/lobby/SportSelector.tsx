@@ -26,6 +26,8 @@ interface SportSelectorProps {
   selectedSportId: string; // Expect selected ID as prop
   onSelectSport: (sportId: string) => void; // Expect callback as prop
   sweepstakesStartTime?: Date | null; 
+  sportSelectorView: 'sweepstakes' | 'allRegularSports'; // New prop
+  setSportSelectorView: (view: 'sweepstakes' | 'allRegularSports') => void; // New prop
 }
 
 // Helper function to calculate time left
@@ -53,7 +55,7 @@ const calculateTimeLeft = (targetDate: Date | null): TimeLeft => {
 };
 
 // Use props
-const SportSelector = memo(function SportSelector({ sports, selectedSportId, onSelectSport, sweepstakesStartTime }: SportSelectorProps) {
+const SportSelector = memo(function SportSelector({ sports, selectedSportId, onSelectSport, sweepstakesStartTime, sportSelectorView, setSportSelectorView }: SportSelectorProps) {
   // Add isMounted state
   const [isMounted, setIsMounted] = useState(false);
   
@@ -106,11 +108,15 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
 
   // Function to handle clicking the "More" button
   const handleShowMore = () => {
-    // Select the first *actual* sport (assuming Sweepstakes is always first)
-    const firstSportId = sports.find(s => s.id !== 'sweepstakes')?.id;
-    if (firstSportId) {
-      onSelectSport(firstSportId);
-    }
+    // NEW: Set the view to allRegularSports
+    setSportSelectorView('allRegularSports');
+    // DO NOT automatically select a sport here anymore.
+    // Let the user choose from the new view.
+  };
+
+  const handleShowSweepstakes = () => {
+    setSportSelectorView('sweepstakes');
+    onSelectSport('sweepstakes'); // Also select sweepstakes when going back
   };
 
   // Format countdown time - handle zero/past state
@@ -142,14 +148,10 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
   };
 
   return (
-    <div className="my-4 w-full">
-      {/* Container with padding for shadow - Remove overflow-x-auto if flex-wrap handles it */}
-      {/* Keep flex-wrap to allow wrapping */}
+    <div className="mt-4 mb-2 w-full">
       <div className="flex justify-center space-x-3 pb-4 flex-wrap"> 
-        
-        {/* Wrap conditional rendering in AnimatePresence */}
         <AnimatePresence mode="wait" initial={false}>
-          {selectedSportId === 'sweepstakes' ? (
+          {sportSelectorView === 'sweepstakes' ? (
             // --- Sweepstakes Active State wrapped in motion.div ---
             (<motion.div 
               key="sweepstakes-view" 
@@ -161,18 +163,14 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                 key="sweepstakes-active"
                 onClick={() => handleSelect('sweepstakes')}
                 className={cn(`
-                  h-[60px] rounded-lg 
+                  h-[48px] rounded-lg // REDUCED height
                   flex flex-col items-center justify-center 
                   transition-all duration-200 ease-in-out 
                   relative group 
-                  flex-grow basis-3/4 /* Keep flex-grow and basis */
-                  /* Update border color */
+                  flex-grow basis-3/4 
                   border border-[#F0E68C] 
-                  /* Update background gradient: primary to gold, transition at 12% */
                   bg-gradient-to-b from-background-primary via-[#B8860B]/50 via-[12%] to-[#B8860B] 
-                  /* Update box shadow to use gold (approx RGB 184, 134, 11) */
                   shadow-[0_0_15px_0px_rgba(184,134,11,0.5)] 
-                  /* HOVER EFFECTS */
                   hover:brightness-110 hover:shadow-[0_0_20px_2px_rgba(184,134,11,0.7)] hover:border-white
                 `)}
               >
@@ -185,9 +183,9 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                 {/* Content Layer */}
                 <div className="relative z-10 flex flex-col items-center justify-center space-y-0.5">
                   {/* Update text color */}
-                  <span className="text-xs text-[#F0E68C] font-semibold uppercase tracking-wider">COUNTDOWN</span>
+                  <span className="text-[10px] text-[#F0E68C] font-semibold uppercase tracking-wider">COUNTDOWN</span> {/* REDUCED text size */}
                   {/* Update text color and add gold text shadow class */}
-                  <span className="text-2xl text-[#F0E68C] font-bold font-mono tracking-tight h-7 text-shadow-glow-gold"> 
+                  <span className="text-xl text-[#F0E68C] font-bold font-mono tracking-tight text-shadow-glow-gold">  {/* REDUCED text size, removed h-7 */}
                     {/* Display the formatted countdown string */}
                     {isMounted ? countdownString : "--:--:--:--"} 
                   </span>
@@ -199,93 +197,88 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                 key="more-sports"
                 onClick={handleShowMore}
                 className={cn(`
-                  flex-shrink-0 h-[60px] rounded-lg 
-                  flex flex-col items-center justify-center space-y-1 
+                  flex-shrink-0 h-[48px] rounded-lg // REDUCED height
+                  flex flex-col items-center justify-center space-y-0.5 // REDUCED space
                   transition-all duration-200 ease-in-out 
                   relative group border
-                  flex-grow basis-1/4 /* Keep flex-grow and basis */
-                  /* Remove w-[70px] */
+                  flex-grow basis-1/4 
                   `, 
-                  // Apply dark blue gradient directly, keep border/shadow
                   'border-accent-2 bg-gradient-to-b from-background-primary to-[#220248] shadow-[0_4px_12px_-4px_rgba(99,102,241,0.5)] backdrop-blur-sm',
-                  /* HOVER EFFECTS */
                   'hover:brightness-125 hover:shadow-[0_6px_15px_-3px_rgba(99,102,241,0.6)] hover:border-white'
                 )}
               >
                 {/* Remove separate background div */}
                 
                 {/* Content Layer */}
-                <div className="relative z-10 flex flex-col items-center justify-center space-y-1">
-                  <span className="text-sm font-medium text-text-primary">
+                <div className="relative z-10 flex flex-col items-center justify-center space-y-0.5"> {/* Ensure consistency space-y-0.5 */}
+                  <span className="text-xs font-medium text-text-primary"> {/* REDUCED text size */}
                     More
                   </span>
                 </div>
               </button>
             </motion.div>)
           ) : (
-            // --- Normal State wrapped in motion.div --- 
+            // --- All Regular Sports View --- 
             (<motion.div 
               key="all-sports-view"
-              className="flex justify-center space-x-3" // Maintain spacing
+              className="flex items-center gap-2 px-2.5 py-1" // MODIFIED: flex, items-center, reduced gap, kept padding. No wrap/scroll explicit.
               initial="hidden" animate="visible" exit="exit" variants={variants}
             >
-              {sports.map((sport) => {
+              {/* "Back to Sweepstakes" Button */}
+              <button
+                key="back-to-sweepstakes"
+                onClick={handleShowSweepstakes}
+                className={cn(`
+                  h-[48px] rounded-lg // REDUCED height
+                  flex flex-col items-center justify-center 
+                  transition-all duration-200 ease-in-out 
+                  relative group border px-2 // REDUCED padding
+                  flex-grow flex-basis-0 // ADDED flex-grow and flex-basis-0
+                  border-gray-600 bg-gradient-to-b from-gray-700 to-gray-800 text-gray-300
+                  hover:shadow-[0_0_15px_0px_rgba(184,134,11,0.5)] hover:border-[#F0E68C] hover:text-[#F0E68C] hover:bg-gradient-to-b hover:from-[#B8860B]/40 hover:to-[#B8860B]/90
+                `)}
+              >
+                 <div className="relative z-10 flex flex-col items-center justify-center">
+                  <Ticket size={18} className="mb-0.5" /> {/* REDUCED size */}
+                  <span className="text-[10px] font-medium uppercase tracking-wider">Sweepstakes</span> {/* REDUCED text size */}
+                </div>
+              </button>
+
+              {sports.filter(sport => sport.id !== 'sweepstakes').map((sport) => {
                 const isActive = selectedSportId === sport.id;
-                const isSweepstakes = sport.id === 'sweepstakes';
+                const iconToShow = isActive ? sport.iconActive : sport.iconDefault;
+                const fallbackIconClass = isActive 
+                  ? 'opacity-100 text-accent-2' // Active fallback
+                  : 'opacity-70 group-hover:opacity-100 text-gray-500'; // Inactive fallback
       
                 return (
                   <button
                     key={sport.id}
                     onClick={() => handleSelect(sport.id)}
-                    // Apply backgrounds directly
                     className={cn(`
-                      flex-shrink-0 h-[60px] rounded-lg 
-                      flex flex-col items-center justify-center space-y-1 
+                      h-[48px] rounded-lg // REDUCED height
+                      flex flex-col items-center justify-center space-y-0.5 // REDUCED space
                       transition-all duration-200 ease-in-out 
                       relative group border
-                      flex-grow /* Allow normal buttons to grow */
-                      min-w-[60px] /* Add a minimum width */
+                      flex-grow flex-basis-0 // ADDED flex-grow and flex-basis-0
+                      min-w-[56px] sm:min-w-[64px] px-2 // REDUCED min-width
                       `, 
-                      /* Remove w-[90px] and w-[70px] */
-                      /* isSweepstakes ? '' : '', */
                       isActive 
-                        ? (isSweepstakes 
-                            // Change transition point to 5% here too
-                            ? 'border-yellow-400 bg-gradient-to-b from-background-primary via-orange-500 via-5% to-yellow-400 shadow-[0_0_15px_0px_rgba(250,204,21,0.5)]' 
-                            : 'border-accent-2 bg-gradient-to-b from-background-primary to-[#220248] backdrop-blur-sm shadow-[0_4px_12px_-4px_rgba(99,102,241,0.5)]' 
-                          ) 
-                        : 'border-transparent bg-gradient-to-b from-background-primary to-gray-700 shadow-none' // Inactive
+                        ? 'border-accent-2 bg-gradient-to-b from-background-primary to-accent-2/70 shadow-[0_4px_12px_-4px_rgba(99,102,241,0.5)] backdrop-blur-sm' 
+                        : 'border-gray-700 bg-background-secondary hover:bg-background-tertiary text-gray-400 hover:text-text-primary'
                     )}
                   >
-                    {/* Remove separate background div entirely */}
-                    
-                    {/* Content Layer */}
-                    <div className="relative z-10 flex flex-col items-center justify-center space-y-1">
-                      {isSweepstakes ? (
-                        <Ticket className={cn("h-5 w-5", isActive ? "text-white" : "text-text-secondary")} />
-                      ) : sport.iconDefault && sport.iconActive ? (
-                        <Image 
-                          src={isActive ? sport.iconActive : sport.iconDefault}
-                          alt={sport.name}
-                          width={20}
-                          height={20}
-                          className="w-5 h-5"
-                        />
-                      ) : (
-                        <div className="w-5 h-5 bg-gray-500 rounded-sm"></div> 
-                      )}
-                      
+                    {iconToShow && typeof iconToShow === 'string' ? (
+                        <Image src={iconToShow} alt={sport.name} width={18} height={18} className={`object-contain transition-transform duration-300 group-hover:scale-110 ${isActive ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`} /> // REDUCED size
+                    ) : (
+                        <Ticket size={18} className={`object-contain transition-transform duration-300 group-hover:scale-110 ${fallbackIconClass}`} /> // REDUCED size
+                    )}
                       <span className={cn(
-                        "text-xs font-medium", 
-                        isActive 
-                          // Text color remains white for contrast
-                          ? (isSweepstakes ? 'text-white font-semibold' : 'text-text-primary') 
-                          : 'text-text-secondary'
-                        )}
-                      >
+                        "text-[9px] sm:text-[11px] font-medium uppercase tracking-wider", // REDUCED text size
+                        isActive ? 'text-white' : 'text-gray-500 group-hover:text-text-secondary'
+                    )}>
                         {sport.name}
                       </span>
-                    </div>
                   </button>
                 );
               })}

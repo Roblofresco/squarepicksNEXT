@@ -289,7 +289,7 @@ const AccountSettingsPage = () => {
           <Link
             href="/profile/settings/change-password"
             className="flex items-center justify-between w-full p-3 bg-white hover:bg-gray-50 rounded-md border border-gray-400 transition-colors duration-150 text-gray-800 active:scale-95 focus:scale-105 transition-all outline-none"
-            legacyBehavior>
+          >
             <div className="flex items-center">
                 <KeyRound size={18} className="mr-3 text-gray-500"/>
                 Change Password
@@ -299,7 +299,7 @@ const AccountSettingsPage = () => {
           <Link
             href="/profile/settings/personal-details"
             className="mt-4 flex items-center justify-between w-full p-3 bg-white hover:bg-gray-50 rounded-md border border-gray-400 transition-colors duration-150 text-gray-800 active:scale-95 focus:scale-105 transition-all outline-none"
-            legacyBehavior>
+          >
             <div className="flex items-center">
                 <User size={18} className="mr-3 text-gray-500"/>
                 Edit Personal Details

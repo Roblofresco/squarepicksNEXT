@@ -1,482 +1,443 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation'; // Use Next.js router
-import Link from 'next/link';
-import { motion } from "framer-motion";
-// Assuming similar UI components exist, otherwise need creation/styling
+import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"; // Assuming Card components exist
-// Using Lucide icons for consistency
-import { ArrowLeft, Trophy, Check, Star, Loader2 } from 'lucide-react'; // Added Loader2
-
-// Import Firebase Auth
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-
-// Import BottomNav
-import BottomNav from '@/components/lobby/BottomNav';
-
-// Import Shadcn Dialog components for login modal
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Loader2, Info, Trophy, ListChecks } from 'lucide-react'; // Added Trophy and ListChecks for potential use
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import SquareCard from '@/components/my-boards/SquareCard'; // Updated import
+import BottomNav from '@/components/lobby/BottomNav'; // Corrected Import BottomNavBar
+import { auth, db } from '@/lib/firebase'; // Import auth and db
+import { User as FirebaseUser } from 'firebase/auth'; // Firebase user type
+import { 
+  collection, query, where, getDocs, doc, getDoc, DocumentData, Timestamp 
+} from 'firebase/firestore'; // Firestore imports
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle
+} from "@/components/ui/dialog"; // Import Dialog components
+import { AppBoard, TeamInfo, BoardSquare, BoardStatus } from '../../types/myBoards';
 
-// --- Interfaces ---
-interface TeamInfo {
-  name: string;
-  color: string; // e.g., 'bg-red-500', 'text-blue-300'
-  textColor?: string; // Optional: specific text color if needed for contrast
-}
+// Remove interface/type definitions from this file (move to types/myBoards.ts)
 
-interface BoardSquare {
-  number?: string | null; // Allow null, assigned number if revealed/owned
-  x: number;
-  y: number;
-  isUserSquare: boolean; // Does the current user own this square?
-}
-
-interface QuarterScore {
-  period: string; // 'Q1', 'Q2', 'Q3', 'F' (Final)
-  homeScore: number;
-  awayScore: number;
-  isWinner?: boolean; // Did the user win this period?
-}
-
-interface Board {
-  id: string;
-  gameId: string;
-  homeTeam: TeamInfo;
-  awayTeam: TeamInfo;
-  date: string;
-  time: string;
-  entryFee: number;
-  potentialWinnings: number;
-  status: "active" | "completed" | "upcoming";
-  result?: {
-    winnerOverall: boolean; // Did the user win overall? (might be different from period wins)
-    totalWinAmount?: number;
-  };
-  quarters: QuarterScore[];
-  squares: BoardSquare[][]; // Representing the 10x10 grid
-  rowNumbers?: string[]; // Assigned row numbers (usually Away team score last digit)
-  colNumbers?: string[]; // Assigned col numbers (usually Home team score last digit)
-  userOwnedSquareCoords: { x: number, y: number }[]; // Coords user owns
-}
-
-// --- Helper Functions ---
-// Generate a 10x10 grid with user squares marked and assigned placeholder numbers
-const generateGrid = (userSquares: { x: number, y: number }[]): BoardSquare[][] => {
-  return Array.from({ length: 10 }, (_, y) =>
-    Array.from({ length: 10 }, (_, x) => {
-      const isUserSquare = userSquares.some(sq => sq.x === x && sq.y === y);
-      // Assign placeholder number if it's a user square
-      const number = isUserSquare ? `${x}${y}` : null; // Example: "73" for cell at x=7, y=3
-      return { x, y, isUserSquare, number };
-    })
-  );
-};
-
-// --- Placeholder Data ---
-const placeholderCurrentBoards: Board[] = [
-  {
-    id: "board-1",
-    gameId: "game-1",
-    homeTeam: { name: "Chiefs", color: "bg-red-600", textColor: "text-white" },
-    awayTeam: { name: "49ers", color: "bg-yellow-500", textColor: "text-black" },
-    date: "Apr 14, 2025",
-    time: "8:30 PM ET",
-    entryFee: 10,
-    potentialWinnings: 200,
-    status: "active",
-    quarters: [
-      { period: 'Q1', homeScore: 7, awayScore: 3 },
-      { period: 'Q2', homeScore: 14, awayScore: 10 },
-      { period: 'Q3', homeScore: 14, awayScore: 17 },
-      { period: 'F', homeScore: 21, awayScore: 20 }
-    ],
-    userOwnedSquareCoords: [{ x: 7, y: 3 }, { x: 4, y: 0 }],
-    squares: [], // Will be generated
-    rowNumbers: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
-    colNumbers: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-  },
-  // Add more sample boards...
-];
-placeholderCurrentBoards.forEach(b => b.squares = generateGrid(b.userOwnedSquareCoords));
-
-const placeholderHistoricalBoards: Board[] = [
-  {
-    id: "board-3",
-    gameId: "game-3",
-    homeTeam: { name: "Lakers", color: "bg-purple-600", textColor: "text-yellow-300" },
-    awayTeam: { name: "Celtics", color: "bg-green-700", textColor: "text-white" },
-    date: "Apr 10, 2025",
-    time: "9:00 PM ET",
-    entryFee: 10,
-    potentialWinnings: 200,
-    status: "completed",
-    result: {
-      winnerOverall: true,
-      totalWinAmount: 50
-    },
-    quarters: [
-      { period: 'Q1', homeScore: 7, awayScore: 3, isWinner: true }, // User won Q1
-      { period: 'Q2', homeScore: 14, awayScore: 10 },
-      { period: 'Q3', homeScore: 14, awayScore: 17 },
-      { period: 'F', homeScore: 21, awayScore: 20 }
-    ],
-    userOwnedSquareCoords: [{ x: 7, y: 3 }], // User owned 7-3 square
-    squares: [], // Will be generated
-    rowNumbers: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
-    colNumbers: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-  },
-  // Add more sample boards...
-];
-placeholderHistoricalBoards.forEach(b => b.squares = generateGrid(b.userOwnedSquareCoords));
-
-
-// --- Component ---
 export default function MyBoardsPage() {
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [activeBoardsData, setActiveBoardsData] = useState<AppBoard[]>([]);
+  const [historicalBoardsData, setHistoricalBoardsData] = useState<AppBoard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false); // Added state for login modal
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("current");
-  const [currentBoards, setCurrentBoards] = useState<Board[]>([]); // Start empty
-  const [historicalBoards, setHistoricalBoards] = useState<Board[]>([]); // Start empty
+  const [historyFilter, setHistoryFilter] = useState<'all' | 'won' | 'lost'>('all');
+  const [historySort, setHistorySort] = useState<'date' | 'winnings'>('date');
 
-  // Auth State
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [authLoading, setAuthLoading] = useState<boolean>(true);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
-
-  // Effect for Firebase Authentication State
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        setUser(currentUser);
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      setCurrentUser(user);
         setAuthLoading(false);
-        // If user must be logged in to view this page, uncomment redirect:
-        // if (!currentUser) { 
-        //   router.push('/login');
-        // }
+      if (!user) {
+        setActiveBoardsData([]);
+        setHistoricalBoardsData([]);
+        setIsLoading(false); 
+        setError(null); 
+      }
     });
     return () => unsubscribe();
-  }, [router]); 
+  }, []);
 
-  // TODO: Replace placeholder data with actual data fetching logic based on `user.uid`
-  useEffect(() => {
-    if (user && !authLoading) { // Ensure user exists and auth check is complete
-      // Fetch current and historical boards data here using user.uid
-      // For now, using placeholders if you want to see something on the screen:
-      setCurrentBoards(placeholderCurrentBoards);
-      setHistoricalBoards(placeholderHistoricalBoards);
-      console.log("User authenticated, (TODO: fetch user-specific boards)");
-    } else if (!user && !authLoading) {
-      // Clear boards if user logs out or is not available
-      setCurrentBoards([]);
-      setHistoricalBoards([]);
-      console.log("User not authenticated or logged out, clearing boards.");
+  const fetchBoardData = useCallback(async (userId: string) => {
+    setIsLoading(true);
+    setError(null);
+    console.log("[MyBoardsPage] Fetching 'open' boards and checking participation for user:", userId);
+
+    try {
+      const openBoardsQuery = query(collection(db, "boards"), where("status", "==", "open"));
+      const openBoardSnapshots = await getDocs(openBoardsQuery);
+      console.log(`[MyBoardsPage] Found ${openBoardSnapshots.docs.length} total 'open' board documents.`);
+
+      if (openBoardSnapshots.empty) {
+        console.log("[MyBoardsPage] No 'open' boards found in the database.");
+        setActiveBoardsData([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const userRelevantBoardsPromises = openBoardSnapshots.docs.map(async (boardDoc) => {
+        const boardData = boardDoc.data();
+        console.log(`[MyBoardsPage] Checking board ID: ${boardDoc.id}, Status: ${boardData.status}`);
+
+        const userRef = doc(db, "users", userId);
+        const squaresQuery = query(collection(db, "boards", boardDoc.id, "squares"), where("userID", "==", userRef)); 
+        const userSquaresSnap = await getDocs(squaresQuery);
+
+        if (userSquaresSnap.empty) {
+          console.log(`[MyBoardsPage] User ${userId} has NO SQUARES in board ${boardDoc.id}. Skipping this board.`);
+          return null; 
+        } else {
+          console.log(`[MyBoardsPage] User ${userId} HAS ${userSquaresSnap.docs.length} SQUARES in board ${boardDoc.id}. Processing...`);
+        }
+        
+        const userPickedSquaresData: BoardSquare[] = userSquaresSnap.docs.map(sqDoc => {
+            const data = sqDoc.data();
+            const squareIndex = typeof data.index === 'number' ? data.index : -1; 
+            const squareValue = typeof data.square === 'string' ? data.square : undefined; // Get the .square field
+            return { 
+                index: squareIndex,
+                isUserSquare: true, 
+                square: squareValue // Populate it here
+            };
+        });
+
+        let gameData: DocumentData | null = null;
+        let homeTeamData: TeamInfo | undefined = undefined;
+        let awayTeamData: TeamInfo | undefined = undefined;
+
+        if (boardData.gameID && typeof boardData.gameID.path === 'string') { 
+          const gameDocSnap = await getDoc(doc(db, boardData.gameID.path));
+          if (gameDocSnap.exists()) {
+            gameData = gameDocSnap.data();
+            // Populate team data as before...
+            if (gameData.home_team_id && typeof gameData.home_team_id.path === 'string') {
+              const homeTeamSnap = await getDoc(doc(db, gameData.home_team_id.path));
+              if (homeTeamSnap.exists()) {
+                const htData = homeTeamSnap.data(); 
+                homeTeamData = { name: htData.name || "N/A", logo: htData.logo ? `/team-logos/${htData.logo}` : undefined, initials: htData.initials || "N/A" };
+              }
+            }
+            if (gameData.away_team_id && typeof gameData.away_team_id.path === 'string') {
+              const awayTeamSnap = await getDoc(doc(db, gameData.away_team_id.path));
+              if (awayTeamSnap.exists()) {
+                 const atData = awayTeamSnap.data(); 
+                awayTeamData = { name: atData.name || "N/A", logo: atData.logo ? `/team-logos/${atData.logo}` : undefined, initials: atData.initials || "N/A" };
+              }
+            }
+          } else {
+            console.warn(`[MyBoardsPage] Game document not found for gameID: ${boardData.gameID.path} (Board: ${boardDoc.id})`);
+          }
+        } else {
+          console.warn(`[MyBoardsPage] Board ${boardDoc.id} is missing gameID or gameID.path is not a string. gameID: ${boardData.gameID}`);
+        }
+        
+        let gameDateTimeStr = new Date().toISOString(); 
+        if (gameData && gameData.start_time && gameData.start_time.toDate) {
+             gameDateTimeStr = gameData.start_time.toDate().toISOString();
+        } else if (boardData.created_time && boardData.created_time.toDate) { 
+             gameDateTimeStr = boardData.created_time.toDate().toISOString();
+        }
+
+        const appBoardEntry: AppBoard = {
+          id: boardDoc.id,
+          gameId: gameData && boardData.gameID ? boardData.gameID.id : 'N/A',
+          homeTeam: homeTeamData || { name: "Team A", initials: "TA", logo: undefined },
+          awayTeam: awayTeamData || { name: "Team B", initials: "TB", logo: undefined },
+          gameDateTime: gameDateTimeStr,
+          status: boardData.status as BoardStatus || 'open' as BoardStatus,
+          is_live: gameData?.is_live || false, 
+          broadcast_provider: gameData?.broadcast_provider || undefined, // Populate broadcast_provider
+          sport: gameData?.sport || "N/A", 
+          league: gameData?.leagueName || "N/A", // leagueName might not be on game doc based on memory
+          userSquareSelectionCount: userPickedSquaresData.length,
+          // totalSquareCount from boardData if it exists, else default.
+          totalSquareCount: typeof boardData.totalSquareCount === 'number' ? boardData.totalSquareCount : 100, 
+          userPickedSquares: userPickedSquaresData,
+          selected_indexes_on_board: Array.isArray(boardData.selected_indexes) ? boardData.selected_indexes : [], // Populate selected_indexes_on_board
+          home_axis_numbers: Array.isArray(boardData.home_numbers) ? boardData.home_numbers : [], // Populate home_axis_numbers
+          away_axis_numbers: Array.isArray(boardData.away_numbers) ? boardData.away_numbers : [], // Populate away_axis_numbers
+          winnings: typeof boardData.winnings === 'number' ? boardData.winnings : 0, 
+          stake: typeof boardData.amount === 'number' ? boardData.amount : undefined, 
+          // Add winning indexes from boardData (e.g., boardData.q1_winning_number)
+          q1_winning_index: typeof boardData.q1_winning_number === 'number' ? boardData.q1_winning_number : undefined,
+          q2_winning_index: typeof boardData.q2_winning_number === 'number' ? boardData.q2_winning_number : undefined,
+          q3_winning_index: typeof boardData.q3_winning_number === 'number' ? boardData.q3_winning_number : undefined,
+          q4_winning_index: typeof boardData.q4_winning_number === 'number' ? boardData.q4_winning_number : undefined, // Adjust if final field name differs
+        };
+        console.log(`[MyBoardsPage] Successfully processed board ${boardDoc.id}. AppBoard entry:`, appBoardEntry);
+        return appBoardEntry;
+      });
+
+      const populatedUserBoards = (await Promise.all(userRelevantBoardsPromises)).filter((b: AppBoard | null): b is AppBoard => b !== null);
+      // Ensure it's AppBoard[] for safety, though filter should ensure non-null
+      console.log("[MyBoardsPage] Final populatedUserBoards before setting state:", populatedUserBoards);
+
+      setActiveBoardsData(populatedUserBoards);
+      setHistoricalBoardsData([]); 
+
+    } catch (err) {
+      console.error("[MyBoardsPage] Error in fetchBoardData:", err);
+      setError(err instanceof Error ? err.message : "An unknown error occurred while fetching user boards.");
+    } finally {
+      setIsLoading(false);
     }
-  }, [user, authLoading]);
+  }, []);
 
-  // Protected action handler for BottomNav
-  const handleProtectedAction = () => {
-    if (!user) {
-      console.log("Protected action triggered on my-boards, showing login prompt.");
+  const fetchHistoricalBoards = useCallback(async (userId: string) => {
+    // Fetch boards where user has squares and board status is final (won/lost/cancelled)
+    setIsLoading(true);
+    setError(null);
+    try {
+      const finalStatuses: BoardStatus[] = ['FINAL_WON', 'FINAL_LOST', 'CANCELLED'];
+      const boardsQuery = query(collection(db, 'boards'), where('status', 'in', finalStatuses));
+      const boardSnapshots = await getDocs(boardsQuery);
+      const userBoards: AppBoard[] = [];
+      for (const boardDoc of boardSnapshots.docs) {
+        const boardData = boardDoc.data();
+        const userRef = doc(db, 'users', userId);
+        const squaresQuery = query(collection(db, 'boards', boardDoc.id, 'squares'), where('userID', '==', userRef));
+        const userSquaresSnap = await getDocs(squaresQuery);
+        if (!userSquaresSnap.empty) {
+          const userPickedSquaresData: BoardSquare[] = userSquaresSnap.docs.map(sqDoc => {
+              const data = sqDoc.data();
+              const squareIndex = typeof data.index === 'number' ? data.index : -1; 
+              const squareValue = typeof data.square === 'string' ? data.square : undefined; // Get the .square field
+              return { 
+                  index: squareIndex,
+                  isUserSquare: true, 
+                  square: squareValue // Populate it here
+              };
+          });
+
+          let gameData: DocumentData | null = null;
+          let homeTeamData: TeamInfo | undefined = undefined;
+          let awayTeamData: TeamInfo | undefined = undefined;
+
+          if (boardData.gameID && typeof boardData.gameID.path === 'string') { 
+            const gameDocSnap = await getDoc(doc(db, boardData.gameID.path));
+            if (gameDocSnap.exists()) {
+              gameData = gameDocSnap.data();
+              // Populate team data as before...
+              if (gameData.home_team_id && typeof gameData.home_team_id.path === 'string') {
+                const homeTeamSnap = await getDoc(doc(db, gameData.home_team_id.path));
+                if (homeTeamSnap.exists()) {
+                  const htData = homeTeamSnap.data(); 
+                  homeTeamData = { name: htData.name || "N/A", logo: htData.logo ? `/team-logos/${htData.logo}` : undefined, initials: htData.initials || "N/A" };
+                }
+              }
+              if (gameData.away_team_id && typeof gameData.away_team_id.path === 'string') {
+                const awayTeamSnap = await getDoc(doc(db, gameData.away_team_id.path));
+                if (awayTeamSnap.exists()) {
+                   const atData = awayTeamSnap.data(); 
+                  awayTeamData = { name: atData.name || "N/A", logo: atData.logo ? `/team-logos/${atData.logo}` : undefined, initials: atData.initials || "N/A" };
+                }
+              }
+            } else {
+              console.warn(`[MyBoardsPage] Game document not found for gameID: ${boardData.gameID.path} (Board: ${boardDoc.id})`);
+            }
+          } else {
+            console.warn(`[MyBoardsPage] Board ${boardDoc.id} is missing gameID or gameID.path is not a string. gameID: ${boardData.gameID}`);
+          }
+          
+          let gameDateTimeStr = new Date().toISOString(); 
+          if (gameData && gameData.start_time && gameData.start_time.toDate) {
+               gameDateTimeStr = gameData.start_time.toDate().toISOString();
+          } else if (boardData.created_time && boardData.created_time.toDate) { 
+               gameDateTimeStr = boardData.created_time.toDate().toISOString();
+          }
+
+          const appBoardEntry: AppBoard = {
+            id: boardDoc.id,
+            gameId: gameData && boardData.gameID ? boardData.gameID.id : 'N/A',
+            homeTeam: homeTeamData || { name: "Team A", initials: "TA", logo: undefined },
+            awayTeam: awayTeamData || { name: "Team B", initials: "TB", logo: undefined },
+            gameDateTime: gameDateTimeStr,
+            status: boardData.status as BoardStatus || 'open' as BoardStatus,
+            is_live: gameData?.is_live || false, 
+            broadcast_provider: gameData?.broadcast_provider || undefined, // Populate broadcast_provider
+            sport: gameData?.sport || "N/A", 
+            league: gameData?.leagueName || "N/A", // leagueName might not be on game doc based on memory
+            userSquareSelectionCount: userPickedSquaresData.length,
+            // totalSquareCount from boardData if it exists, else default.
+            totalSquareCount: typeof boardData.totalSquareCount === 'number' ? boardData.totalSquareCount : 100, 
+            userPickedSquares: userPickedSquaresData,
+            selected_indexes_on_board: Array.isArray(boardData.selected_indexes) ? boardData.selected_indexes : [], // Populate selected_indexes_on_board
+            home_axis_numbers: Array.isArray(boardData.home_numbers) ? boardData.home_numbers : [], // Populate home_axis_numbers
+            away_axis_numbers: Array.isArray(boardData.away_numbers) ? boardData.away_numbers : [], // Populate away_axis_numbers
+            winnings: typeof boardData.winnings === 'number' ? boardData.winnings : 0, 
+            stake: typeof boardData.amount === 'number' ? boardData.amount : undefined, 
+            // Add winning indexes from boardData (e.g., boardData.q1_winning_number)
+            q1_winning_index: typeof boardData.q1_winning_number === 'number' ? boardData.q1_winning_number : undefined,
+            q2_winning_index: typeof boardData.q2_winning_number === 'number' ? boardData.q2_winning_number : undefined,
+            q3_winning_index: typeof boardData.q3_winning_number === 'number' ? boardData.q3_winning_number : undefined,
+            q4_winning_index: typeof boardData.q4_winning_number === 'number' ? boardData.q4_winning_number : undefined, // Adjust if final field name differs
+          };
+          userBoards.push(appBoardEntry);
+        }
+      }
+      setHistoricalBoardsData(userBoards);
+    } catch (err) {
+      setError('Failed to fetch historical boards.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!authLoading && currentUser) {
+      fetchBoardData(currentUser.uid);
+      fetchHistoricalBoards(currentUser.uid);
+    } else if (!authLoading && !currentUser) {
+      setIsLoading(false); 
+      setActiveBoardsData([]); 
+      setHistoricalBoardsData([]);
+      setError("Please log in to view your boards.");
+    }
+  }, [currentUser, authLoading, fetchBoardData, fetchHistoricalBoards]);
+
+  const handleBoardCardClick = useCallback((boardId: string) => {
+    console.log("Board card clicked:", boardId);
+    // router.push(`/my-boards/${boardId}`); 
+  }, [router]);
+
+  // Added handleProtectedAction for BottomNav
+  const handleProtectedAction = useCallback(() => {
+    if (!currentUser) {
       setIsLoginModalOpen(true);
     }
-  };
+    // If user is logged in, BottomNav actions should navigate directly
+    // or this function could be expanded if other protected actions are needed from this page
+  }, [currentUser]);
 
-  const renderQuarterScoreboard = (board: Board) => (
-    // Added max-w-md and mx-auto for consistent width and centering
-    (<div className="grid grid-cols-4 gap-1.5 mb-4 p-1.5 rounded-lg border border-gray-700/50 bg-background-primary shadow-md max-w-md mx-auto">
-      {board.quarters.map((q) => (
-        <div key={q.period} className="bg-background-secondary/60 rounded p-2 text-center relative shadow-inner border border-gray-700/30 flex flex-col justify-between min-h-[70px]">
-          <div className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-1">{q.period}</div>
-          <div className="h-px w-4/5 mx-auto bg-gray-600/40 my-1"></div>
-          <div className="flex justify-around items-center text-[10px] font-semibold text-white mb-0.5">
-             <span>{board.awayTeam.name ? board.awayTeam.name[0] : '?'}</span>
-             <span>{board.homeTeam.name ? board.homeTeam.name[0] : '?'}</span>
-          </div>
-          <div className="flex justify-center items-center mt-1 gap-2"> 
-            <div className={`text-xl font-bold text-text-primary drop-shadow-md`}> 
-              {q.awayScore}
-            </div>
-            <div className="h-6 w-px bg-gray-600/50 self-center"></div> 
-            <div className={`text-xl font-bold text-text-primary drop-shadow-md`}> 
-              {q.homeScore}
-            </div>
-            {q.isWinner && (
-               <div className="absolute inset-0 flex items-center justify-center -z-10 opacity-20 pointer-events-none">
-                 <span className="text-4xl font-black text-green-400 filter drop-shadow-lg">W</span>
-               </div>
-            )}
-          </div>
+  const renderBoardGrid = (boards: AppBoard[], type: 'active' | 'history') => {
+    if (authLoading) { 
+      return (
+        <div className="flex justify-center items-center py-10">
+          <Loader2 className="h-12 w-12 text-slate-400 animate-spin" />
+          <p className="ml-4 text-slate-500">Authenticating...</p>
         </div>
-      ))}
-    </div>)
-  );
+      );
+    }
 
-  const renderBoardGrid = (board: Board) => {
-    // Define base mobile size, use sm: for larger screens
-    const axisCellSize = "h-6 w-6 sm:h-8 sm:w-8"; 
-    const axisTextSize = "text-[10px] sm:text-xs"; // Responsive axis numbers
-    const teamNameTextSize = "text-xs sm:text-sm"; // Responsive team names
-    // Responsive Paddings
-    const homeNamePadding = "pr-1 sm:pr-2"; 
-    const awayTeamNamePadding = "pb-1 sm:pb-2"; 
-    const iconSize = 16; // Base size for mobile
-    const tagTextSize = "text-[8px] sm:text-[9px]"; // Responsive tag text
-
-    // Removed calc() variables, will use direct classes
-
-    const axisBaseStyle = `flex items-center justify-center font-mono ${axisTextSize}`;
-    const teamNameBaseStyle = `font-semibold flex ${teamNameTextSize}`;
-    const borderStyle = "border border-gray-500/50"; 
-
+    if (isLoading && !authLoading && currentUser) { 
     return (
-      <div className="flex flex-col items-end w-full max-w-md mx-auto mt-4">
-        {/* Home Team Name Container - Reverted to solid team color */}
-        <div
-          className={`${teamNameBaseStyle} justify-center items-center h-6 sm:h-8 w-60 sm:w-80 ${board.homeTeam.color} ${board.homeTeam.textColor ?? 'text-white'} rounded-t-md ${homeNamePadding}`} // Re-added team bg class
-        >
-          {board.homeTeam.name}
+        <div className="flex justify-center items-center py-10">
+          <Loader2 className="h-12 w-12 text-slate-400 animate-spin" />
+          <p className="ml-4 text-slate-500">Loading your boards...</p>
         </div>
-
-        <div className="flex flex-row items-end">
-          {/* Away Team Name Container - Reverted to solid team color */} 
-          <div
-            className={`${teamNameBaseStyle} w-6 sm:w-8 h-60 sm:h-80 ${board.awayTeam.color} ${board.awayTeam.textColor ?? 'text-white'} rounded-l-md text-center`} // Re-added team bg class
-            style={{ writingMode: 'vertical-rl' }} // Keep writingMode
-          >
-            <span className={`rotate-180 block w-full h-full flex items-end justify-center ${awayTeamNamePadding}`}>
-            {board.awayTeam.name}
-            </span>
-         </div>
-
-          {/* 11x11 Grid - Size determined by cells */}
-          <div 
-             className={`grid grid-cols-11 grid-rows-11 ${borderStyle} bg-transparent border-gray-500/50 shadow-inner rounded-br-md rounded-tr-md`}
-          >
-            {/* Top-left empty cell - Responsive size */}
-            <div className={`bg-background-tertiary ${axisCellSize} ${borderStyle}`}></div>
-
-            {/* Column numbers - Responsive size */} 
-         {board.colNumbers?.map((num, i) => (
-              <div key={`col-num-${i}`} className={`${axisBaseStyle} ${axisCellSize} ${board.homeTeam.color} ${board.homeTeam.textColor ?? 'text-white'} bg-opacity-90 ${borderStyle}`}> 
-            {num}
-          </div>
-         ))}
-
-            {/* Render Rows 2-11 */} 
-         {Array.from({ length: 10 }).map((_, rowIndex) => (
-          <React.Fragment key={`row-${rowIndex}`}>
-                {/* Row number - Responsive size */} 
-                <div className={`${axisBaseStyle} ${axisCellSize} ${board.awayTeam.color} ${board.awayTeam.textColor ?? 'text-white'} bg-opacity-90 ${borderStyle}`}> 
-              {board.rowNumbers?.[rowIndex]}
+      );
+    }
+    
+    if (error && !authLoading && currentUser) { // Only show board fetching error if user is logged in
+        return (
+            <div className="text-center py-10 px-4 text-red-500">
+                <Info size={56} className="mx-auto mb-4" />
+                <h3 className="text-2xl font-semibold mb-3">Error Loading Boards</h3>
+                <p>{error}</p>
             </div>
-
-                {/* Grid cells - Responsive size */} 
-                {board.squares[rowIndex].map((cell, colIndex) => {
-                  // Find the winning quarter(s) for this cell
-                  const winningQuarters = board.quarters.filter(q => {
-                      const homeLastDigit = String(q.homeScore % 10);
-                      const awayLastDigit = String(q.awayScore % 10);
-                      return board.colNumbers?.[colIndex] === homeLastDigit && board.rowNumbers?.[rowIndex] === awayLastDigit;
-                  }).map(q => q.period); // Get ['Q1', 'Q3'] etc.
-
-                  const isWinning = winningQuarters.length > 0;
-                  const displayQuarter = isWinning 
-                     ? winningQuarters.filter(q => board.status === 'completed' || q !== 'F').join('/') 
-                     : ''; 
-
-                  // Determine cell style based on state
-                  let cellStyle = `bg-gradient-to-br from-gray-800/10 to-black/10`;
-                  let borderStyleOverride = borderStyle;
-                  let shadowStyle = 'shadow-inner';
-                  let content: React.ReactNode = null;
-                  let tag: React.ReactNode = null;
-                  // Determine icon size based on cell size (crude example)
-                  const currentIconSize = axisCellSize.includes('h-8') ? 20 : 16;
-
-                  if (cell.isUserSquare) {
-                      if (isWinning) {
-                          // --- Winning + User Selected ---
-                          cellStyle = 'bg-white'; // White fill
-                          borderStyleOverride = borderStyle; // Keep standard border
-                          // Raised shadow (removed yellow glow)
-                          shadowStyle = 'shadow-xl'; 
-                          // Gold star icon
-                          content = <Star size={currentIconSize} className="text-yellow-400 fill-yellow-400/30" />;
-                          // Gold tag - Moved to bottom-right, adjusted rounding
-                          tag = <div className={`absolute bottom-0 right-0 px-1 ${tagTextSize} font-bold bg-yellow-400 text-black rounded-tl-sm leading-none border border-yellow-600`}>{displayQuarter}</div>;
-                      } else {
-                          // --- User Selected Only ---
-                          cellStyle = 'bg-black/10'; // Keep default bg for indent 
-                          borderStyleOverride = borderStyle; // Keep standard grid border
-                          shadowStyle = 'shadow-inner'; // Indented look
-                          // Apply White Star Icon content, remove tag
-                          content = <Star size={currentIconSize} className="text-white fill-white/20" />;
-                          tag = null;
-                      }
-                  } else if (isWinning) {
-                      // --- Winning Only ---
-                      // White fill with inner shadow effect
-                      cellStyle = `bg-white`; 
-                      borderStyleOverride = borderStyle; // Keep standard border
-                      shadowStyle = 'shadow-inner'; // Add inner shadow
-                      // Neutral tag
-                      tag = <div className={`absolute bottom-0 right-0 px-1 ${tagTextSize} font-semibold bg-gray-200 text-gray-700 rounded-tl-sm leading-none border border-gray-400`}>{displayQuarter}</div>;
-                      // No main content (icon)
-                  }
-                  // Else: Default square - Apply subtle gradient and inner shadow
-                  else {
-                    cellStyle = `bg-gradient-to-br from-gray-800/10 to-black/10`;
-                    shadowStyle = 'shadow-inner';
-                    borderStyleOverride = borderStyle; // Ensure standard border is used
-                    content = null;
-                    tag = null;
-                  }
-                  
+        );
+    }
+    
+    if (!currentUser && !authLoading) { // Show login prompt if not logged in
                   return (
-                    <div
-                      key={`cell-${rowIndex}-${colIndex}`}
-                      // Responsive cell size applied here
-                      className={`relative flex items-center justify-center aspect-square ${axisCellSize} ${borderStyle} ${cellStyle} ${shadowStyle} transition-all duration-300`}
-                    >
-                      {content} 
-                      {tag}
+            <div className="text-center py-10 px-4">
+                <Info size={56} className="mx-auto mb-4 text-slate-500" />
+                <h3 className="text-2xl font-semibold mb-3 text-text-primary">Login Required</h3>
+                <p className="text-text-secondary mb-6">Please log in to view your game boards.</p>
+                <Link href="/login">
+                    <Button className="mt-4">Login</Button>
+                </Link>
               </div>
                   );
-                })}
-              </React.Fragment>
-            ))}
+    }
+
+    if (boards.length === 0 && !isLoading && !authLoading && currentUser) { 
+      return (
+        <div className="text-center py-10 px-4">
+          <div className="flex justify-center mb-4">
+            {type === 'active' ? 
+              <ListChecks size={56} className="text-slate-500" /> : 
+              <Trophy size={56} className="text-slate-500" />
+            }
           </div>
+          <h3 className="text-2xl font-semibold mb-3 text-text-primary">
+            {type === 'active' ? "No Active Boards" : "No Board History"}
+          </h3>
+          <p className="text-text-secondary mb-6">
+            {type === 'active' ? 
+              "You don\'t have any boards currently in play or open for picks." : 
+              "You haven\'t completed any boards yet. Your past games will appear here."
+            }
+          </p>
+          {type === 'active' && (
+            <Link href="/lobby">
+              <Button>
+                Find a Game
+              </Button>
+            </Link>
+          )}
         </div>
-    </div>
-  );
-};
+      );
+    }
 
-
-  const renderBoardCard = (board: Board) => (
-    <motion.div
-      // variants={itemVariants} // Add animations back if needed
-      key={board.id}
-      className="rounded-xl overflow-hidden bg-background-secondary border border-gray-700/50 shadow-lg hover:border-accent-1/50 transition-all duration-300 flex flex-col"
-      // whileHover={{ y: -5 }}
-    >
-      <CardHeader className="pb-3 border-b border-gray-700/50">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <CardTitle className="text-lg text-text-primary">{board.awayTeam.name} @ {board.homeTeam.name}</CardTitle>
-            <CardDescription className="text-text-secondary text-sm">
-              {board.date} • {board.time}
-            </CardDescription>
+    if (type === 'history' && boards.length > 0) {
+      // Filtering and sorting controls
+      return (
+        <>
+          <div className="flex flex-wrap gap-4 mb-4 items-center">
+            <label className="text-sm text-gray-400">Filter:</label>
+            <select value={historyFilter} onChange={e => setHistoryFilter(e.target.value as any)} className="bg-gray-800 text-white rounded px-2 py-1">
+              <option value="all">All</option>
+              <option value="won">Won</option>
+              <option value="lost">Lost</option>
+            </select>
+            <label className="text-sm text-gray-400 ml-4">Sort by:</label>
+            <select value={historySort} onChange={e => setHistorySort(e.target.value as any)} className="bg-gray-800 text-white rounded px-2 py-1">
+              <option value="date">Date</option>
+              <option value="winnings">Winnings</option>
+            </select>
           </div>
-          <Badge
-            variant={board.status === "active" ? "default" :
-                   board.status === "completed" ? "secondary" : "outline"}
-            className={`flex-shrink-0 ${// More distinct colors
-              board.status === "active" ? 'bg-green-500/20 text-green-400' :
-              board.status === "completed" ? 'bg-blue-500/20 text-blue-400' :
-              'bg-gray-600/30 text-text-secondary'
-            }`}
-          >
-            {board.status.charAt(0).toUpperCase() + board.status.slice(1)}
-          </Badge>
-        </div>
-      </CardHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-1 justify-center">
+            {boards
+              .filter(b => historyFilter === 'all' || (historyFilter === 'won' ? b.status === 'FINAL_WON' : b.status === 'FINAL_LOST'))
+              .sort((a, b) => {
+                if (historySort === 'date') {
+                  return new Date(b.gameDateTime).getTime() - new Date(a.gameDateTime).getTime();
+                } else {
+                  return (b.winnings || 0) - (a.winnings || 0);
+                }
+              })
+              .map(board => (
+                <SquareCard key={board.id} board={board} onClick={handleBoardCardClick} />
+              ))}
+          </div>
+        </>
+      );
+    }
 
-      <CardContent className="p-4 space-y-4 flex-grow">
-         {renderQuarterScoreboard(board)}
-         {renderBoardGrid(board)}
-      </CardContent>
-
-      <CardFooter className="p-4 pt-0 flex justify-end">
-        <button
-          onClick={() => router.push(`/board/${board.id}`)} // Replace with actual navigation or modal
-          className="px-4 py-2 bg-accent-1 hover:bg-accent-1/80 text-white text-sm font-medium rounded-md transition-colors duration-200 shadow hover:shadow-md"
-          >
-            View Details
-        </button>
-      </CardFooter>
-    </motion.div>
-  );
-
-  // Animation variants (optional)
-  const containerVariants = { /* ... */ };
-  const itemVariants = { /* ... */ };
-
-  if (authLoading) {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-background to-background-secondary">
-            <Loader2 className="h-12 w-12 animate-spin text-accent-1" />
-            {/* Placeholder for BottomNav during auth loading, if needed, or keep it simple */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-1 justify-center">
+        {boards.map((board) => (
+          <SquareCard key={board.id} board={board} onClick={handleBoardCardClick} />
+        ))}
         </div>
     );
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background-secondary p-4 sm:p-6 text-text-primary flex flex-col">
-      <div className="max-w-7xl mx-auto w-full flex-grow">
-        {/* Header */}
-        <div className="flex items-center mb-6">
-           <button onClick={() => router.back()} className="mr-4 p-2 rounded-full hover:bg-background-secondary transition-colors">
-              <ArrowLeft size={20} />
-          </button>
-           <h1 className="text-2xl font-bold">My Boards</h1>
-        </div>
+    <div className="flex flex-col min-h-screen bg-background-primary pb-16"> {/* Added pb-16 for BottomNav clearance */}
+      <main className="flex-grow container mx-auto py-8 px-4">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold tracking-tight text-text-primary">Your Game Boards</h1>
+          <p className="text-lg text-text-secondary mt-2">
+            Track your active boards, review past games, and see your winnings.
+          </p>
+        </header>
 
-        {/* Tabs */}
-        {/* Adjusted TabsList for shorter width and dynamic rounding */}
-        <Tabs defaultValue="current" value={activeTab} onValueChange={setActiveTab} className="w-full mb-6">
-          <TabsList className="grid grid-cols-2 gap-1 p-1 bg-background-secondary rounded-lg max-w-xs mx-auto">
-            <TabsTrigger
-              value="current"
-              className={`flex-1 text-center px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out ${
-                activeTab === 'current'
-                  ? 'bg-accent-1 text-white shadow-md rounded-l-md rounded-r-none' // Selected: rounded left
-                  : 'text-text-secondary hover:bg-background-tertiary rounded-l-md' // Not selected: rounded left
-              }`}
-            >
-              Current ({currentBoards.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="historical"
-              className={`flex-1 text-center px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out ${
-                activeTab === 'historical'
-                  ? 'bg-accent-1 text-white shadow-md rounded-r-md rounded-l-none' // Selected: rounded right
-                  : 'text-text-secondary hover:bg-background-tertiary rounded-r-md' // Not selected: rounded right
-              }`}
-            >
-              Historical ({historicalBoards.length})
-            </TabsTrigger>
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 md:w-1/2 lg:w-1/3 mx-auto">
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="current">
-            {(currentBoards.length > 0 || (!user && !authLoading)) ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {currentBoards.map(renderBoardCard)}
-              </div>
-            ) : (
-              <p className="text-center text-text-secondary mt-8">{!user && !authLoading ? "Please log in to see your boards." : "No active boards found."}</p>
-            )}
+          <TabsContent value="active" className="mt-6">
+            {renderBoardGrid(activeBoardsData, 'active')}
           </TabsContent>
-          <TabsContent value="historical">
-            {(historicalBoards.length > 0 || (!user && !authLoading)) ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {historicalBoards.map(renderBoardCard)}
-              </div>
-            ) : (
-              <p className="text-center text-text-secondary mt-8">{!user && !authLoading ? "Please log in to see your historical boards." : "No historical boards found."}</p>
-            )}
+          <TabsContent value="history" className="mt-6">
+            {renderBoardGrid(historicalBoardsData, 'history')}
           </TabsContent>
         </Tabs>
-      </div>
-      <BottomNav user={user} onProtectedAction={handleProtectedAction} />
+      </main>
+      <BottomNav user={currentUser} onProtectedAction={handleProtectedAction} /> {/* Passed props */}
+      
+      {/* Login Dialog Copied & Adapted from LobbyPage */}
       <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
          <DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] to-[#5855e4] to-15% border-accent-1/50 text-white py-8">
             <DialogHeader className="text-center items-center">
@@ -486,8 +447,19 @@ export default function MyBoardsPage() {
                </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col sm:flex-row gap-3 mt-6 mb-2">
-               <Button onClick={() => { setIsLoginModalOpen(false); router.push('/login'); }} className="flex-1 bg-accent-1 hover:bg-accent-1/80 text-white font-semibold">Login</Button>
-               <Button onClick={() => { setIsLoginModalOpen(false); router.push('/signup'); }} variant="outline" className="flex-1 bg-transparent border-gray-500 hover:bg-gray-500/20 text-gray-300 font-semibold hover:text-gray-300">Sign Up</Button>
+            <Button 
+              onClick={() => { setIsLoginModalOpen(false); router.push('/login'); }} 
+              className="flex-1 bg-accent-1 hover:bg-accent-1/80 text-white font-semibold"
+            >
+              Login
+            </Button>
+            <Button 
+              onClick={() => { setIsLoginModalOpen(false); router.push('/signup'); }} 
+              variant="outline" 
+              className="flex-1 bg-transparent border-gray-500 hover:bg-gray-500/20 text-gray-300 font-semibold hover:text-gray-300"
+            >
+              Sign Up
+            </Button>
             </div>
          </DialogContent>
       </Dialog>

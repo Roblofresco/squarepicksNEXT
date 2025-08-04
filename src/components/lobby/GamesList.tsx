@@ -50,10 +50,10 @@ const TeamDisplay = memo(({ team }: { team?: TeamInfo }) => {
         <Image 
           src={team.logo} 
           alt={`${team.initials || team.name} logo`} // Use initials or name
-          width={40}
-          height={40}
+          width={40} // Keep for aspect ratio hint / placeholder
+          height={40} // Keep for aspect ratio hint / placeholder
           className="object-contain mb-1"
-          style={filterStyle} 
+          style={{ width: '100%', height: 'auto', ...filterStyle }} // Adjust style for responsiveness
         />
       ) : (
         <div 
@@ -103,7 +103,9 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
       href={`/game/${game.id}`}
       onClick={handleClick}
       className={`relative flex flex-row items-center justify-between flex-shrink-0 w-[240px] h-[90px] rounded-lg text-white ${shadowStyle} overflow-hidden hover:ring-2 hover:ring-accent-1 transition-all duration-200 p-2`}
-      legacyBehavior>
+      // legacyBehavior and passHref removed
+    >
+      {/* The content that was previously in the div child now directly inside Link (which renders an <a>) */}
       {/* Background Layer */}
       <div 
         className={`absolute inset-0 ${gradientStyle} opacity-85 z-0 rounded-lg`}

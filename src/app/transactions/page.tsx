@@ -32,6 +32,10 @@ export default function TransactionsPage() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortBy, setSortBy] = useState<'timestamp' | 'amount'>('timestamp');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const totalPages = Math.ceil(filteredAndSortedTransactions.length / pageSize);
+  const paginatedTransactions = filteredAndSortedTransactions.slice((page - 1) * pageSize, page * pageSize);
 
   // --- Fetching Logic ---
   useEffect(() => {
@@ -41,7 +45,7 @@ export default function TransactionsPage() {
         setError(null);
         try {
           // Base query - adjust if needed
-          let q = query(
+          const q = query(
             collection(db, 'transactions'),
             where('userID', '==', user.uid), // *** SECURITY: Rules must enforce this ***
             orderBy(sortBy, sortOrder) // Apply initial sort
@@ -231,19 +235,19 @@ export default function TransactionsPage() {
         <div className="bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-gray-200/50 border-b-gray-300">
+              <TableRow className="bg-gradient-to-r from-accent-2 via-accent-4 to-accent-2">
                 {/* Add onClick handlers for sorting */}
-                <TableHead className="text-gray-700 cursor-pointer" onClick={() => { setSortBy('timestamp'); setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc'); }}>Date {sortBy === 'timestamp' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}</TableHead>
-                <TableHead className="text-gray-700">Type</TableHead>
-                <TableHead className="text-gray-700">Description</TableHead>
-                <TableHead className="text-right text-gray-700 cursor-pointer" onClick={() => { setSortBy('amount'); setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc'); }}>Amount ({sortBy === 'amount' ? (sortOrder === 'desc' ? '↓' : '↑') : ''})</TableHead>
-                <TableHead className="text-right text-gray-700">Status</TableHead>
+                <TableHead className="text-slate-200 cursor-pointer" onClick={() => { setSortBy('timestamp'); setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc'); }}>Date {sortBy === 'timestamp' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}</TableHead>
+                <TableHead className="text-slate-200">Type</TableHead>
+                <TableHead className="text-slate-200">Description</TableHead>
+                <TableHead className="text-right text-slate-200 cursor-pointer" onClick={() => { setSortBy('amount'); setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc'); }}>Amount ({sortBy === 'amount' ? (sortOrder === 'desc' ? '↓' : '↑') : ''})</TableHead>
+                <TableHead className="text-right text-slate-200">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAndSortedTransactions.length > 0 ? (
-                filteredAndSortedTransactions.map((tx) => (
-                  <TableRow key={tx.id} className="border-b-gray-300 hover:bg-gray-200/30">
+              {paginatedTransactions.length > 0 ? (
+                paginatedTransactions.map((tx) => (
+                  <TableRow key={tx.id} className="border-b-gray-300">
                     <TableCell className="text-sm text-gray-800">{format(tx.timestamp.toDate(), 'yyyy-MM-dd p')}</TableCell>
                     <TableCell className="text-sm text-gray-800 capitalize">{tx.type.replace('_', ' ')}</TableCell>
                     <TableCell className="text-sm text-gray-600">{tx.description || 'N/A'}</TableCell>
@@ -264,7 +268,14 @@ export default function TransactionsPage() {
               )}
             </TableBody>
           </Table>
-          {/* TODO: Add Pagination controls here if needed */}
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 py-4">
+              <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}>Prev</Button>
+              <span className="text-sm">Page {page} of {totalPages}</span>
+              <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page === totalPages}>Next</Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -6,7 +6,9 @@ import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 // Import Firebase functions SDK
-import { getFunctions, httpsCallable, Functions } from 'firebase/functions';
+import { getFunctions, httpsCallable, Functions, FunctionsError } from 'firebase/functions';
+import { app } from '@/lib/firebase'; // IMPORT Firebase app instance
+// import { trackEvent } from '@/utils/analytics'; // COMMENTED OUT - Module not found
 // Button is no longer used
 // import { Button } from "@/components/ui/button";
 // Input is no longer needed
@@ -25,15 +27,17 @@ import {
 } from "@/components/ui/alert-dialog";
 // Import StarfieldBackground
 import StarfieldBackground from '@/components/effects/StarfieldBackground';
+import ProgressBar from '@/components/ui/ProgressBar';
 
 // Define the list of ineligible states
 const INELIGIBLE_STATES: string[] = ['CO', 'MD', 'NE', 'ND', 'VT'];
 
-// Initialize Firebase Functions
-let functionsInstance: Functions | null = null;
-if (typeof window !== 'undefined') { // Ensure this runs client-side
-    functionsInstance = getFunctions();
-}
+// Get a Functions instance, specifying the region
+// const functionsInstance = getFunctions(); // OLD
+const functionsInstance = getFunctions(app, 'us-east1'); // NEW: Specify region
+
+// Initialize the callable function reference directly here if not already done elsewhere
+const verifyLocationFromCoordsCallable = httpsCallable(functionsInstance, 'verifyLocationFromCoords');
 
 export default function LocationSetupPage() {
   const router = useRouter();
@@ -63,7 +67,7 @@ export default function LocationSetupPage() {
       setIsAuthLoading(false); // Auth check done, allow page render
     });
     return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [router]); 
 
   // Updated to pass state via query param, no Firestore interaction here
@@ -94,50 +98,45 @@ export default function LocationSetupPage() {
     
   }, [router, setError, setIsVerifyingLocation, setDeterminedState, setIneligibleStateDetected, setShowIneligibleDialog]); // Removed isSubmitting from dependencies
 
+  // Function to handle geolocation attempt
   const attemptGeolocation = useCallback(() => {
-    setIsVerifyingLocation(true); // Show spinner for this specific action
+    setIsVerifyingLocation(true); // Spinner on
     setError(null);
+    console.log("Attempting geolocation...");
 
     if (!navigator.geolocation) {
+      console.error('Geolocation API not supported.');
       setError('Geolocation is not supported by your browser. Please ensure it is enabled in your browser settings.');
-      setIsVerifyingLocation(false);
+      setIsVerifyingLocation(false); // Spinner off
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        console.log('Geolocation Success:', position.coords);
+        console.log('Geolocation Success (raw):', position);
         const { latitude, longitude } = position.coords;
 
         if (!functionsInstance) {
-            console.error("Firebase Functions not initialized");
+            console.error("Firebase Functions not initialized before calling verifyLocationFromCoords.");
             setError("Could not contact verification service. Please refresh and try again.");
-            setIsVerifyingLocation(false);
+            setIsVerifyingLocation(false); // Spinner off
             return;
         }
         
-        console.log(`Frontend check: latitude = ${latitude} (type: ${typeof latitude})`);
-        console.log(`Frontend check: longitude = ${longitude} (type: ${typeof longitude})`);
-
-        if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-            console.error("Frontend Error: Geolocation did not return valid coordinates.");
-            setError("Could not get valid coordinates from browser. Please check permissions or try again.");
-            setIsVerifyingLocation(false);
-            return; 
-        }
+        console.log(`Frontend: Coordinates to send: latitude = ${latitude}, longitude = ${longitude}`);
 
         const dataToSend = { latitude, longitude };
-        console.log("Frontend: Sending this object to Cloud Function:", dataToSend);
+        // console.log("Frontend: Sending this object to Cloud Function:", dataToSend); // Original log, kept for reference if needed, but the one above is more direct
 
         try {
-            const verifyLocation = httpsCallable(functionsInstance, 'verifyLocationFromCoords');
-            const result = await verifyLocation(dataToSend); 
+            const result = await verifyLocationFromCoordsCallable(dataToSend); 
             const data = result.data as { state: string }; 
 
             if (data && data.state) {
                 console.log("Cloud function returned state:", data.state);
-                handleStateVerification(data.state); // Removed 'auto' method
+                handleStateVerification(data.state);
             } else {
+                 console.error("Invalid response from verification service. Data:", data);
                  throw new Error("Invalid response from verification service.");
             }
         } catch (funcError: any) {
@@ -146,18 +145,17 @@ export default function LocationSetupPage() {
             if (funcError.code === 'not-found') {
                  errorMsg += "Could not determine state from coordinates. Please try again.";
             } else if (funcError.message) {
-                // Sanitize or shorten the error message if necessary
                 const displayMessage = funcError.message.length > 100 ? "An unexpected error occurred." : funcError.message;
                 errorMsg += displayMessage;
             } else {
                 errorMsg += "Please try again.";
             }
             setError(errorMsg);
-            setIsVerifyingLocation(false);
+            setIsVerifyingLocation(false); // Spinner off
         }
       },
       (geoError) => {
-        console.error('Geolocation Error:', geoError);
+        console.error('Geolocation Error (raw):', geoError);
         let errorMsg = 'Could not determine your location automatically.';
         switch (geoError.code) {
           case geoError.PERMISSION_DENIED:
@@ -174,9 +172,9 @@ export default function LocationSetupPage() {
             break;
         }
         setError(errorMsg);
-        setIsVerifyingLocation(false);
+        setIsVerifyingLocation(false); // Spinner off
       },
-      { timeout: 10000, enableHighAccuracy: true } // Added enableHighAccuracy
+      { timeout: 10000, enableHighAccuracy: true } 
     );
   }, [setIsVerifyingLocation, setError, handleStateVerification]);
 
@@ -184,21 +182,23 @@ export default function LocationSetupPage() {
   useEffect(() => {
     let timerId: NodeJS.Timeout | undefined = undefined; // For setTimeout
 
-    if (user && !isAuthLoading) {
-      console.log("Geolocation useEffect: Conditions met. Will attempt geolocation after 1s delay.");
-      // Removed checkStepAndGeolocate and direct step checking here
-      timerId = setTimeout(() => {
-        console.log("Geolocation useEffect: 1s delay complete. Calling attemptGeolocation.");
-        attemptGeolocation();
-      }, 1000); // 1-second delay
-    }
+    // --- REMOVING AUTOMATIC GEOLOCATION ATTEMPT ---
+    // if (user && !isAuthLoading) {
+    //   console.log("Geolocation useEffect: Conditions met. Will attempt geolocation after 1s delay.");
+    //   timerId = setTimeout(() => {
+    //     // trackEvent('geolocation_auto_attempt_started'); // COMMENTED OUT - Module not found
+    //     console.log("Geolocation useEffect: 1s delay complete. Calling attemptGeolocation.");
+    //     attemptGeolocation();
+    //   }, 1000); // 1-second delay
+    // }
+    // --- END OF REMOVAL ---
     return () => { // Cleanup
       if (timerId) {
         clearTimeout(timerId);
-        console.log("Geolocation useEffect: Cleared geolocation timer.");
+        // console.log("Geolocation useEffect: Cleared geolocation timer."); // No longer needed
       }
     };
-  }, [user, isAuthLoading, attemptGeolocation]); 
+  }, []); // Empty dependency array as it no longer depends on user/authLoading/attemptGeolocation for auto-trigger
 
   // Effect to automatically log out user after showing the ineligible dialog for 5 seconds
   useEffect(() => {
@@ -207,11 +207,14 @@ export default function LocationSetupPage() {
     // --- RE-ENABLING AUTOMATIC LOGOUT --- 
     if (showIneligibleDialog) {
       console.log("Ineligible dialog shown. Starting 5s logout timer.");
+      // trackEvent('ineligible_location_dialog_shown', { state: ineligibleStateDetected }); // COMMENTED OUT - Module not found
       logoutTimerId = setTimeout(() => {
         console.log("5s elapsed. Signing out and redirecting to login.");
         auth.signOut().then(() => {
+          // trackEvent('automatic_logout_success_ineligible'); // COMMENTED OUT - Module not found
           router.push('/');
-        }).catch((signOutError) => {
+        }).catch((signOutError: any) => { // TYPED signOutError
+          // trackEvent('automatic_logout_failed_ineligible', { error: signOutError.message }); // COMMENTED OUT - Module not found
           console.error("Error during automatic sign out:", signOutError);
           // Attempt to redirect even if sign out fails
           router.push('/');
@@ -249,6 +252,7 @@ export default function LocationSetupPage() {
     <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-background-primary to-background-secondary p-4 pt-10">
       <div className="w-full max-w-md mb-6">
           <p className="text-sm text-primary-blue text-center font-semibold">Step 1 of 2: Location</p>
+          <ProgressBar step={1} totalSteps={2} />
       </div>
 
       <div className="w-full max-w-md bg-gradient-to-b from-gray-800/30 to-gray-900/50 rounded-lg shadow-xl p-6 md:p-8 border border-gray-700">
@@ -265,6 +269,22 @@ export default function LocationSetupPage() {
           <li className="flex items-center justify-center"><svg className="w-4 h-4 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>Ensure legal compliance</li>
         </ul>
 
+        {/* ADDED "Verify My Location" Button */}
+        {!isVerifyingLocation && !determinedState && !error && (
+          <button
+            onClick={() => {
+              // trackEvent('verify_location_button_clicked'); // COMMENTED OUT - Module not found
+              attemptGeolocation();
+            }}
+            className="w-full mt-2 mb-6 bg-gradient-to-r from-[#5855e4] to-[#6a67e8] hover:from-[#6a67e8] hover:to-[#5855e4] active:scale-95 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-150 ease-in-out flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent-2/50 focus:ring-offset-2 focus:ring-offset-gray-800"
+            disabled={isAuthLoading} // Disable if auth is still loading
+            tabIndex={0}
+            aria-label="Verify My Location"
+          >
+            Verify My Location
+          </button>
+        )}
+
           <div className="mb-6 flex justify-center">
                <Image src="/images/us_outline.png" alt="US Map Outline" width={300} height={180} priority />
         </div>
@@ -273,7 +293,7 @@ export default function LocationSetupPage() {
           {isVerifyingLocation && !error && !determinedState && (
             <div className="flex flex-col items-center justify-center my-4">
               <Loader2 className="h-8 w-8 animate-spin text-primary-blue mb-2" />
-              <p className="text-gray-300">Verifying your location automatically...</p>
+              <p className="text-gray-300 text-center">Attempting to verify your location automatically.<br/>Please check for a browser permission prompt.</p>
             </div>
           )}
           

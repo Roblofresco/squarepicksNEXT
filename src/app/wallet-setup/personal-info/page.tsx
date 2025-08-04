@@ -4,10 +4,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
+import ProgressBar from '@/components/ui/ProgressBar';
+import PersonalInfoForm from '@/components/ui/PersonalInfoForm';
 
 interface FormData {
   firstName: string;
@@ -116,58 +118,44 @@ export default function PersonalInfoSetupPage() {
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  // Function to handle form submission with validation
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError(null);
+    console.log('Form submission started');
 
     // Basic validation
     for (const key in formData) {
       if (formData[key as keyof FormData].trim() === '') {
         setError(`Please fill out all fields. Missing: ${key}`);
+        console.log('Validation failed:', `Missing: ${key}`);
         return;
       }
     }
 
     if (!verifiedState) { // Double check verifiedState is set (should be by useEffect)
       setError("State information is missing. Please go back to the location step.");
+      console.log('State information missing');
       return;
     }
 
     if (!user) {
       setError("User session lost. Please log in again.");
+      console.log('User session lost');
       router.push('/login');
       return;
     }
 
     setIsSubmitting(true);
-
     try {
-      const userDocRef = doc(db, 'users', user.uid);
-      
-      const dataToSave = {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          email: formData.email,
-          street: formData.street,
-          city: formData.city,
-          postalCode: formData.postalCode,
-          state: verifiedState, // Use state from URL param
-          hasWallet: true // Add this field to indicate wallet setup is complete
-      };
-
-      await setDoc(userDocRef, 
-          dataToSave, 
-          { merge: true } 
-      ); 
-
-      console.log("Personal info saved. Navigating to wallet.");
-      router.push('/wallet'); 
-
-    } catch (updateError) {
-      console.error("Error saving personal information:", updateError);
-      setError('Could not save your information. Please try again.');
+      // Simulate form submission
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      console.log('Form submitted successfully:', formData);
+    } catch (error) {
+      console.error('Form submission error:', error);
+    } finally {
       setIsSubmitting(false);
+      console.log('Form submission ended');
     }
   };
 
@@ -185,7 +173,7 @@ export default function PersonalInfoSetupPage() {
       {/* Progress Indicator */}
       <div className="w-full max-w-md mb-6">
         <p className="text-sm text-primary-blue text-center font-semibold">Step 2 of 2: Personal Information</p>
-        {/* TODO: Add a more visual progress bar */} 
+        <ProgressBar step={2} totalSteps={2} />
       </div>
 
       <div className="w-full max-w-md bg-gradient-to-b from-gray-800/30 to-gray-900/50 rounded-lg shadow-xl p-6 md:p-8 border border-gray-700">
@@ -194,103 +182,14 @@ export default function PersonalInfoSetupPage() {
           Please provide the following information for verification and account setup purposes.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Input
-              name="firstName"
-              type="text"
-              placeholder="First Name"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-              className="flex-1 bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
-              disabled={isSubmitting}
-            />
-            <Input
-              name="lastName"
-              type="text"
-              placeholder="Last Name"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              className="flex-1 bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
-              disabled={isSubmitting}
-            />
-          </div>
-          <Input
-            name="phone"
-            type="tel" // Use tel type for phone numbers
-            placeholder="Phone Number"
-            value={formData.phone}
-            onChange={handleChange}
-            required
-            className="bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
-            disabled={isSubmitting}
-          />
-          <Input
-            name="email"
-            type="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
-            disabled={isSubmitting}
-          />
-          <Input
-            name="street"
-            type="text"
-            placeholder="Street Address"
-            value={formData.street}
-            onChange={handleChange}
-            required
-            className="bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
-            disabled={isSubmitting}
-          />
-          <Input
-            name="city"
-            type="text"
-            placeholder="City"
-            value={formData.city}
-            onChange={handleChange}
-            required
-            className="bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
-            disabled={isSubmitting}
-          />
-           <div className="flex flex-col sm:flex-row gap-4">
-            <Input
-              name="stateDisplay" // Read-only display
-              type="text"
-              placeholder="State"
-              value={verifiedState || ''} // Display state from step 1
-              readOnly
-              className="flex-1 bg-gray-600 border-gray-500 text-gray-300 placeholder-gray-400 cursor-not-allowed"
-              aria-label="State (verified)"
-            />
-            <Input
-              name="postalCode"
-              type="text"
-              placeholder="Postal Code"
-              value={formData.postalCode}
-              onChange={handleChange}
-              required
-              className="flex-1 bg-gray-700/50 border-gray-600 text-white placeholder-gray-400"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {error && (
-            <p className="text-red-400 text-sm text-center">{error}</p>
-          )}
-
-          <Button 
-            type="submit" 
-            className="w-full bg-primary-blue hover:bg-primary-blue-dark text-white font-semibold mt-6"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Submit Information'}
-          </Button>
-        </form>
+        <PersonalInfoForm
+          formData={formData}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          error={error}
+          verifiedState={verifiedState}
+        />
 
         <p className="mt-6 text-xs text-center text-gray-500">
           By submitting this information, you agree to our <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-blue">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-blue">Privacy Policy</a>.

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Ticket, DollarSign, ArrowRight } from 'lucide-react';
 import { Progress } from '@/components/ui/progress'; // Using shadcn Progress
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 // Define the structure of board data (adjust as needed)
 interface Board {
@@ -22,6 +23,7 @@ interface BoardCardExpandedProps {
 
 // Rename component
 const BoardCardExpanded: React.FC<BoardCardExpandedProps> = ({ board }) => {
+  const router = useRouter();
   const {
     id,
     entryFee,
@@ -77,7 +79,7 @@ const BoardCardExpanded: React.FC<BoardCardExpandedProps> = ({ board }) => {
         <Button
           variant={isPremium ? "default" : "outline"}
           className="w-full group"
-          // TODO: Add Link or onClick to navigate to /board/[id]
+          onClick={() => router.push(`/game/${id}`)}
         >
           {isFreeEntryAvailable && isPremium ? 'Claim Free Square' : 'View Board'}
           <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />

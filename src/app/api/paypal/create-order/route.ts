@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createPayPalOrderAPI } from '@/lib/paypal-api'; // Import the actual API helper
 
-// TODO: Import necessary PayPal SDK or configure fetch for REST API calls
 // import paypal from '@paypal/checkout-server-sdk'; // Example if using the older server SDK
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;

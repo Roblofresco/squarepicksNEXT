@@ -2,7 +2,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-// TODO: Add other Firebase services imports as needed (e.g., getAnalytics)
+import { getAnalytics } from "firebase/analytics"; // Optional: Analytics
 
 // Your web app's Firebase configuration using environment variables
 const firebaseConfig = {
@@ -25,4 +25,4 @@ const auth = getAuth(app);
 // const analytics = getAnalytics(app); // Optional
 
 // Export the initialized services
-export { app, db, auth }; // Add other services like 'analytics' if needed
+export { app, db, auth /*, analytics */ }; // Add other services like 'analytics' if needed

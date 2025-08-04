@@ -24,6 +24,9 @@ interface BoardsListProps {
   entryInteraction: EntryInteractionState;
   handleBoardAction: (action: string, boardId: string, value?: any) => void;
   openWalletDialog: (type: 'setup' | 'deposit', reqAmount?: number, boardIdToEnter?: string | null) => void;
+  walletHasWallet: boolean | null;
+  walletBalance: number;
+  walletIsLoading: boolean;
 }
 
 const BoardsList = memo((props: BoardsListProps) => {
@@ -38,18 +41,18 @@ const BoardsList = memo((props: BoardsListProps) => {
     openWalletDialog
   } = props;
 
-  const { 
-      balance: walletBalance = 0, 
-      hasWallet: walletHasWallet = null, 
-      isLoading: walletIsLoading = true, 
-      error: walletError 
-  } = useWallet();
+  // const { 
+  //     balance: walletBalance = 0, 
+  //     hasWallet: walletHasWallet = null, 
+  //     isLoading: walletIsLoading = true, 
+  //     error: walletError 
+  // } = useWallet();
 
-  useEffect(() => {
-    if(walletError) {
-        console.error("Wallet Hook Error in BoardsList:", walletError);
-    }
-  }, [walletError]);
+  // useEffect(() => {
+  //   if(walletError) {
+  //       console.error("Wallet Hook Error in BoardsList:", walletError);
+  //   }
+  // }, [walletError]);
 
   if (games.length === 0) {
     return <p className="text-gray-400 text-center py-4">No relevant games found to display boards.</p>;
@@ -70,17 +73,15 @@ const BoardsList = memo((props: BoardsListProps) => {
         <BoardCard
             key={game.id}
             game={game}
-            teamA={teamA}
-            teamB={teamB}
-          user={user}
+            user={user}
             currentUserId={currentUserId}
-          onProtectedAction={onProtectedAction}
-          entryInteraction={entryInteraction}
-          handleBoardAction={handleBoardAction}
-          walletHasWallet={walletHasWallet}
-          walletBalance={walletBalance}
-          walletIsLoading={walletIsLoading}
-          openWalletDialog={openWalletDialog}
+            onProtectedAction={onProtectedAction}
+            entryInteraction={entryInteraction}
+            handleBoardAction={handleBoardAction}
+            walletHasWallet={props.walletHasWallet}
+            walletBalance={props.walletBalance}
+            walletIsLoading={props.walletIsLoading}
+            openWalletDialog={openWalletDialog}
         />
         );
       })}

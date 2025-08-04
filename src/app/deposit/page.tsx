@@ -14,6 +14,8 @@ import { getFunctions, httpsCallable } from 'firebase/functions'; // Added for h
 import { getApp } from 'firebase/app'; // Import getApp
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+const MIN_DEPOSIT = 5;
+const MAX_DEPOSIT = 1000;
 
 export default function DepositPage() {
   const router = useRouter();
@@ -21,6 +23,7 @@ export default function DepositPage() {
   const [amount, setAmount] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (!walletLoading) {
@@ -44,13 +47,7 @@ export default function DepositPage() {
       value = `${decimalParts[0]}.${decimalParts[1].slice(0, 2)}`;
     }
     setAmount(value);
-
-    const numericValue = parseFloat(value);
-    if (value && numericValue < 5) {
-      setError("Minimum deposit amount is $5.00");
-    } else {
-      setError(null);
-    }
+    setError(null);
   };
 
   const createPayPalOrder = async (data: any, actions: any): Promise<string> => {
@@ -62,11 +59,15 @@ export default function DepositPage() {
         setError("Invalid deposit amount for PayPal.");
         throw new Error("Invalid amount");
     }
-    if (depositAmount < 5) {
-        setError("Minimum deposit amount is $5.00.");
-        throw new Error("Amount below minimum");
+    if (depositAmount < MIN_DEPOSIT) {
+      setError(`Minimum deposit is $${MIN_DEPOSIT}.`);
+      throw new Error(`Minimum deposit is $${MIN_DEPOSIT}.`);
     }
-    // TODO: Add min/max checks 
+    if (depositAmount > MAX_DEPOSIT) {
+      setError(`Maximum deposit is $${MAX_DEPOSIT}.`);
+      throw new Error(`Maximum deposit is $${MAX_DEPOSIT}.`);
+    }
+    
 
     setIsSubmitting(true);
     
@@ -123,9 +124,9 @@ export default function DepositPage() {
 
       console.log("Capture successful:", captureResult);
       console.log("Deposit via PayPal successful. User profile updated by backend.");
-      // Optionally trigger a refresh of wallet balance in context/hook
-      // TODO: Maybe show a success message before redirecting?
-      router.push('/wallet');
+      setSuccess(true);
+      setTimeout(() => router.push('/wallet'), 2000);
+      return;
     } catch (err: any) {
         console.error("Error capturing PayPal order:", err);
         // Display the specific error message if available
@@ -177,6 +178,17 @@ export default function DepositPage() {
      )
   }
 
+  if (success) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background-primary text-white p-4">
+        <div className="bg-green-600 text-white rounded-lg px-6 py-4 shadow-lg text-center">
+          <h2 className="text-2xl font-bold mb-2">Deposit Successful!</h2>
+          <p>Your funds have been added. Redirecting to your wallet...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}> 
       <div className="min-h-screen bg-background-primary text-white flex flex-col items-center p-4 pt-10">
@@ -202,7 +214,9 @@ export default function DepositPage() {
               {/* Amount Input */}
               <div className="mb-6">
                  {/* Label with Dark Text */}
-                 <Label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">Amount (USD)</Label>
+                 <Label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+                   Amount (USD) <span className="text-xs text-gray-500">(Min ${MIN_DEPOSIT}, Max ${MAX_DEPOSIT})</span>
+                 </Label>
                  <div className="relative mt-1 rounded-md shadow-sm">
                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                      {/* Darker $ Sign */}
@@ -237,10 +251,10 @@ export default function DepositPage() {
                      createOrder={createPayPalOrder} 
                      onApprove={onPayPalApprove}
                      onError={onPayPalError}
-                     disabled={isSubmitting || !amount || parseFloat(amount) < 5} 
+                     disabled={isSubmitting || !amount || parseFloat(amount) <= 0} 
                      onInit={(data, actions) => {
                          console.log("PayPal Buttons Initialized. Disabled state:", 
-                           isSubmitting || !amount || parseFloat(amount) < 5, 
+                           isSubmitting || !amount || parseFloat(amount) <= 0, 
                            { isSubmitting, amount: amount, parsedAmount: parseFloat(amount) }
                          );
                      }}

@@ -70,35 +70,38 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
       case 'FRIEND_REQUEST':
         return <Users {...iconProps} />;
       case 'ERROR':
-        return <AlertCircle {...iconProps} className="h-4 w-4 text-destructive" />;
+        return <AlertCircle {...iconProps} className={`${iconProps.className} text-red-500`} />;
       case 'INFO':
-      default:
         return <Info {...iconProps} />;
+      default:
+        return <CircleDot {...iconProps} />;
     }
   };
 
   return (
     <div
       onClick={handleClick}
-      className={`flex items-start gap-3 p-3 border-b border-border last:border-b-0 hover:bg-muted/50 cursor-pointer ${notification.isRead ? 'opacity-70' : 'font-medium'}`}
+      className={`flex items-start gap-3 p-3 border-b border-slate-700/50 last:border-b-0 
+                  hover:bg-slate-700/60 transition-colors duration-150 cursor-pointer 
+                  ${notification.isRead ? 'opacity-60 hover:opacity-80' : 'opacity-95 hover:opacity-100 font-medium'}`}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleClick()}
     >
-      <div className={`mt-0.5 flex-shrink-0 ${notification.isRead ? 'text-muted-foreground' : 'text-primary'}`}>
+      <div className={`mt-0.5 flex-shrink-0 ${notification.isRead ? 'text-slate-500' : 'text-accent-1'}`}>
         {getIcon()}
       </div>
       <div className="flex-grow min-w-0">
-        <p className={`text-sm leading-snug ${notification.isRead ? 'text-muted-foreground' : 'text-foreground'}`}>
+        <p className={`text-sm leading-snug ${notification.isRead ? 'text-slate-400' : 'text-slate-100'}`}>
           {notification.message}
         </p>
-        <p className={`text-xs mt-0.5 ${notification.isRead ? 'text-muted-foreground/80' : 'text-muted-foreground'}`}>
+        <p className={`text-xs mt-0.5 ${notification.isRead ? 'text-slate-500' : 'text-slate-400'}`}>
           {formatRelativeTime(notification.timestamp)}
         </p>
       </div>
       {!notification.isRead && (
         <div className="ml-auto flex-shrink-0 self-center pl-2">
-          <span className="w-2 h-2 bg-primary rounded-full inline-block" title="Unread"></span>
+          <span className="w-2 h-2 bg-accent-1 rounded-full inline-block shadow-[0_0_6px_1px_#1bb0f2b3]" title="Unread"></span>
         </div>
       )}
     </div>

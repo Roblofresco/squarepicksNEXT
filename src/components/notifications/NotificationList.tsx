@@ -36,21 +36,24 @@ export const NotificationList = ({ onClose }: NotificationListProps) => {
   }
 
   return (
-    <div className="notification-list-container max-h-[70vh] flex flex-col"> {/* Ensure this class is on the outermost div for click outside to work */}
-      <div className="p-3 border-b border-border flex justify-between items-center">
-        <h3 className="font-semibold text-lg text-popover-foreground">Notifications</h3>
-        <div className="flex items-center gap-2">
+    <div className="notification-list-container max-h-[70vh] flex flex-col 
+                    bg-slate-800/70 backdrop-blur-md 
+                    border border-accent-1/50 rounded-lg 
+                    shadow-2xl shadow-accent-1/30">
+      <div className="p-3 border-b border-slate-700 flex justify-between items-center">
+        <h3 className="font-semibold text-lg text-slate-100">Notifications</h3>
+        <div className="flex items-center gap-3">
           {unreadCount > 0 && (
             <button 
               onClick={handleMarkAllAsRead} 
-              className="text-xs text-primary hover:text-primary/80 focus:outline-none"
+              className="text-xs text-accent-1 hover:text-accent-1/80 focus:outline-none focus:ring-1 focus:ring-accent-1 rounded"
               aria-label="Mark all notifications as read"
             >
               Mark all as read
             </button>
           )}
-          <button onClick={onClose} className="p-1 rounded-md hover:bg-accent" aria-label="Close notifications">
-            <X className="h-4 w-4 text-muted-foreground" />
+          <button onClick={onClose} className="p-1 rounded-md hover:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-500" aria-label="Close notifications">
+            <X className="h-4 w-4 text-slate-400 hover:text-slate-200" />
           </button>
         </div>
       </div>
@@ -70,15 +73,15 @@ export const NotificationList = ({ onClose }: NotificationListProps) => {
       )}
 
       {!isLoading && notifications.length === 0 && (
-        <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
-          <Inbox className="h-12 w-12 mb-4 opacity-50" />
-          <h4 className="font-semibold text-lg mb-1">No new notifications</h4>
+        <div className="flex flex-col items-center justify-center p-8 text-slate-400">
+          <Inbox className="h-12 w-12 mb-4 opacity-40" />
+          <h4 className="font-semibold text-lg text-slate-300 mb-1">No new notifications</h4>
           <p className="text-sm">You're all caught up!</p>
         </div>
       )}
 
       {!isLoading && notifications.length > 0 && (
-        <div className="overflow-y-auto flex-grow py-1">
+        <div className="overflow-y-auto flex-grow py-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800/50">
           {notifications.map((notification) => (
             <NotificationItem key={notification.id} notification={notification} />
           ))}

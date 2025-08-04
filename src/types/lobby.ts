@@ -112,7 +112,7 @@ export interface Board {
 export interface SquareEntry {
   id: string;                 // Firestore document ID of this specific square entry
   userID: DocumentReference;  // Firestore 'userID' reference to a user document
-  squareIndex: number;        // The square number selected (0-99) - maps to 'index' in Firestore schema
+  index: number;              // The square number selected (0-99) - matches 'index' in Firestore schema
   selected_time: Timestamp;   // From 'selected_time' field in Firestore
 }
 

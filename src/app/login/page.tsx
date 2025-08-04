@@ -10,7 +10,7 @@ import { FiUser, FiLock, FiArrowLeft, FiEye, FiEyeOff } from 'react-icons/fi'
 import { useRouter } from 'next/navigation'
 // Firebase Imports
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
 // Import the correct LogoCube component dynamically
 const LogoCube = dynamic(() => import('@/components/LogoCube'), { ssr: false })
@@ -132,19 +132,68 @@ export default function LoginPage() {
     }
 
     try {
-        console.log('Attempting Firebase login...');
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log("Login successful:", userCredential.user.uid);
-        // Login successful, redirect to loading page
-        router.push('/loading'); // Changed from '/lobby'
+        console.log('[LoginPage] Attempting Firebase login...');
+        await signInWithEmailAndPassword(auth, email, password);
+        // After signInWithEmailAndPassword, auth.currentUser should be set.
+
+        const checkVerificationAndRedirect = async (attempt: number): Promise<boolean> => {
+            console.log(`[LoginPage] Attempt ${attempt}: Reloading user for email verification check.`);
+            
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                console.error(`[LoginPage] Attempt ${attempt}: No current user found before reload. This should not happen after successful signIn.`);
+                // This scenario implies something went very wrong, or the user was signed out immediately.
+                setError("Authentication error. Please try again.");
+                setIsLoading(false); 
+                return false; // Cannot proceed without a user
+            }
+            await currentUser.reload();
+            const freshUser = auth.currentUser; // Re-fetch after reload to be certain
+
+            if (freshUser && freshUser.emailVerified) {
+                console.log(`[LoginPage] Attempt ${attempt}: Email verified for UID: ${freshUser.uid}. Preparing to redirect.`);
+                // Add a small delay here to allow useWallet's onAuthStateChanged to process
+                await new Promise(resolve => setTimeout(resolve, 500)); // 0.5 second delay
+                console.log("[LoginPage] Redirecting to /loading");
+                router.push('/loading');
+                // No need to setIsLoading(false) here because of the redirect
+                return true; // Verified and redirected
+            }
+            console.log(`[LoginPage] Attempt ${attempt}: Email still not showing as verified. UID: ${freshUser?.uid}, Status: ${freshUser?.emailVerified}`);
+            return false; // Not verified yet
+        };
+
+        // Attempt 1: Immediately after login and first reload
+        if (await checkVerificationAndRedirect(1)) return;
+
+        // Attempt 2: After a short delay
+        console.log("[LoginPage] Email not verified on first check. Waiting for a moment...");
+        setError("Verifying email status, please wait..."); 
+        // isLoading is already true
+        await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay
+        if (await checkVerificationAndRedirect(2)) return;
+        
+        // Attempt 3: After a longer delay (an additional 3 seconds)
+        console.log("[LoginPage] Email not verified on second check. Waiting a bit longer...");
+        // Error message is already "Verifying email status..."
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Additional 3-second delay
+        if (await checkVerificationAndRedirect(3)) return;
+
+        // If still not verified after all attempts
+        console.log("[LoginPage] Email STILL NOT verified after all attempts.");
+        setError("Email not verified. Please check your inbox or resend the verification email from the banner. If you recently verified, please wait a few moments and try logging in again.");
+        setIsLoading(false);
+        // Optional: Sign out the user if email verification is mandatory to proceed.
+        // await signOut(auth);
+        // console.log("[LoginPage] User signed out as email is not verified.");
+
     } catch (firebaseError: any) {
         console.error("Login Error:", firebaseError);
         let errorMessage = "Login failed. Please check your credentials.";
-        // More specific error messages based on Firebase error codes
         switch (firebaseError.code) {
             case 'auth/user-not-found':
             case 'auth/wrong-password':
-            case 'auth/invalid-credential': // Catches both user-not-found and wrong-password in newer SDK versions
+            case 'auth/invalid-credential':
                 errorMessage = "Invalid email or password.";
                 break;
             case 'auth/invalid-email':
@@ -153,17 +202,21 @@ export default function LoginPage() {
             case 'auth/too-many-requests':
                  errorMessage = "Access temporarily disabled due to too many failed login attempts. Please reset your password or try again later.";
                  break;
-            // Add other specific error codes if needed
+            // It's good to handle 'auth/network-request-failed' specifically if it becomes common
+            case 'auth/network-request-failed':
+                errorMessage = "Network error during login. Please check your connection and try again.";
+                break;
             default:
-                // Use a generic message for other errors
-                errorMessage = "An unexpected error occurred. Please try again.";
+                errorMessage = "An unexpected error occurred during login. Please try again.";
         }
         setError(errorMessage);
         setIsLoading(false);
     }
-     // Do not set isLoading to false here if redirecting on success,
-     // as the component might unmount before the state update completes.
-     // It's already set to false within the catch block.
+    // If the function reaches here, it means no redirect happened and errors were handled, 
+    // or a final state was set (e.g. email not verified).
+    // Ensure isLoading is false if not already set by an error path.
+    // However, if it's still loading because of the setError("Verifying email status...") path without redirect, 
+    // this might be premature. The existing logic to set isLoading(false) in the final error path for verification is better.
   };
   
   // Simple inline SVG Spinner component (copied from page.tsx)
@@ -234,14 +287,12 @@ export default function LoginPage() {
           {/* Content block: Relative position, z-10 to sit above background, transparent bg */}
           <div className="relative z-10 w-full p-8 flex flex-col items-center gap-6">
             {/* Cube */}
-            <div className="mb-0">
-              <LogoCube
-              rotationX={rotation.x}
-              rotationY={rotation.y}
-            />
-          </div>
-
-            <h1 className="text-2xl font-semibold text-white">Log In</h1>
+            <div className="flex flex-col items-center gap-4">
+              <div className="cubeRoot" style={{ height: '3rem', width: '3rem', '--cube-size': '3rem' } as React.CSSProperties}>
+                <LogoCube rotationX={rotation.x} rotationY={rotation.y} />
+              </div>
+              <h1 className="text-2xl font-semibold text-white">Log In</h1>
+            </div>
 
             {/* Form */}
             <form id="login-form" className="w-full flex flex-col gap-5" onSubmit={handleLogin}>

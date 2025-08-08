@@ -20,4 +20,5 @@ Centralized operational layer for product docs, knowledge, commands, and stories
 - Execute using `commands/execute-tasks.md`
 - Use Context7 before changing deps (`commands/context7.md`)
 - Use shadcn/ui MCP for UI work (`commands/shadcn-ui.md`)
-- Use BMAD for process/architecture (`commands/bmad-method.md`) 
+- Use BMAD for process/architecture (`commands/bmad-method.md`)
+- Use awesome-claude-code for Claude Code workflows (`commands/awesome-claude-code.md`) 

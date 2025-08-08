@@ -81,3 +81,4 @@ This document outlines the development roadmap for SquarePicks. This version has
   - `[x]` As a developer, there are no duplicate knowledge files for the same page/component.
   - `[ ]` As a developer, CI fails if a PR adds a page/component without a corresponding knowledge doc.
   - `[ ]` As a developer, CI warns if `knowledge/INDEX.md` or `AllComponentsIndex.md` are not updated when related files change. 
+  - `[ ]` As a maintainer, PR template enforces BMAD and awesome-claude-code usage with links in PRs. 

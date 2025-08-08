@@ -1,0 +1,8 @@
+# CODEOWNERS
+
+# Protect Agent OS structure and docs
+/Agent OS/* @robeo
+/Agent OS/product/* @robeo
+/Agent OS/knowledge/* @robeo
+/Agent OS/commands/* @robeo
+/Agent OS/stories/* @robeo 

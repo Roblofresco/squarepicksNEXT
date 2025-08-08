@@ -7,6 +7,7 @@ Centralized operational layer for product docs, knowledge, commands, and stories
 - `knowledge/`: Pages and components knowledge base
 - `commands/`: Operational runbooks (rules + procedures)
 - `stories/`: Executable stories for sprints
+- `agents/`: Role definitions (Docs, UI, Integration, CI)
 
 ## Conventions
 - Knowledge pages must list: Overview, Responsibilities, Core Components Used, Data Dependencies, Where Used (for components)

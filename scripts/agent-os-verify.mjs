@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { readdirSync, statSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
+import process from 'node:process';
 
 function fail(msg) {
   console.error(`[AgentOS] FAIL: ${msg}`);
@@ -74,5 +75,25 @@ try {
 } catch (e) {
   console.warn(`[AgentOS] WARN: Skipped coverage heuristic: ${e.message}`);
 }
+
+async function checkPrBody() {
+  try {
+    const eventName = process.env.GITHUB_EVENT_NAME || '';
+    if (eventName !== 'pull_request') return; // only PRs
+    const token = process.env.GITHUB_TOKEN;
+    if (!token) return;
+    const eventPath = process.env.GITHUB_EVENT_PATH;
+    if (!eventPath) return;
+    const evt = JSON.parse(await (await import('node:fs/promises')).readFile(eventPath, 'utf8'));
+    const body = evt.pull_request?.body || '';
+    const hasBMAD = /bmad/i.test(body);
+    const hasAwesome = /awesome-claude-code/i.test(body);
+    if (!hasBMAD || !hasAwesome) fail('PR body must include BMAD and awesome-claude-code references/links.'); else ok('PR body includes BMAD + awesome references');
+  } catch (e) {
+    console.warn(`[AgentOS] WARN: PR body check skipped: ${e.message}`);
+  }
+}
+
+await checkPrBody();
 
 process.exit(process.exitCode || 0); 

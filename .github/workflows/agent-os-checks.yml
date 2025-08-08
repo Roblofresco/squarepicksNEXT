@@ -16,4 +16,6 @@ jobs:
         with:
           node-version: 20
       - name: Run Agent OS verification
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/agent-os-verify.mjs 

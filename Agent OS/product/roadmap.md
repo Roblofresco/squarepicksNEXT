@@ -70,15 +70,9 @@ This document outlines the development roadmap for SquarePicks. This version has
 ## Epic 6: Technical Debt & Refactoring
 
 -   **User Stories:**
-    -   `[ ]` As a developer, I want to refactor the informational pages to use a shared layout component for the background effects, removing significant code duplication. *(Note: Identified in knowledge base creation).* 
+    -   `[x]` As a developer, I want to refactor the informational pages to use a shared layout component for the background effects, removing significant code duplication. *(Done via `src/components/info/InfoPageShell.tsx` and applied to terms, privacy, FAQ, how-to-play, contact-support, account-guide, responsible-gaming-policy).* 
 
 ## Epic 7: Knowledge Base & Documentation Enforcement
 
 - **User Stories:**
-  - `[x]` As a developer, I can find a centralized index of all knowledge docs (`knowledge/INDEX.md`).
-  - `[x]` As a developer, I can view an index of all components (`components/AllComponentsIndex.md`).
-  - `[x]` As a developer, I can read READMEs explaining structure for `product`, `knowledge`, `commands`, and `stories`.
-  - `[x]` As a developer, there are no duplicate knowledge files for the same page/component.
-  - `[ ]` As a developer, CI fails if a PR adds a page/component without a corresponding knowledge doc.
-  - `[ ]` As a developer, CI warns if `knowledge/INDEX.md` or `AllComponentsIndex.md` are not updated when related files change. 
-  - `[ ]` As a maintainer, PR template enforces BMAD and awesome-claude-code usage with links in PRs. 
+  - `[x]`

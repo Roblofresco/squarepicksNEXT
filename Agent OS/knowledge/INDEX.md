@@ -1,0 +1,33 @@
+# Knowledge Index
+
+## Pages
+- [welcome.md](./pages/welcome.md)
+- [loading.md](./pages/loading.md)
+- [lobby-page.md](./pages/lobby-page.md)
+- [game-page.md](./pages/game-page.md)
+- [my-boards-page.md](./pages/my-boards-page.md)
+- [signup-flow.md](./pages/signup-flow.md)
+- [login-verification-flow.md](./pages/login-verification-flow.md)
+- [profile-flow.md](./pages/profile-flow.md)
+- [account-settings.md](./pages/account-settings.md)
+- [wallet-setup-flow.md](./pages/wallet-setup-flow.md)
+- [wallet-flow.md](./pages/wallet-flow.md)
+- [informational-pages.md](./pages/informational-pages.md)
+
+## Components & Hooks
+- [AllComponentsIndex.md](./components/AllComponentsIndex.md)
+- [InAppHeader.md](./components/InAppHeader.md)
+- [BottomNav.md](./components/BottomNav.md)
+- [BoardsList.md](./components/BoardsList.md)
+- [BoardCard.md](./components/BoardCard.md)
+- [BoardMiniGrid.md](./components/BoardMiniGrid.md)
+- [QuickEntrySelector.md](./components/QuickEntrySelector.md)
+- [SweepstakesBoardCard.md](./components/SweepstakesBoardCard.md)
+- [SweepstakesScoreboard.md](./components/SweepstakesScoreboard.md)
+- [SquareCard.md](./components/SquareCard.md)
+- [LogoCube.md](./components/LogoCube.md)
+- [StarfieldBackground.md](./components/StarfieldBackground.md)
+- [EmailVerificationBanner.md](./components/EmailVerificationBanner.md)
+- [PersonalInfoForm.md](./components/PersonalInfoForm.md)
+- [SignupProgressDots.md](./components/SignupProgressDots.md)
+- [useWallet.md](./components/useWallet.md) 

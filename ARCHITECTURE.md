@@ -79,4 +79,30 @@
 
 ---
 
-**Contact:** For questions about the architecture, contact [Name/Role, e.g., Lead Developer, CTO]. 
+**Contact:** For questions about the architecture, contact [Name/Role, e.g., Lead Developer, CTO].
+
+---
+
+## 7. BMAD Method Integration
+
+- Agentic framework: BMAD core (agents, templates, tasks, checklists, data)
+- Planning workflow: Brief → PRD → Architecture → PO validation → Sharded epics/stories
+- Core Dev Cycle: SM drafts next story → Dev implements → QA optional review → Done
+- Technical Preferences: Centralize stack choices and constraints in a single doc for agents
+
+Artifacts to align:
+- Agents/Teams: document expected roles and responsibilities
+- Templates/Tasks: capture repeatable flows (create-doc, review-story, shard-doc)
+- Checklists: PO, Architect, QA validation
+
+## 8. UI Architecture Guidelines (shadcn/ui)
+
+- Use `src/components/ui` shadcn components for forms, dialogs, buttons, inputs, labels, selects, tabs, table
+- Prefer blocks where available; map screens to components before coding
+- Accessibility: ensure label/aria, focus visible, keyboard navigation
+- Styling: Tailwind tokens; avoid ad-hoc inline styles for reusable UI
+
+Pending refactor targets:
+- `src/app/login/page.tsx`: replace native inputs/buttons with shadcn `Input`, `Label`, `Button`
+- `src/app/signup/*/page.tsx`: same for email/password/identity/username steps
+- `src/app/profile/page.tsx`: already using shadcn `Dialog`, `Button`; review other elements for consistency 

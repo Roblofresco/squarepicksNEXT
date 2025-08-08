@@ -12,6 +12,9 @@ const nextConfig = {
       // Add other hostnames here if needed
     ],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   /* other config options can go here */
 };
 

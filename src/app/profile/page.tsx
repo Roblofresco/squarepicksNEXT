@@ -200,9 +200,9 @@ const ProfilePage = () => {
         {error && !profileLoading ? (
           <div className="bg-destructive/10 text-destructive rounded-lg p-4 my-6 text-center">
             <p>{error}</p>
-            <button onClick={() => router.push('/')} className="mt-2 px-4 py-2 bg-accent-1 text-white rounded hover:bg-accent-1/90">
+            <Button onClick={() => router.push('/')} className="mt-2 bg-accent-1 hover:bg-accent-1/90 text-white">
               Go to Homepage
-            </button>
+            </Button>
           </div>
         ) : userProfile ? (
           <>
@@ -287,13 +287,14 @@ const ProfilePage = () => {
                         <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
                       </Link>
                     ))}
-                     <button
+                     <Button
                        onClick={handleLogout}
-                       className="w-full p-4 flex items-center hover:bg-red-900/20 text-red-500 hover:text-red-400 focus:text-red-400 active:scale-95 transition-all duration-150 rounded-none outline-none group"
+                       variant="destructive"
+                       className="w-full p-4 flex items-center justify-start bg-red-600 hover:bg-red-700 text-white rounded-none"
                      >
-                       <LogOut className="mr-4 w-5 h-5 group-hover:text-red-400 group-focus:text-red-400 transition-colors duration-150" />
+                       <LogOut className="mr-4 w-5 h-5" />
                        <span>Logout</span>
-                     </button>
+                     </Button>
                 </div>
             </div>
 
@@ -332,10 +333,8 @@ const ProfilePage = () => {
       </div>
       <div className="h-16" />
       <BottomNav 
-        onWalletClick={handleProtectedAction} 
-        onLobbyClick={() => router.push('/lobby')}
-        onProfileClick={() => router.push('/profile')} 
-        currentUser={auth.currentUser}
+        onProtectedAction={handleProtectedAction} 
+        user={auth.currentUser}
       />
       <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
          <DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] to-[#5855e4] to-15% border-accent-1/50 text-white py-8">

@@ -12,6 +12,8 @@ import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from '
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { MailCheck, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export default function UsernamePage() {
   const router = useRouter();
@@ -170,7 +172,7 @@ export default function UsernamePage() {
              {/* Input field */}
             <div className="relative">
               <label htmlFor="username" className="sr-only">Username</label>
-              <input
+              <Input
                 id="username"
                 type="text"
                 value={username}
@@ -227,7 +229,7 @@ export default function UsernamePage() {
         <div>
           <SignupProgressDots currentStep={currentStep} totalSteps={totalSteps} />
         </div>
-        <button
+        <Button
             type="submit" 
             form="username-form" 
             disabled={isLoading}
@@ -235,7 +237,7 @@ export default function UsernamePage() {
             style={{ backgroundColor: isLoading ? '#cccccc' : '#1bb0f2', color: isLoading ? '#666666' : '#202020' }}
         >
             {isLoading ? 'Completing Signup...' : 'Complete Signup'} {isLoading && <FiCheck className="animate-pulse"/>}
-        </button>
+        </Button>
         <div className="text-center mt-4">
           <Link href="/signup/identity" className="text-sm text-gray-400 hover:text-white hover:underline">Back</Link>
         </div>

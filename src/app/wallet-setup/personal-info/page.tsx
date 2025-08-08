@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -23,6 +23,14 @@ interface FormData {
 }
 
 export default function PersonalInfoSetupPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary-blue" /></div>}>
+      <PersonalInfoContent />
+    </Suspense>
+  );
+}
+
+function PersonalInfoContent() {
   const router = useRouter();
   const searchParams = useSearchParams(); // Hook to get URL search params
   const [user, setUser] = useState<User | null>(null);
@@ -33,7 +41,7 @@ export default function PersonalInfoSetupPage() {
     firstName: '',
     lastName: '',
     phone: '',
-    email: '',
+    email: '', // May pre-fill from auth user
     street: '',
     city: '',
     postalCode: '',

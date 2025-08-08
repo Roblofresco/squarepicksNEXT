@@ -11,6 +11,9 @@ import { useRouter } from 'next/navigation'
 // Firebase Imports
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { LoginForm } from "@/components/auth/LoginForm"
 
 // Import the correct LogoCube component dynamically
 const LogoCube = dynamic(() => import('@/components/LogoCube'), { ssr: false })
@@ -236,17 +239,19 @@ export default function LoginPage() {
         className="fixed inset-0 -z-1 pointer-events-none"
         id="login-constellation-canvas" // Unique ID if needed
       />
-      <div
-        className="pointer-events-none fixed inset-0 z-0 transition duration-300"
-        style={{
-          background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
-        }}
-      />
+      {isMounted && (
+        <div
+          className="pointer-events-none fixed inset-0 z-0 transition duration-300"
+          style={{
+            background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
+          }}
+        />
+      )}
       {/* Header container - Adjust padding slightly */}
       <div className="w-full px-6 pt-6 z-10 flex items-center justify-between">
           {/* Add onClick, disabled, and conditional classes */}
-          <Link href="/" passHref onClick={() => handleNavClick('/')} legacyBehavior>
             <button 
+              onClick={() => handleNavClick('/')}
               // Apply motion if needed, or just basic button
               className={`flex items-center px-4 py-1.5 rounded-md transition duration-300 text-sm 
                 ${navigatingTo === '/'
@@ -258,14 +263,9 @@ export default function LoginPage() {
               <FiArrowLeft className="mr-1.5" size={16} />
               Back
             </button>
-          </Link>
           {/* Add onClick, disabled, and conditional classes */}
-          <Link
-            href="/lobby"
-            passHref
-            onClick={() => handleNavClick('/lobby')}
-            legacyBehavior>
              <button
+               onClick={() => handleNavClick('/lobby')}
                className={`px-4 py-1.5 rounded-md transition duration-300 text-sm 
                 ${navigatingTo === '/lobby'
                   ? 'bg-accent-1 text-background-primary animate-pulse cursor-not-allowed' // Loading state
@@ -275,7 +275,6 @@ export default function LoginPage() {
              >
               View Lobby (Guest)
             </button>
-          </Link>
       </div>
       {/* Main content wrapper - Centered */}
       <div className="relative flex-grow flex flex-col items-center justify-center p-5">
@@ -295,61 +294,19 @@ export default function LoginPage() {
             </div>
 
             {/* Form */}
-            <form id="login-form" className="w-full flex flex-col gap-5" onSubmit={handleLogin}>
-              {/* Email Input - Added value and onChange */}
-            <div className="relative w-full">
-              <label htmlFor="email" className="sr-only">Email or Username</label>
-                <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none z-10" size={20} />
-              <input 
-                id="email"
-                type="email" 
-                value={email} // Bind value
-                onChange={(e) => setEmail(e.target.value)} // Update state
-                placeholder="Email or Username" 
-                required
-                  className="w-full appearance-none bg-gray-900/50 border border-gray-600 text-white placeholder-gray-400 text-base p-3 pl-10 rounded-lg focus:outline-none focus:border-accent-1 focus:ring-1 focus:ring-accent-1/50 transition duration-200 shadow-sm"
-              />
-            </div>
-              {/* Password Input - Added value and onChange */}
-            <div className="relative w-full">
-              <label htmlFor="password" className="sr-only">Password</label>
-                <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none z-10" size={20} />
-              <input 
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password} // Bind value
-                onChange={(e) => setPassword(e.target.value)} // Update state
-                placeholder="Password"
-                required
-                  className="w-full appearance-none bg-gray-900/50 border border-gray-600 text-white placeholder-gray-400 text-base p-3 pl-10 pr-10 rounded-lg focus:outline-none focus:border-accent-1 focus:ring-1 focus:ring-accent-1/50 transition duration-200 shadow-sm"
-              />
-              <button 
-                type="button" 
-                onClick={() => setShowPassword(!showPassword)} 
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none z-10"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-              </button>
-            </div>
-            {/* Display Login Error Message */} 
-            {error && <p className="text-red-500 text-sm text-left -mt-2">{error}</p>} 
-          </form>
+            <LoginForm
+              email={email}
+              password={password}
+              isLoading={isLoading}
+              error={error}
+              onEmailChange={setEmail}
+              onPasswordChange={setPassword}
+              onSubmit={handleLogin}
+              onTogglePassword={() => setShowPassword(!showPassword)}
+              showPassword={showPassword}
+            />
 
-            {/* Submit Button: Apply conditional classes based on isLoading */}
-          <button 
-            type="submit"
-            form="login-form"
-              className={`w-full font-semibold text-base py-3 px-5 rounded-lg transition-all duration-300 flex items-center justify-center 
-                ${isLoading 
-                  ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' // Loading state
-                  : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3 text-white shadow-md hover:shadow-lg' // Normal state
-                }`}
-            disabled={isLoading}
-          >
-              {/* Keep spinner for form submission, but remove extra text */}
-              {isLoading ? <LoadingSpinner /> : 'Log In'}
-          </button>
+            {/* Submit button moved inside LoginForm; keep spacing */}
 
             {/* Create Account Link */}
             <p className="text-sm text-gray-400">

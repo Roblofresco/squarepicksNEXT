@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, useAnimation } from "framer-motion";
+import { FiSearch, FiGrid, FiShoppingCart, FiAward } from 'react-icons/fi'
 import { LogoIcon } from "@/components/LogoIcon";
 import { LogoWithText } from "@/components/LogoWithText";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [easterEggActivated, setEasterEggActivated] = useState(false);
   const [secretCode, setSecretCode] = useState<string[]>([]);
@@ -162,33 +165,33 @@ export default function Home() {
     }
   };
 
-  // How to Play steps
+  // How to Play steps (enhanced)
   const howToPlaySteps = [
     {
-      title: "Finding Games & Boards",
-      content: "Navigate through the Lobby to find upcoming sports games and available $1 entry boards. Access specific Game Pages to select entry amounts and view open grids."
+      title: "Find a Board",
+      content: "Open the Lobby, filter by sport or time, and pick a $1 board or a featured free board.",
+      icon: FiSearch,
     },
     {
-      title: "Understanding the Board",
-      content: "Each game board consists of a 10x10 grid with numbered squares. Numbers are assigned randomly after the board is closed, ensuring fair play."
+      title: "Know the Grid",
+      content: "Each board is a 10×10 grid. Numbers 0–9 are randomly assigned to rows and columns once the board fills.",
+      icon: FiGrid,
     },
     {
-      title: "Selecting Your Squares",
-      content: "You can select squares via the Game Page, where multiple selections can be made, or quickly through the Lobby for a single square. Confirm selections to proceed."
+      title: "Pick Your Squares",
+      content: "Tap any open square. Choose one or many; confirm your selection to lock it in.",
+      icon: FiShoppingCart,
     },
     {
-      title: "Confirming Your Entry",
-      content: "After selection, review and confirm your entries through a final confirmation screen. Sufficient funds are required to complete the purchase."
+      title: "Win & Payouts",
+      content: "If your row/column digits match the score at set intervals, you win. Winnings are added to your wallet.",
+      icon: FiAward,
     },
-    {
-      title: "Checking for Winners",
-      content: "Winning squares are determined based on the last digit of team scores at game intervals. Payouts are automatically credited after each scoring period."
-    }
   ];
 
   const handleNavClick = (href: string) => {
     setNavigatingTo(href);
-    // Navigation state will clear on page transition
+    router.push(href);
   };
 
   // Simple inline SVG Spinner component
@@ -224,54 +227,46 @@ export default function Home() {
         className="fixed inset-0 -z-1 pointer-events-none"
         id="constellation-canvas"
       />
-      {/* Cursor Spotlight Effect */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 transition duration-300"
-        style={{
-          background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
-        }}
-      />
+      {/* Cursor Spotlight Effect (render after mount to avoid hydration mismatch) */}
+      {isMounted && (
+        <div
+          className="pointer-events-none fixed inset-0 z-0 transition duration-300"
+          style={{
+            background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
+          }}
+        />
+      )}
       <main className="container mx-auto px-4 relative z-10">
         {/* Navigation */}
         <nav className="py-6 flex justify-between items-center">
           <LogoIcon size="md" />
           
           <div className="flex space-x-2">
-            <Link
-              href="/login"
-              passHref
+            <motion.button 
+              whileHover={{ scale: navigatingTo === '/login' ? 1 : 1.05 }}
+              whileTap={{ scale: navigatingTo === '/login' ? 1 : 0.95 }}
+              className={`px-6 py-2 rounded-md transition duration-300 flex items-center justify-center 
+                ${navigatingTo === '/login'
+                  ? 'bg-accent-1 text-background-primary animate-pulse cursor-not-allowed'
+                  : 'border border-accent-1 text-accent-1 hover:bg-accent-1/10'
+                }`}
               onClick={() => handleNavClick('/login')}
-              legacyBehavior>
-              <motion.button 
-                whileHover={{ scale: navigatingTo === '/login' ? 1 : 1.05 }}
-                whileTap={{ scale: navigatingTo === '/login' ? 1 : 0.95 }}
-                className={`px-6 py-2 rounded-md transition duration-300 flex items-center justify-center 
-                  ${navigatingTo === '/login'
-                    ? 'bg-accent-1 text-background-primary animate-pulse cursor-not-allowed'
-                    : 'border border-accent-1 text-accent-1 hover:bg-accent-1/10'
-                  }`}
-                disabled={navigatingTo === '/login'}
-              >
-                Log In
-              </motion.button>
-            </Link>
-            <Link
-              href="/signup/email"
-              passHref
+              disabled={navigatingTo === '/login'}
+            >
+              Log In
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
+              whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
+              className={`px-6 py-2 rounded-md text-white transition duration-300 flex items-center justify-center min-h-10 
+                ${navigatingTo === '/signup/email' 
+                  ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' 
+                  : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
               onClick={() => handleNavClick('/signup/email')}
-              legacyBehavior>
-              <motion.button
-                whileHover={{ scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
-                whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
-                className={`px-6 py-2 rounded-md text-white transition duration-300 flex items-center justify-center min-h-10 
-                  ${navigatingTo === '/signup/email' 
-                    ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' 
-                    : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
-                disabled={navigatingTo === '/signup/email'}
-              >
-                Sign Up
-              </motion.button>
-            </Link>
+              disabled={navigatingTo === '/signup/email'}
+            >
+              Sign Up
+            </motion.button>
           </div>
         </nav>
         
@@ -311,23 +306,18 @@ export default function Home() {
               variants={fadeIn}
               className="flex flex-row gap-4 justify-center items-center"
             >
-              <Link
-                href="/signup/email"
-                passHref
+              <motion.button
+                whileHover={{ boxShadow: navigatingTo === '/signup/email' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
+                whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
+                className={`px-8 py-4 rounded-md text-white text-xl font-semibold transition-all duration-300 relative flex items-center justify-center 
+                  ${navigatingTo === '/signup/email' 
+                    ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' 
+                    : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
                 onClick={() => handleNavClick('/signup/email')}
-                legacyBehavior>
-                <motion.button
-                  whileHover={{ boxShadow: navigatingTo === '/signup/email' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
-                  whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
-                  className={`px-8 py-4 rounded-md text-white text-xl font-semibold transition-all duration-300 relative flex items-center justify-center 
-                    ${navigatingTo === '/signup/email' 
-                      ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' 
-                      : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
-                  disabled={navigatingTo === '/signup/email'}
-                >
-                  Get Started
-                </motion.button>
-              </Link>
+                disabled={navigatingTo === '/signup/email'}
+              >
+                Get Started
+              </motion.button>
               
               <motion.button 
                 whileHover={{ scale: 1.05 }}
@@ -408,25 +398,32 @@ export default function Home() {
               </span>
             </motion.h2>
             
-            <div className="grid md:grid-cols-2 gap-8">
-              {howToPlaySteps.map((step, index) => (
-                <motion.div
-                  key={index}
-                  variants={fadeIn}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700 hover:border-accent-1/50 transition-all duration-300"
-                >
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-accent1-accent4 flex items-center justify-center text-white font-bold">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2 text-white">{step.title}</h3>
-                      <p className="text-gray-300">{step.content}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+            {/* Responsive stepper/timeline */}
+            <div className="relative max-w-5xl mx-auto">
+              <div className="hidden md:block absolute left-0 right-0 top-6 h-0.5 bg-gradient-to-r from-accent-1/40 via-accent-2/40 to-accent-3/40" />
+              <ol className="flex flex-col md:flex-row gap-8 md:gap-6">
+                {howToPlaySteps.map((step, index) => {
+                  const Icon = step.icon as React.ElementType;
+                  return (
+                    <motion.li
+                      key={index}
+                      variants={fadeIn}
+                      className="relative md:flex-1"
+                    >
+                      <div className="flex md:flex-col items-start md:items-center gap-4">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-accent1-accent4 text-white ring-2 ring-accent-1/40 shadow-lg">
+                          <Icon size={20} />
+                        </div>
+                        <div className="md:text-center">
+                          <div className="text-sm text-gray-400 mb-1">Step {index + 1}</div>
+                          <h3 className="text-lg font-semibold text-white mb-1">{step.title}</h3>
+                          <p className="text-gray-300 leading-relaxed max-w-xs md:mx-auto">{step.content}</p>
+                        </div>
+                      </div>
+                    </motion.li>
+                  );
+                })}
+              </ol>
             </div>
             
             {/* Final step about payouts */}
@@ -447,43 +444,39 @@ export default function Home() {
           </motion.div>
         </section>
         
-        {/* Call to Action Section */}
-        <section className="py-20">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerChildren}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <motion.h2 
-              variants={fadeIn}
-              className="text-3xl md:text-4xl font-bold mb-6"
+        {/* Bottom container (CTA + Footer) */}
+        <div className="mt-8 w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gray-950/85">
+          <section className="py-20">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={staggerChildren}
+              className="max-w-4xl mx-auto text-center"
             >
-              <span className="bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent">
-                Ready to Join the
-              </span>
-              <span className="bg-gradient-accent1-accent4 bg-clip-text text-transparent">
-                {' '}Future of Sports Entertainment?
-              </span>
-            </motion.h2>
-            
-            <motion.p 
-              variants={fadeIn}
-              className="text-xl text-gray-300 mb-10"
-            >
-              Create your account today and get your first square on us.
-            </motion.p>
-            
-            <motion.div 
-              variants={fadeIn}
-              className="flex flex-row gap-4 justify-center items-center"
-            >
-              <Link
-                href="/signup/email"
-                passHref
-                onClick={() => handleNavClick('/signup/email')}
-                legacyBehavior>
+              <motion.h2 
+                variants={fadeIn}
+                className="text-3xl md:text-4xl font-bold mb-6"
+              >
+                <span className="bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent">
+                  Ready to Join the
+                </span>
+                <span className="bg-gradient-accent1-accent4 bg-clip-text text-transparent">
+                  {' '}Future of Sports Entertainment?
+                </span>
+              </motion.h2>
+              
+              <motion.p 
+                variants={fadeIn}
+                className="text-xl text-gray-300 mb-10"
+              >
+                Create your account today and get your first square on us.
+              </motion.p>
+              
+              <motion.div 
+                variants={fadeIn}
+                className="flex flex-row gap-4 justify-center items-center"
+              >
                 <motion.button
                   whileHover={{ boxShadow: navigatingTo === '/signup/email' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
                   whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
@@ -491,35 +484,46 @@ export default function Home() {
                     ${navigatingTo === '/signup/email' 
                       ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' 
                       : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
+                  onClick={() => handleNavClick('/signup/email')}
                   disabled={navigatingTo === '/signup/email'}
                 >
                   Sign Up Now
                 </motion.button>
-              </Link>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        </section>
-        
-        {/* Footer */}
-        <footer className="py-8 border-t border-gray-800">
-          <div className="flex flex-col items-center justify-center text-center">
-            <LogoWithText size="md" className="mb-4" />
-            <div className="text-gray-400 text-sm">
-              &copy; {new Date().getFullYear()} SquarePicks. All rights reserved.
-              {easterEggActivated && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gradient-accent1-accent4/90 text-white py-4 px-6 rounded-lg backdrop-blur-md z-50 shadow-2xl"
-                >
-                  <p className="font-bold mb-1">🎮 Easter Egg Activated!</p>
-                  <p>You've discovered the hidden secret! Click on the grid cells to reveal their final form.</p>
-                </motion.div>
-              )}
-            </div>
+          </section>
+
+          {/* Divider above footer */}
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="h-px bg-gray-800/80" />
           </div>
-        </footer>
+          
+          {/* Footer */}
+          <footer className="py-8 relative">
+            <div className="flex flex-col items-center justify-center text-center">
+              <LogoWithText size="md" className="mb-4" />
+              <div className="text-gray-400 text-sm">
+                &copy; {new Date().getFullYear()} SquarePicks. All rights reserved.
+                {easterEggActivated && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gradient-accent1-accent4/90 text-white py-4 px-6 rounded-lg backdrop-blur-md z-50 shadow-2xl"
+                  >
+                    <p className="font-bold mb-1">🎮 Easter Egg Activated!</p>
+                    <p>You've discovered the hidden secret! Click on the grid cells to reveal their final form.</p>
+                  </motion.div>
+                )}
+              </div>
+              {/* Footer links bottom-right */}
+              <div className="absolute right-4 bottom-4 flex items-center gap-4 text-sm text-gray-400">
+                <a href="/faq" className="hover:text-white hover:underline">FAQ</a>
+                <a href="/terms" className="hover:text-white hover:underline">Terms</a>
+              </div>
+            </div>
+          </footer>
+        </div>
       </main>
     </div>
   );

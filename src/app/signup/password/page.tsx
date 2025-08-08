@@ -6,6 +6,8 @@ import { useSignupContext } from '@/context/SignupContext';
 import Link from 'next/link';
 import { FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
 import SignupProgressDots from '@/components/SignupProgressDots'; // Import dots
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 export default function PasswordPage() {
   const router = useRouter();
@@ -76,7 +78,7 @@ export default function PasswordPage() {
           {/* Password Input */}
           <div className="relative">
             <label htmlFor="password" className="sr-only">Password</label>
-            <input
+            <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
               value={password}
@@ -100,7 +102,7 @@ export default function PasswordPage() {
           {/* Confirm Password Input */}
           <div className="relative">
             <label htmlFor="confirm-password" className="sr-only">Confirm Password</label>
-            <input
+            <Input
               id="confirm-password"
               type={showConfirmPassword ? 'text' : 'password'}
               value={confirmPassword}
@@ -129,14 +131,14 @@ export default function PasswordPage() {
       {/* Footer block matching email */}
       <div className="w-full max-w-sm mx-auto px-5 pb-8">
         <SignupProgressDots currentStep={currentStep} totalSteps={totalSteps} />
-        <button
+        <Button
           type="submit"
           form="password-form"
           className="w-full flex items-center justify-center gap-2 text-gray-800 font-medium text-base py-3.5 px-5 rounded-lg hover:opacity-90 transition-opacity mt-6"
           style={{ backgroundColor: '#1bb0f2' }}
         >
           Next <FiArrowRight />
-        </button>
+        </Button>
         <div className="text-center mt-4">
           <Link href="/signup/email" className="text-sm text-gray-400 hover:text-white hover:underline">Back</Link>
         </div>

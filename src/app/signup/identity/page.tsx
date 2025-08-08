@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { FiUser, FiArrowRight, FiCalendar } from 'react-icons/fi';
 import SignupProgressDots from '@/components/SignupProgressDots';
 import { parse, isValid, isBefore, subYears } from 'date-fns';
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 export default function IdentityPage() {
   const router = useRouter();
@@ -89,7 +91,7 @@ export default function IdentityPage() {
             <div className="relative">
               <label htmlFor="first-name" className="sr-only">First Name</label>
               <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
-              <input
+              <Input
                 id="first-name"
                 type="text"
                 value={firstName}
@@ -104,7 +106,7 @@ export default function IdentityPage() {
             <div className="relative">
               <label htmlFor="last-name" className="sr-only">Last Name</label>
               <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
-              <input
+              <Input
                 id="last-name"
                 type="text"
                 value={lastName}
@@ -119,7 +121,7 @@ export default function IdentityPage() {
             <div className="relative">
               <label htmlFor="dob" className="sr-only">Date of Birth</label>
               <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
-              <input
+              <Input
                 id="dob"
                 type="text"
                 value={dob}
@@ -140,14 +142,14 @@ export default function IdentityPage() {
       {/* Footer block matching email */}
       <div className="w-full max-w-sm mx-auto px-5 pb-8">
         <SignupProgressDots currentStep={currentStep} totalSteps={totalSteps} />
-        <button
+        <Button
           type="submit"
           form="identity-form"
           className="w-full flex items-center justify-center gap-2 text-gray-800 font-medium text-base py-3.5 px-5 rounded-lg hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 ease-in-out mt-6 disabled:opacity-70"
           style={{ backgroundColor: '#1bb0f2' }}
         >
           Next <FiArrowRight />
-        </button>
+        </Button>
         <div className="text-center mt-4">
           <Link href="/signup/password" className="text-sm text-gray-400 hover:text-white hover:underline">Back</Link>
         </div>

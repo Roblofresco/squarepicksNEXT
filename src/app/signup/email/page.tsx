@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useSignupContext } from '@/context/SignupContext';
 import { FiArrowRight } from 'react-icons/fi';
 import SignupProgressDots from '@/components/SignupProgressDots';
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 export default function EmailPage() {
   const router = useRouter();
@@ -41,7 +43,7 @@ export default function EmailPage() {
         >
           <div className="relative">
             <label htmlFor="email" className="sr-only">Email</label>
-            <input
+            <Input
               id="email"
               type="email"
               value={email}
@@ -58,14 +60,14 @@ export default function EmailPage() {
 
       <div className="w-full max-w-sm mx-auto px-5 pb-8">
         <SignupProgressDots currentStep={currentStep} totalSteps={totalSteps} />
-        <button
+        <Button
           type="button"
           onClick={handleNext}
           className="w-full flex items-center justify-center gap-2 text-gray-800 font-medium text-base py-3.5 px-5 rounded-lg hover:opacity-90 transition-opacity mt-6"
           style={{ backgroundColor: '#1bb0f2' }}
         >
           Next <FiArrowRight />
-        </button>
+        </Button>
       </div>
     </>
   );

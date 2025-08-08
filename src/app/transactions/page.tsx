@@ -34,8 +34,6 @@ export default function TransactionsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const pageSize = 10;
-  const totalPages = Math.ceil(filteredAndSortedTransactions.length / pageSize);
-  const paginatedTransactions = filteredAndSortedTransactions.slice((page - 1) * pageSize, page * pageSize);
 
   // --- Fetching Logic ---
   useEffect(() => {
@@ -120,6 +118,9 @@ export default function TransactionsPage() {
     return result;
   }, [transactions, filterType, filterStatus, dateRange, searchTerm]);
 
+  const totalPages = Math.ceil(filteredAndSortedTransactions.length / pageSize);
+  const paginatedTransactions = filteredAndSortedTransactions.slice((page - 1) * pageSize, page * pageSize);
+
   // --- Event Handlers ---
   const handleClearFilters = () => {
     setFilterType('all');
@@ -154,13 +155,14 @@ export default function TransactionsPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="relative mb-6 md:mb-8 text-center">
-          <button 
+          <Button
+            variant="ghost"
             onClick={() => router.back()}
-            className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300 hover:text-text-primary transition-colors p-2 rounded-full hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-accent-1 focus:ring-offset-2 focus:ring-offset-background-primary active:scale-95 focus:scale-105 transition-all duration-150"
+            className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300 hover:text-text-primary p-2 rounded-full"
             aria-label="Go back to previous page"
           >
              <ArrowLeft size={20} />
-          </button>
+          </Button>
           <h1 className="text-2xl md:text-3xl font-bold text-text-primary">Transaction History</h1>
         </div>
 

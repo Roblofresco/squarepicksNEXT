@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { FiLogIn, FiAlertCircle } from 'react-icons/fi' // Removed FiArrowLeft
 import { useRouter, useSearchParams } from 'next/navigation'
 import { auth } from '@/lib/firebase'
@@ -12,6 +12,14 @@ import { applyActionCode } from 'firebase/auth'
 const LogoCube = dynamic(() => import('@/components/LogoCube'), { ssr: false })
 
 export default function EmailVerifiedPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+      <EmailVerifiedContent />
+    </Suspense>
+  );
+}
+
+function EmailVerifiedContent() {
   const router = useRouter();
   const searchParams = useSearchParams(); // Get URL search parameters
   const [rotation, setRotation] = useState({ x: 0, y: 0 });

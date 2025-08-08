@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast, Toaster } from 'react-hot-toast';
 import { db, auth } from '@/lib/firebase'; // Import auth here
@@ -72,6 +72,14 @@ const fetchMultipleTeams = async (teamRefs: DocumentReference[]): Promise<Record
 };
 
 export default function LobbyPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background-primary text-white">Loading…</div>}>
+      <LobbyContent />
+    </Suspense>
+  );
+}
+
+function LobbyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();

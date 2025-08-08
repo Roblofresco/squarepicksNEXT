@@ -55,11 +55,16 @@ try {
   for (const r of routes) {
     const rel = r.replace(appDir + '\\', '').replace(appDir + '/', '');
     const firstSeg = rel.split(/[\\/]/)[0] || 'root';
-    const candidates = [
-      `${firstSeg}.md`,
-      `${firstSeg}-page.md`,
-      `${firstSeg.replace(/\[|\]/g, '')}.md`,
-    ].map(s => s.toLowerCase());
+    let candidates = [];
+    if (rel === 'page.tsx' || rel === 'page.ts') {
+      candidates = ['welcome.md'];
+    } else {
+      candidates = [
+        `${firstSeg}.md`,
+        `${firstSeg}-page.md`,
+        `${firstSeg.replace(/\[|\]/g, '')}.md`,
+      ].map(s => s.toLowerCase());
+    }
     if (!candidates.some(c => pageDocs.has(c))) {
       console.warn(`[AgentOS] WARN: Missing knowledge doc for route segment '${firstSeg}'`);
       missing++;

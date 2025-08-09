@@ -30,6 +30,7 @@
 - [deposit.md](./pages/deposit.md)
 - [contact-support.md](./pages/contact-support.md)
 - [account-guide.md](./pages/account-guide.md)
+- [password-reset.md](./pages/password-reset.md)
 
 ## Components & Hooks
 - [AllComponentsIndex.md](./components/AllComponentsIndex.md)

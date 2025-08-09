@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { Input } from '@/components/ui/input'
@@ -10,7 +10,15 @@ import toast from 'react-hot-toast'
 import { useRouter, useSearchParams } from 'next/navigation'
 import AuthBackground from '@/components/layout/AuthBackground'
 
-export default function ResetPasswordConfirmPage() {
+export default function Page() {
+  return (
+    <Suspense fallback={<AuthBackground canvasId="reset-password-confirm-canvas"><div className="text-gray-300">Verifying link…</div></AuthBackground>}>
+      <ResetPasswordConfirmContent />
+    </Suspense>
+  )
+}
+
+function ResetPasswordConfirmContent() {
   const router = useRouter()
   const search = useSearchParams()
   const oobCode = search.get('oobCode') || search.get('oobcode') || ''

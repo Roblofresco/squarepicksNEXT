@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import AuthBackground from '@/components/layout/AuthBackground'
+import Link from 'next/link'
+import { FiArrowLeft } from 'react-icons/fi'
 
 export default function ResetPasswordRequestPage() {
   const router = useRouter()
@@ -51,6 +53,11 @@ export default function ResetPasswordRequestPage() {
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? 'Sending…' : 'Send reset link'}
           </Button>
+          <div className="text-center">
+            <Link href="/login" className="inline-flex items-center justify-center text-sm text-gray-300 hover:text-white">
+              <FiArrowLeft className="mr-2" /> Back to login
+            </Link>
+          </div>
         </form>
       </div>
     </AuthBackground>

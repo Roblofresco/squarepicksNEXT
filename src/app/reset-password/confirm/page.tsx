@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { Input } from '@/components/ui/input'
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { useRouter, useSearchParams } from 'next/navigation'
+import InfoPageShell from '@/components/info/InfoPageShell'
 
 export default function ResetPasswordConfirmPage() {
   const router = useRouter()
@@ -64,28 +66,40 @@ export default function ResetPasswordConfirmPage() {
   }
 
   if (isVerifying) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-300">Verifying link…</div>
+    return (
+      <InfoPageShell canvasId="auth-constellation" showBackButton={false}>
+        <div className="w-full flex items-center justify-center py-10 text-gray-300">Verifying link…</div>
+      </InfoPageShell>
+    )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 bg-background/40 p-6 rounded-md border border-gray-700">
-        <div>
-          <h1 className="text-2xl font-semibold text-white">Set a new password</h1>
-          {email && <p className="text-sm text-gray-400 mt-1">Account: {email}</p>}
+    <InfoPageShell canvasId="auth-constellation">
+      <div className="w-full flex items-center justify-center py-10">
+        <div className="relative w-full max-w-sm">
+          <div className="absolute inset-0 bg-gradient-to-b from-background-primary/45 via-background-secondary/45 via-15% to-background-secondary/45 backdrop-blur-md rounded-xl border border-gray-700/50 shadow-xl z-0"></div>
+          <form onSubmit={handleSubmit} className="relative z-10 w-full p-8 space-y-6">
+            <div>
+              <h1 className="text-2xl font-semibold text-white">Set a new password</h1>
+              {email && <p className="text-sm text-gray-400 mt-1">Account: {email}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New password</Label>
+              <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm password</Label>
+              <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            </div>
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? 'Updating…' : 'Update password'}
+            </Button>
+            <div className="text-center text-sm text-gray-400">
+              <Link href="/login" className="hover:text-white transition-colors">Back to login</Link>
+            </div>
+          </form>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="newPassword">New password</Label>
-          <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm password</Label>
-          <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-        </div>
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? 'Updating…' : 'Update password'}
-        </Button>
-      </form>
-    </div>
+      </div>
+    </InfoPageShell>
   )
 } 

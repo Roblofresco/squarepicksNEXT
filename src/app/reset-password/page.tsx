@@ -9,8 +9,6 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
-import InfoPageShell from '@/components/info/InfoPageShell'
-import AuthScreenShell from '@/components/auth/AuthScreenShell'
 
 export default function ResetPasswordRequestPage() {
   const router = useRouter()
@@ -39,8 +37,8 @@ export default function ResetPasswordRequestPage() {
   }
 
   return (
-    <AuthScreenShell canvasId="auth-constellation">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <main className="min-h-screen flex items-center justify-center px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
         <div>
           <h1 className="text-2xl font-semibold text-white">Reset your password</h1>
           <p className="text-sm text-gray-400 mt-1">Enter your email and we'll send you a reset link.</p>
@@ -63,6 +61,6 @@ export default function ResetPasswordRequestPage() {
           <Link href="/login" className="hover:text-white transition-colors">Back to login</Link>
         </div>
       </form>
-    </AuthScreenShell>
+    </main>
   )
 } 

@@ -9,8 +9,6 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { useRouter, useSearchParams } from 'next/navigation'
-import InfoPageShell from '@/components/info/InfoPageShell'
-import AuthScreenShell from '@/components/auth/AuthScreenShell'
 
 export default function ResetPasswordConfirmPage() {
   const router = useRouter()
@@ -67,12 +65,12 @@ export default function ResetPasswordConfirmPage() {
   }
 
   if (isVerifying) {
-    return <AuthScreenShell canvasId="auth-constellation"><div className="text-gray-300">Verifying link…</div></AuthScreenShell>
+    return <main className="min-h-screen flex items-center justify-center px-4 text-gray-300">Verifying link…</main>
   }
 
   return (
-    <AuthScreenShell canvasId="auth-constellation">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <main className="min-h-screen flex items-center justify-center px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
         <div>
           <h1 className="text-2xl font-semibold text-white">Set a new password</h1>
           {email && <p className="text-sm text-gray-400 mt-1">Account: {email}</p>}
@@ -92,6 +90,6 @@ export default function ResetPasswordConfirmPage() {
           <Link href="/login" className="hover:text-white transition-colors">Back to login</Link>
         </div>
       </form>
-    </AuthScreenShell>
+    </main>
   )
 } 

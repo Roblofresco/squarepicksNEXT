@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import InfoPageShell from '@/components/info/InfoPageShell'
+import AuthScreenShell from '@/components/auth/AuthScreenShell'
 
 export default function ResetPasswordRequestPage() {
   const router = useRouter()
@@ -38,35 +39,30 @@ export default function ResetPasswordRequestPage() {
   }
 
   return (
-    <InfoPageShell canvasId="auth-constellation">
-      <div className="w-full flex items-center justify-center py-10">
-        <div className="relative w-full max-w-sm">
-          <div className="absolute inset-0 bg-gradient-to-b from-background-primary/45 via-background-secondary/45 via-15% to-background-secondary/45 backdrop-blur-md rounded-xl border border-gray-700/50 shadow-xl z-0"></div>
-          <form onSubmit={handleSubmit} className="relative z-10 w-full p-8 space-y-6">
-            <div>
-              <h1 className="text-2xl font-semibold text-white">Reset your password</h1>
-              <p className="text-sm text-gray-400 mt-1">Enter your email and we'll send you a reset link.</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-              />
-            </div>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? 'Sending…' : 'Send reset link'}
-            </Button>
-            <div className="text-center text-sm text-gray-400">
-              <Link href="/login" className="hover:text-white transition-colors">Back to login</Link>
-            </div>
-          </form>
+    <AuthScreenShell canvasId="auth-constellation">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-white">Reset your password</h1>
+          <p className="text-sm text-gray-400 mt-1">Enter your email and we'll send you a reset link.</p>
         </div>
-      </div>
-    </InfoPageShell>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+          />
+        </div>
+        <Button type="submit" disabled={isSubmitting} className="w-full">
+          {isSubmitting ? 'Sending…' : 'Send reset link'}
+        </Button>
+        <div className="text-center text-sm text-gray-400">
+          <Link href="/login" className="hover:text-white transition-colors">Back to login</Link>
+        </div>
+      </form>
+    </AuthScreenShell>
   )
 } 

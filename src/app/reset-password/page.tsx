@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import Link from 'next/link'
 import { sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { Input } from '@/components/ui/input'
@@ -9,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
+import AuthBackground from '@/components/layout/AuthBackground'
 
 export default function ResetPasswordRequestPage() {
   const router = useRouter()
@@ -37,30 +37,22 @@ export default function ResetPasswordRequestPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-white">Reset your password</h1>
-          <p className="text-sm text-gray-400 mt-1">Enter your email and we'll send you a reset link.</p>
+    <AuthBackground canvasId="reset-password-canvas">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center space-y-1">
+          <h1 className="text-3xl font-bold">Reset your password</h1>
+          <p className="text-sm text-gray-300">Enter your email and we'll send you a reset link.</p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-          />
-        </div>
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? 'Sending…' : 'Send reset link'}
-        </Button>
-        <div className="text-center text-sm text-gray-400">
-          <Link href="/login" className="hover:text-white transition-colors">Back to login</Link>
-        </div>
-      </form>
-    </main>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+          </div>
+          <Button type="submit" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? 'Sending…' : 'Send reset link'}
+          </Button>
+        </form>
+      </div>
+    </AuthBackground>
   )
 } 

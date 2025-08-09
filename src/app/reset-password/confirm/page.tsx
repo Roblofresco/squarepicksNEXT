@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { Input } from '@/components/ui/input'
@@ -9,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import { useRouter, useSearchParams } from 'next/navigation'
+import AuthBackground from '@/components/layout/AuthBackground'
 
 export default function ResetPasswordConfirmPage() {
   const router = useRouter()
@@ -65,31 +65,30 @@ export default function ResetPasswordConfirmPage() {
   }
 
   if (isVerifying) {
-    return <main className="min-h-screen flex items-center justify-center px-4 text-gray-300">Verifying link…</main>
+    return <AuthBackground canvasId="reset-password-confirm-canvas"><div className="text-gray-300">Verifying link…</div></AuthBackground>
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-white">Set a new password</h1>
-          {email && <p className="text-sm text-gray-400 mt-1">Account: {email}</p>}
+    <AuthBackground canvasId="reset-password-confirm-canvas">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center space-y-1">
+          <h1 className="text-3xl font-bold">Set a new password</h1>
+          {email && <p className="text-sm text-gray-300">Account: {email}</p>}
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="newPassword">New password</Label>
-          <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm password</Label>
-          <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-        </div>
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? 'Updating…' : 'Update password'}
-        </Button>
-        <div className="text-center text-sm text-gray-400">
-          <Link href="/login" className="hover:text-white transition-colors">Back to login</Link>
-        </div>
-      </form>
-    </main>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">New password</Label>
+            <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+          </div>
+          <Button type="submit" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? 'Updating…' : 'Update password'}
+          </Button>
+        </form>
+      </div>
+    </AuthBackground>
   )
 } 

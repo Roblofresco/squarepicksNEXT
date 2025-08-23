@@ -4,11 +4,15 @@ import Image from 'next/image'; // For team logos later
 import { Game as GameType, TeamInfo } from '@/types/lobby'; // Import shared type
 import Link from 'next/link'; // Import Link
 import { User as FirebaseUser } from 'firebase/auth'; // Import User type
-import React, { memo, useMemo } from 'react'; // Import React for event type, memo, useMemo
+import React, { memo, useMemo, useEffect, useRef } from 'react'; // Import React for event type, memo, useMemo
 import { Timestamp } from 'firebase/firestore'; // Import Timestamp
-
-// Removed placeholder data - will come from props
-// const gamesData: Game[] = [...];
+import { motion } from 'framer-motion';
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 // --- Define Props --- 
 interface GameCardProps {
@@ -27,11 +31,10 @@ interface GamesListProps {
 // Helper component for Team Display (Logo + Initials)
 const TeamDisplay = memo(({ team }: { team?: TeamInfo }) => {
   if (!team) {
-    // Render placeholder if team data is missing
     return (
-        <div className="flex flex-col items-center justify-center h-full px-1">
-            <div className="w-10 h-10 bg-gray-600 rounded-full mb-1"></div>
-            <span className="text-xs text-gray-500 font-bold">N/A</span>
+        <div className="flex flex-col items-center justify-center h-full px-0.5 sm:px-1">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 bg-gray-600 rounded-full mb-0.5 sm:mb-1"></div>
+            <span className="text-[10px] sm:text-xs text-gray-500 font-bold">N/A</span>
         </div>
     );
   }
@@ -45,29 +48,29 @@ const TeamDisplay = memo(({ team }: { team?: TeamInfo }) => {
   }, [shadowColorHex]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-1">
+    <div className="flex flex-col items-center justify-center h-full px-0.5 sm:px-1">
       {team.logo ? (
         <Image 
           src={team.logo} 
-          alt={`${team.initials || team.name} logo`} // Use initials or name
-          width={40} // Keep for aspect ratio hint / placeholder
-          height={40} // Keep for aspect ratio hint / placeholder
-          className="object-contain mb-1"
-          style={{ width: '100%', height: 'auto', ...filterStyle }} // Adjust style for responsiveness
+          alt={`${team.initials || team.name} logo`}
+          width={28}
+          height={28}
+          className="object-contain mb-0.5 sm:mb-1 sm:w-10 sm:h-10"
+          style={filterStyle}
         />
       ) : (
         <div 
-          className="w-10 h-10 bg-gray-600 rounded-full mb-1 flex items-center justify-center text-white font-semibold"
+          className="w-7 h-7 sm:w-10 sm:h-10 bg-gray-600 rounded-full mb-0.5 sm:mb-1 flex items-center justify-center text-white text-xs sm:text-sm font-semibold"
           style={filterStyle}
         >
-          {team.initials?.substring(0, 3) || 'N/A'} {/* Show initials or fallback */}
+          {team.initials?.substring(0, 3) || 'N/A'}
         </div>
       )}
       <span 
-        className="text-xs text-white font-bold"
+        className="text-[10px] sm:text-xs text-white font-bold"
         style={filterStyle} 
       >
-        {team.initials || 'N/A'} {/* Use initials */} 
+        {team.initials || 'N/A'}
       </span>
     </div>
   );
@@ -99,80 +102,109 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
   const { timeStr, dateStr } = formatStartTime(game.start_time);
 
   return (
-    <Link
-      href={`/game/${game.id}`}
-      onClick={handleClick}
-      className={`relative flex flex-row items-center justify-between flex-shrink-0 w-[240px] h-[90px] rounded-lg text-white ${shadowStyle} overflow-hidden hover:ring-2 hover:ring-accent-1 transition-all duration-200 p-2`}
-      // legacyBehavior and passHref removed
-    >
-      {/* The content that was previously in the div child now directly inside Link (which renders an <a>) */}
-      {/* Background Layer */}
-      <div 
-        className={`absolute inset-0 ${gradientStyle} opacity-85 z-0 rounded-lg`}
-      ></div>
-      {/* Live Badge */}
-      {game.is_live && (
-        <div className="absolute top-1 right-1 bg-red-600 text-white text-[0.5rem] font-bold px-1.5 py-0.5 rounded-full uppercase z-20">
-          Live
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <motion.div 
+          whileHover={{ scale: 1.02 }} 
+          whileTap={{ scale: 0.98 }} 
+          transition={{ 
+            type: "tween", 
+            duration: 0.15,
+            ease: "easeOut"
+          }}
+        >
+          <Card className="relative w-[150px] sm:w-[240px] bg-gradient-to-b from-background-primary to-background-secondary border-accent-1/20">
+            <Link href={`/game/${game.id}`} onClick={handleClick}>
+              <CardContent className="flex items-center justify-between p-0.5 sm:p-2 h-[50px] sm:h-[90px]">
+                {game.is_live && (
+                  <Badge variant="destructive" className="absolute top-0.5 sm:top-1 right-0.5 sm:right-1 text-[0.45rem] sm:text-[0.5rem] uppercase">
+                    Live
+                  </Badge>
+                )}
+                {/* Left Column: Team A */}
+                <div className="w-1/4 flex items-center justify-center h-full"> 
+                  <TeamDisplay team={game.teamA} />
+                </div>
+                {/* Center Column: Game Details */}
+                <div className="flex flex-col items-center justify-center w-1/2 text-center px-0.5 sm:px-1"> 
+                  <div className="text-xs sm:text-sm font-bold mb-0.5 sm:mb-1 text-white"> 
+                    {game.is_live ? `${game.away_score ?? 0} - ${game.home_score ?? 0}` : 'VS'}
+                  </div>
+                  <div className="text-[10px] sm:text-xs text-text-secondary mb-0.5"> 
+                    {game.is_live ? (
+                      <span>{game.period || game.quarter || 'Live'}</span>
+                    ) : (
+                      <span>{timeStr} - {dateStr}</span>
+                    )}
+                  </div>
+                  {game.broadcast_provider && (
+                    <span className="text-[0.55rem] sm:text-[0.65rem] text-gray-400 font-medium truncate w-full">
+                      {game.broadcast_provider}
+                    </span>
+                  )}
+                </div>
+                {/* Right Column: Team B */}
+                <div className="w-1/4 flex items-center justify-center h-full"> 
+                  <TeamDisplay team={game.teamB} />
+                </div>
+              </CardContent>
+            </Link>
+          </Card>
+        </motion.div>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-80 bg-background-primary/95 backdrop-blur-sm border-accent-1/20">
+        <div className="flex justify-between space-x-4">
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold text-white">{game.teamA?.fullName} vs {game.teamB?.fullName}</h4>
+            <div className="text-sm text-white/70">
+              {game.is_live ? (
+                <span>Currently Live • {game.period || game.quarter}</span>
+              ) : (
+                <span>Starts {timeStr} on {dateStr}</span>
+              )}
+            </div>
+            {game.broadcast_provider && (
+              <div className="text-xs text-white/50">
+                Watch on {game.broadcast_provider}
+              </div>
+            )}
+          </div>
         </div>
-      )}
-      {/* Left Column: Team A */}
-      <div className="relative w-1/4 flex items-center justify-center h-full z-10"> 
-        <TeamDisplay team={game.teamA} />
-      </div>
-      {/* Center Column: Game Details */}
-      <div className="relative flex flex-col items-center justify-center w-1/2 text-center px-1 z-10"> 
-        {/* Score or VS */}
-        <div className="text-sm font-bold mb-1" style={textShadowStyle}> 
-          {game.is_live ? `${game.away_score ?? 0} - ${game.home_score ?? 0}` : 'VS'}
-        </div>
-        {/* Time/Date or Period */}
-        <div className="text-xs text-text-secondary mb-0.5" style={textShadowStyle}> 
-          {game.is_live ? (
-            <span>{game.period || game.quarter || 'Live'}</span>
-          ) : (
-            <span>{timeStr} - {dateStr}</span>
-          )}
-        </div>
-        {/* Broadcast Provider */}
-        {game.broadcast_provider && (
-          <span className="text-[0.65rem] text-gray-400 font-medium truncate w-full" style={textShadowStyle}>
-            {game.broadcast_provider}
-          </span>
-        )}
-      </div>
-      {/* Right Column: Team B */}
-      <div className="relative w-1/4 flex items-center justify-center h-full z-10"> 
-        <TeamDisplay team={game.teamB} />
-      </div>
-    </Link>
+      </HoverCardContent>
+    </HoverCard>
   );
 });
 GameCard.displayName = 'GameCard'; // Optional: for better debugging
 
 // Accept and pass down props in GamesList
 const GamesList = memo(({ games, user, onProtectedAction }: GamesListProps) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Reset scroll position to start when games change
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft = 0;
+    }
+  }, [games]);
+
   return (
-    <div className="relative">
-      {/* Remove horizontal padding from this container */}
-      <div> 
-        <div className="flex justify-start space-x-3 overflow-x-auto pb-4 scrollbar-hide w-full max-w-full">
-          {/* Check if games array is empty */}
-          {games.length === 0 ? (
-            <div className="text-text-secondary text-sm italic px-2"> {/* Add padding to message if no games */} 
-               No games available for this sport.
-            </div>
-          ) : (
-            // Add index to map function
-            (games.map((game, index) => (
-              // Apply margin-left only to the first card (index === 0)
-              (<div key={game.id} className={`${index === 0 ? 'ml-2' : ''}`}>
+    <div className="w-full px-0.5 sm:px-[50px]">
+      {games.length === 0 ? (
+        <Alert variant="default" className="bg-background-secondary/50 border-accent-1/20 w-[300px]">
+          <InfoIcon className="h-4 w-4 text-accent-1" />
+          <AlertDescription className="text-white/70">
+            No games available for this sport.
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <div className="flex overflow-x-auto gap-2 pr-2 pb-4 scrollbar-hide">
+            {games.map((game) => (
+              <div key={game.id} className="flex-none">
                 <GameCard game={game} user={user} onProtectedAction={onProtectedAction} />
-              </div>)
-            )))
-          )}
-        </div>
-      </div>
+              </div>
+            ))}
+          </div>
+      )}
     </div>
   );
 });

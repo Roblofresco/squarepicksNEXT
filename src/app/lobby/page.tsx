@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast, Toaster } from 'react-hot-toast';
 import { db, auth } from '@/lib/firebase'; // Import auth here
@@ -9,6 +10,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import SportSelector from '@/components/lobby/SportSelector';
 import GamesList from '@/components/lobby/GamesList';
 import BoardsList from '@/components/lobby/BoardsList';
@@ -27,6 +29,7 @@ import {
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { useWallet } from '@/hooks/useWallet';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AlertCircle, Wallet } from 'lucide-react';
 
 // Define EntryInteractionState locally
 interface EntryInteractionState {
@@ -109,6 +112,8 @@ function LobbyContent() {
   const [teams, setTeams] = useState<Record<string, TeamInfo>>({}); // Stores all fetched teams by ID
   const [isLoadingGamesAndTeams, setIsLoadingGamesAndTeams] = useState<boolean>(true);
   const [gamesAndTeamsError, setGamesAndTeamsError] = useState<string | null>(null);
+  const [weekNumber, setWeekNumber] = useState<number>(0);
+  const [dateRange, setDateRange] = useState<{ startTimestamp: Timestamp; endTimestamp: Timestamp } | null>(null);
 
   const [sportSelectorView, setSportSelectorView] = useState<'sweepstakes' | 'allRegularSports'>('sweepstakes'); // New state
 
@@ -118,6 +123,7 @@ function LobbyContent() {
   const [isLoadingSweepstakesData, setIsLoadingSweepstakesData] = useState<boolean>(true);
   const [sweepstakesDataError, setSweepstakesDataError] = useState<string | null>(null);
   const [sweepstakesStartTime, setSweepstakesStartTime] = useState<Date | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   
   const [entryInteraction, setEntryInteraction] = useState<EntryInteractionState>({ 
     boardId: null, stage: 'idle', selectedNumber: null
@@ -182,9 +188,14 @@ function LobbyContent() {
       unsubscribeSweepstakesListenerRef.current = null;
     }
 
-    setGames([]); setTeams({});
-    setSweepstakesBoard(null); setSweepstakesGame(null); setSweepstakesTeams({}); setSweepstakesStartTime(null);
-    setGamesAndTeamsError(null); setSweepstakesDataError(null);
+    const startTransition = () => {
+      setIsTransitioning(true);
+      // Don't clear data immediately, let the new data replace it upon arrival.
+      setGamesAndTeamsError(null); 
+      setSweepstakesDataError(null);
+    };
+
+    startTransition();
 
     if (selectedSport === SWEEPSTAKES_SPORT_ID) {
       console.log("[LobbyPage] Fetching data for SWEEPSTAKES.");
@@ -208,6 +219,7 @@ function LobbyContent() {
           setSweepstakesStartTime(null);
           setSweepstakesDataError("No active sweepstakes board available.");
           setIsLoadingSweepstakesData(false);
+          setIsTransitioning(false);
           return;
         }
         
@@ -291,6 +303,7 @@ function LobbyContent() {
             setSweepstakesDataError("Error fetching game data for sweepstakes.");
           } finally {
             setIsLoadingSweepstakesData(false);
+            setIsTransitioning(false);
           }
         } else {
           console.warn("[LobbyPage] Sweepstakes board has no valid gameID.");
@@ -298,6 +311,7 @@ function LobbyContent() {
           setSweepstakesTeams({});
           setSweepstakesStartTime(null);
             setIsLoadingSweepstakesData(false);
+            setIsTransitioning(false);
         }
       }, (error) => {
         console.error("[LobbyPage] Error fetching sweepstakes board:", error);
@@ -307,15 +321,24 @@ function LobbyContent() {
         setSweepstakesStartTime(null);
         setSweepstakesDataError("Failed to load sweepstakes data. Please try again.");
         setIsLoadingSweepstakesData(false);
+        setIsTransitioning(false);
       });
     } else { // Regular Sport
       console.log(`[LobbyPage] Fetching data for REGULAR SPORT: ${selectedSport}.`);
       setIsLoadingGamesAndTeams(true);
       setIsLoadingSweepstakesData(false); // Not loading sweepstakes data
+      // Get the NFL week range for filtering games
+      const { weekNumber: currentWeekNumber } = getNFLWeekRange();
+      const timestampRange = getFirestoreTimestampRange();
+      setWeekNumber(currentWeekNumber);
+      setDateRange(timestampRange);
+
       const gamesQuery = query(
         collection(db, 'games'),
         where("sport", "==", selectedSport.toUpperCase()),
         where("is_over", "==", false),
+        where("start_time", ">=", timestampRange.startTimestamp),
+        where("start_time", "<=", timestampRange.endTimestamp),
         orderBy("start_time")
       );
       unsubscribeGamesListenerRef.current = onSnapshot(gamesQuery, async (gamesSnapshot) => {
@@ -349,10 +372,12 @@ function LobbyContent() {
         setGames(enrichedGames);
         console.log(`[LobbyPage] Finished processing ${enrichedGames.length} games for ${selectedSport}.`);
         setIsLoadingGamesAndTeams(false);
+        setIsTransitioning(false);
       }, (error) => {
         console.error(`[LobbyPage] REGULAR GAMES listener error for ${selectedSport}:`, error);
         setGamesAndTeamsError(`Failed to load games for ${selectedSport}.`);
         setIsLoadingGamesAndTeams(false);
+        setIsTransitioning(false);
       });
     }
     return () => {
@@ -481,24 +506,37 @@ function LobbyContent() {
 
   if (showPrimaryLoadingScreen()) {
     console.log("[LobbyPage] Rendering LoadingScreen. isWalletLoading:", isWalletLoading, "userId:", userId, "emailVerified:", emailVerified, "selectedSport:", selectedSport);
-    return <div className="flex items-center justify-center min-h-screen bg-background-primary text-white">Authenticating...</div>; 
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background-primary text-white space-y-8">
+        <div className="flex flex-col items-center space-y-4">
+          <Skeleton className="h-12 w-12 rounded-full bg-accent-1/20" />
+          <Skeleton className="h-4 w-32 bg-accent-1/20" />
+        </div>
+        <div className="text-accent-1/50 animate-pulse">Authenticating...</div>
+      </div>
+    );
   }
 
   const displayLoading = selectedSport === SWEEPSTAKES_SPORT_ID ? isLoadingSweepstakesData : isLoadingGamesAndTeams;
   const displayError = selectedSport === SWEEPSTAKES_SPORT_ID ? sweepstakesDataError : gamesAndTeamsError;
 
   const contentVariants = {
-    hidden: { opacity: 0, y: 15, transition: { duration: 0.25 } },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.25 } },
+    hidden: { opacity: 0, y: 15, transition: { duration: 0.3 } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
+  const overlayVariants = {
+    hidden: { opacity: 0, transition: { duration: 0.2 } },
+    visible: { opacity: 1, transition: { duration: 0.2 } },
   };
 
   return (
     <div className="relative w-full min-h-screen flex flex-col bg-background-primary">
       <Toaster position="top-center" />
-      <div className="sticky top-0 z-20"><InAppHeader /></div>
+      <div className={`sticky top-0 ${entryInteraction.stage !== 'idle' ? 'z-50' : 'z-20'}`}><InAppHeader showBalancePill={entryInteraction.stage !== 'idle'} balance={balance} /></div>
       <div className="flex-grow pb-20">
         <main className="px-4 py-2"> 
-        <div className="max-w-3xl mx-auto w-full">
+          <div className="w-full">
             <SportSelector 
               sports={initialSportsData} 
               selectedSportId={selectedSport} 
@@ -507,12 +545,61 @@ function LobbyContent() {
               sportSelectorView={sportSelectorView}
               setSportSelectorView={setSportSelectorView}
             />
-            {displayLoading ? (
-              <div className="flex items-center justify-center text-white py-10 min-h-[200px]">
-                <p className="text-lg animate-pulse">Fetching latest picks...</p> 
+            {/* Balance pill moved to header component when in entry flow */}
+            <div className="relative">
+              <AnimatePresence mode="wait" initial={false}>
+                {isTransitioning && (
+                  <motion.div
+                    key="loading-overlay"
+                    variants={overlayVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="absolute inset-0 bg-background-primary/50 backdrop-blur-sm z-10 flex items-center justify-center"
+                  >
+                    <p className="text-lg text-white animate-pulse">Fetching latest picks...</p>
+                  </motion.div>
+                )}
+                {entryInteraction.stage !== 'idle' && (
+                  <motion.div
+                    key="interaction-overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-30 pointer-events-auto bg-black/60 backdrop-blur-[2px]"
+                    style={{
+                      WebkitMaskImage: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 35%, rgba(255,255,255,0.9) 55%, rgba(255,255,255,1) 70%)',
+                      maskImage: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 35%, rgba(255,255,255,0.9) 55%, rgba(255,255,255,1) 70%)'
+                    }}
+                  />
+                )}
+              </AnimatePresence>
+              {displayError ? (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col items-center justify-center py-10 min-h-[200px]"
+                >
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 max-w-md w-full backdrop-blur-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-red-500/20 flex items-center justify-center">
+                        <AlertCircle className="h-5 w-5 text-red-500" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-medium text-red-400">Error Loading Data</h3>
+                        <p className="text-sm text-red-300/80 mt-1">{displayError}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.location.reload()}
+                      className="w-full mt-4 bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20"
+                    >
+                      Try Again
+                    </Button>
               </div>
-            ) : displayError ? (
-              <div className="text-center text-red-500 py-10 min-h-[200px]">Error: {displayError}</div>
+                </motion.div>
             ) : (
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
@@ -558,13 +645,58 @@ function LobbyContent() {
                     </>
                   ) : (
                     <>
-                      <h2 className="text-lg font-semibold text-white mt-3 mb-1">Games</h2>
-                      <div className="w-full mb-0">
-                        <GamesList games={games} teams={teams} user={user} onProtectedAction={handleProtectedAction} />
+                      <div className="flex justify-between items-center -mt-5 mb-0">
+                        <h2 className="text-lg font-semibold text-white">Games</h2>
+                        {selectedSport.toUpperCase() === 'NFL' && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-accent-1 font-medium">Week {weekNumber}</span>
+                            <span className="text-xs text-white/50">{dateRange ? formatDateRange(dateRange.startTimestamp.toDate(), dateRange.endTimestamp.toDate()) : ''}</span>
+                          </div>
+                        )}
                       </div>
-                      <h2 className="text-lg font-semibold text-white mt-3 mb-1">Boards</h2>
-                       {games.length > 0 ? (
-                         <div className="w-full max-w-md mx-auto mt-1 px-2 pb-4">
+                      <div className="w-full mb-0">
+                        <AnimatePresence mode="wait">
+                          {isLoadingGamesAndTeams ? (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="flex gap-4 overflow-x-auto pb-4 px-[50px]"
+                            >
+                              {[1, 2, 3].map((i) => (
+                                <div key={i} className="flex-shrink-0">
+                                  <Skeleton className="h-[90px] w-[240px] rounded-lg bg-accent-1/10" />
+                                </div>
+                              ))}
+                            </motion.div>
+                          ) : (
+                        <GamesList games={games} teams={teams} user={user} onProtectedAction={handleProtectedAction} />
+                          )}
+                        </AnimatePresence>
+                      </div>
+                      <h2 className="text-lg font-semibold text-white mt-0 mb-0">Boards</h2>
+                      <AnimatePresence mode="wait">
+                        {isLoadingGamesAndTeams ? (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="w-full mt-0 px-2 pb-4 space-y-4"
+                          >
+                            {[1, 2].map((i) => (
+                              <div key={i} className="flex flex-col gap-2">
+                                <Skeleton className="h-4 w-32 bg-accent-1/10" />
+                                <Skeleton className="h-[120px] w-full rounded-lg bg-accent-1/10" />
+                              </div>
+                            ))}
+                          </motion.div>
+                        ) : games.length > 0 ? (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="w-full mt-0 px-2 pb-4"
+                          >
                            <BoardsList 
                              games={games}
                              teams={teams}
@@ -578,24 +710,78 @@ function LobbyContent() {
                              walletBalance={balance}     // from useWallet
                              walletIsLoading={isWalletLoading} // from useWallet
                            />
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center justify-center py-8"
+                          >
+                            <div className="bg-accent-1/5 border border-accent-1/10 rounded-lg p-4 max-w-md text-center backdrop-blur-sm">
+                              <p className="text-white/70">
+                                {selectedSport.toUpperCase() === 'NFL' 
+                                  ? `No NFL games scheduled for Week ${weekNumber}${dateRange ? ` (${formatDateRange(dateRange.startTimestamp.toDate(), dateRange.endTimestamp.toDate())})` : ''}.`
+                                  : `No games available for ${initialSportsData.find(s => s.id === selectedSport)?.name || selectedSport.toUpperCase()}.`
+                                }
+                              </p>
                          </div>
-                      ) : (
-                         <p className="text-gray-400 text-center py-4">No boards to display as there are no games for {initialSportsData.find(s => s.id === selectedSport)?.name || selectedSport.toUpperCase()}.</p>
+                          </motion.div>
                       )}
+                      </AnimatePresence>
                     </>
                   )}
                 </motion.div>
               </AnimatePresence>
             )}
+          </div>
         </div> 
         </main>
       </div>
       <BottomNav user={user} onProtectedAction={handleProtectedAction} />
       {(isLoginModalOpen || isWalletSetupDialogOpen || isDepositDialogOpen) && <StarfieldBackground className="z-40" />}
-      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}><DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] via-[#B8860B] to-[#B8860B] border-accent-1/50 text-white py-8"><DialogHeader className="text-center items-center"><DialogTitle className="text-2xl font-bold mb-2">Login Required</DialogTitle><DialogDescription className="text-gray-300 opacity-90">You need to be logged in or create an account to perform this action.</DialogDescription></DialogHeader><div className="flex flex-col sm:flex-row gap-3 mt-6 mb-0"><Button onClick={() => router.push('/login')} className="flex-1 bg-accent-1 hover:bg-accent-1/80 text-white font-semibold">Login</Button><Button onClick={() => router.push('/signup')} variant="outline" className="flex-1 bg-transparent border-gray-500 hover:bg-gray-500/20 text-gray-300 font-semibold hover:text-gray-300">Sign Up</Button></div></DialogContent></Dialog>
-      <Dialog open={isWalletSetupDialogOpen} onOpenChange={setIsWalletSetupDialogOpen}><DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] via-[#B8860B] to-[#B8860B] border-accent-1/50 text-white py-8"><DialogHeader className="text-center items-center"><DialogTitle className="flex items-center justify-center text-2xl font-bold mb-2">{setupDialogContent.title}</DialogTitle><DialogDescription className="text-gray-300 opacity-90">{setupDialogContent.description}</DialogDescription></DialogHeader><div className="flex flex-col sm:flex-row gap-3 mt-6 mb-0"><Button
+      {/* Login Dialog */}
+      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
+        <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
+          <DialogHeader className="text-center space-y-2">
+            <DialogTitle className="text-2xl font-bold">Login Required</DialogTitle>
+            <DialogDescription className="text-white/70">
+              You need to be logged in or create an account to perform this action.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <Button 
+              onClick={() => router.push('/login')} 
+              className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90"
+            >
+              Login
+            </Button>
+            <Button 
+              onClick={() => router.push('/signup')} 
+              variant="outline"
+              className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
+            >
+              Sign Up
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Wallet Setup Dialog */}
+      <Dialog open={isWalletSetupDialogOpen} onOpenChange={setIsWalletSetupDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
+          <DialogHeader className="text-center space-y-2">
+            <DialogTitle className="text-2xl font-bold flex items-center justify-center gap-2">
+              {setupDialogContent.title}
+            </DialogTitle>
+            <DialogDescription className="text-white/70">
+              {setupDialogContent.description}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <Button
         onClick={() => { setIsWalletSetupDialogOpen(false); router.push('/wallet-setup/location'); }}
-        className="flex-1 bg-gradient-to-br from-yellow-600 via-yellow-700 to-yellow-800 hover:from-yellow-500 hover:via-yellow-600 hover:to-yellow-700 text-white font-semibold text-lg py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-colors"
+              className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90 py-6 text-lg"
       >
         {setupDialogContent.buttonText}
       </Button>
@@ -603,11 +789,44 @@ function LobbyContent() {
         type="button"
         variant="outline"
         onClick={() => setIsWalletSetupDialogOpen(false)}
-        className="flex-1 bg-transparent border-[#B8860B]/70 text-[#B8860B] hover:bg-[#B8860B]/20 hover:text-yellow-300 transition-colors"
+              className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deposit Dialog */}
+      <Dialog open={isDepositDialogOpen} onOpenChange={setIsDepositDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
+          <DialogHeader className="space-y-2">
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              Insufficient Funds
+            </DialogTitle>
+            <DialogDescription className="text-white/70">
+              You need at least ${requiredDepositAmount.toFixed(2)} more to enter this board.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-start gap-3 mt-6">
+            <Button
+              type="button"
+              onClick={() => { setIsDepositDialogOpen(false); router.push('/deposit'); }}
+              className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90"
+            >
+              Add Funds
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDepositDialogOpen(false)}
+              className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
       >
         Cancel
-      </Button></div></DialogContent></Dialog>
-      <Dialog open={isDepositDialogOpen} onOpenChange={setIsDepositDialogOpen}><DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] to-[#B8860B] to-15% border-accent-1/50 text-white py-8"><DialogHeader><DialogTitle className="flex items-center text-xl font-semibold">Insufficient Funds</DialogTitle><DialogDescription className="text-gray-300 opacity-90 pt-2">You need at least ${requiredDepositAmount.toFixed(2)} more to enter this board.</DialogDescription></DialogHeader><DialogFooter className="mt-4 gap-2 sm:justify-center"><Button type="button" variant="outline" onClick={() => setIsDepositDialogOpen(false)} className="border-gray-500 hover:bg-gray-500/20 text-gray-300 hover:text-gray-300">Cancel</Button><Button type="button" onClick={() => { setIsDepositDialogOpen(false); router.push('/wallet'); }} className="bg-accent-1 hover:bg-accent-1/80 text-white font-semibold">Add Funds</Button></DialogFooter></DialogContent></Dialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 

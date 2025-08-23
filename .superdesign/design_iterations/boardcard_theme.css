@@ -1,0 +1,61 @@
+:root {
+  --background: oklch(0.9900 0.0050 106.7500);
+  --foreground: oklch(0.1500 0.0200 258.3400);
+  --card: oklch(1.0000 0 0);
+  --card-foreground: oklch(0.1500 0.0200 258.3400);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.1500 0.0200 258.3400);
+  --primary: oklch(0.4900 0.1800 142.1000);
+  --primary-foreground: oklch(0.9900 0.0050 106.7500);
+  --secondary: oklch(0.9400 0.0200 258.3400);
+  --secondary-foreground: oklch(0.2000 0.0300 258.3400);
+  --muted: oklch(0.9600 0.0150 258.3400);
+  --muted-foreground: oklch(0.4500 0.0200 258.3400);
+  --accent: oklch(0.5800 0.2200 27.4000);
+  --accent-foreground: oklch(0.9900 0.0050 106.7500);
+  --destructive: oklch(0.5500 0.2400 15.7500);
+  --destructive-foreground: oklch(0.9900 0.0050 106.7500);
+  --border: oklch(0.8800 0.0150 258.3400);
+  --input: oklch(0.9600 0.0150 258.3400);
+  --ring: oklch(0.4900 0.1800 142.1000);
+  --chart-1: oklch(0.4900 0.1800 142.1000);
+  --chart-2: oklch(0.5800 0.2200 27.4000);
+  --chart-3: oklch(0.6200 0.2000 260.0000);
+  --chart-4: oklch(0.5500 0.2400 15.7500);
+  --chart-5: oklch(0.4800 0.1600 310.0000);
+  --sidebar: oklch(0.9800 0.0100 258.3400);
+  --sidebar-foreground: oklch(0.1500 0.0200 258.3400);
+  --sidebar-primary: oklch(0.4900 0.1800 142.1000);
+  --sidebar-primary-foreground: oklch(0.9900 0.0050 106.7500);
+  --sidebar-accent: oklch(0.9400 0.0200 258.3400);
+  --sidebar-accent-foreground: oklch(0.2000 0.0300 258.3400);
+  --sidebar-border: oklch(0.8800 0.0150 258.3400);
+  --sidebar-ring: oklch(0.4900 0.1800 142.1000);
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: JetBrains Mono, 'Fira Code', Consolas, monospace;
+  --radius: 0.5rem;
+  --shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.10), 0 2px 4px -2px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.10), 0 4px 6px -4px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.10), 0 8px 10px -6px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Custom BoardCard specific variables */
+  --grid-available: oklch(0.9600 0.0150 258.3400);
+  --grid-user-owned: oklch(0.4900 0.1800 142.1000);
+  --grid-taken: oklch(0.7000 0.0200 258.3400);
+  --status-live: oklch(0.5500 0.2400 15.7500);
+  --status-upcoming: oklch(0.5800 0.2200 27.4000);
+  --status-completed: oklch(0.4500 0.0200 258.3400);
+}

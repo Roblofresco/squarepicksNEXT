@@ -3,6 +3,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics"; // Optional: Analytics
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 // Your web app's Firebase configuration using environment variables
 const firebaseConfig = {
@@ -23,6 +24,27 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
 // const analytics = getAnalytics(app); // Optional
+
+// Initialize App Check in the browser to satisfy Firestore/AppCheck enforcement
+if (typeof window !== 'undefined') {
+  try {
+    // Enable debug token on localhost if configured
+    if (process.env.NEXT_PUBLIC_APPCHECK_DEBUG === 'true') {
+      // @ts-ignore
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    }
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY;
+    if (siteKey) {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(siteKey),
+        isTokenAutoRefreshEnabled: true,
+      });
+    }
+  } catch (err) {
+    // Swallow to avoid breaking SSR/CSR; logs can be inspected in devtools
+    // console.warn('App Check initialization skipped or failed:', err);
+  }
+}
 
 // Export the initialized services
 export { app, db, auth /*, analytics */ }; // Add other services like 'analytics' if needed

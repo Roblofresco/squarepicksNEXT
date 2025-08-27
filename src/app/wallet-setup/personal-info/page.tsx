@@ -50,6 +50,12 @@ function PersonalInfoContent() {
 
   // Check auth and retrieve state from URL param
   useEffect(() => {
+    if (!auth || !db) {
+      console.error('Firebase not initialized');
+      setError('Firebase not initialized');
+      return;
+    }
+
     const passedState = searchParams.get('state');
 
     if (!passedState || passedState.length !== 2) {

@@ -30,6 +30,10 @@
 - [deposit.md](./pages/deposit.md)
 - [contact-support.md](./pages/contact-support.md)
 - [account-guide.md](./pages/account-guide.md)
+- [password-reset.md](./pages/password-reset.md)
+- [reset-password-check-email.md](./pages/reset-password-check-email.md)
+- [reset-password-confirm.md](./pages/reset-password-confirm.md)
+- [notifications.md](./pages/notifications.md)
 
 ## Components & Hooks
 - [AllComponentsIndex.md](./components/AllComponentsIndex.md)
@@ -47,4 +51,5 @@
 - [EmailVerificationBanner.md](./components/EmailVerificationBanner.md)
 - [PersonalInfoForm.md](./components/PersonalInfoForm.md)
 - [SignupProgressDots.md](./components/SignupProgressDots.md)
-- [useWallet.md](./components/useWallet.md) 
+- [useWallet.md](./components/useWallet.md)
+- [AuthBackground.md](./components/AuthBackground.md) 

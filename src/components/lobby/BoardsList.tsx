@@ -1,8 +1,9 @@
 'use client';
-import React, { memo, useEffect } from 'react';
+import React, { memo } from 'react';
 import { Game as GameType, TeamInfo, Board as BoardType } from '@/types/lobby';
 import { User as FirebaseUser } from 'firebase/auth';
 import { useWallet } from '@/hooks/useWallet';
+import { motion } from 'framer-motion';
 
 // Import the centralized BoardCard component
 import BoardCard from './BoardCard';
@@ -28,6 +29,19 @@ interface BoardsListProps {
   walletBalance: number;
   walletIsLoading: boolean;
 }
+
+const listVariants = {
+  hidden: { opacity: 1 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.18 } }
+};
 
 const BoardsList = memo((props: BoardsListProps) => {
   const {
@@ -59,7 +73,7 @@ const BoardsList = memo((props: BoardsListProps) => {
   }
 
   return (
-    <div className="space-y-4">
+    <motion.div className="space-y-4" variants={listVariants} initial="hidden" animate="show">
       {games.map((game) => {
         const teamA = game.away_team_id ? teams[game.away_team_id.id] : undefined;
         const teamB = game.home_team_id ? teams[game.home_team_id.id] : undefined;
@@ -70,22 +84,28 @@ const BoardsList = memo((props: BoardsListProps) => {
         }
 
         return (
-        <BoardCard
+          <motion.div
             key={game.id}
-            game={game}
-            user={user}
-            currentUserId={currentUserId}
-            onProtectedAction={onProtectedAction}
-            entryInteraction={entryInteraction}
-            handleBoardAction={handleBoardAction}
-            walletHasWallet={props.walletHasWallet}
-            walletBalance={props.walletBalance}
-            walletIsLoading={props.walletIsLoading}
-            openWalletDialog={openWalletDialog}
-        />
+            variants={itemVariants}
+            id={`board-${game.id}`}
+            className="scroll-mt-20 md:scroll-mt-24"
+          >
+            <BoardCard
+              game={game}
+              user={user}
+              currentUserId={currentUserId}
+              onProtectedAction={onProtectedAction}
+              entryInteraction={entryInteraction}
+              handleBoardAction={handleBoardAction}
+              walletHasWallet={props.walletHasWallet}
+              walletBalance={props.walletBalance}
+              walletIsLoading={props.walletIsLoading}
+              openWalletDialog={openWalletDialog}
+            />
+          </motion.div>
         );
       })}
-    </div>
+    </motion.div>
   );
 });
 BoardsList.displayName = 'BoardsList';

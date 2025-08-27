@@ -12,6 +12,9 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { ArrowLeft, AlertTriangle, Loader2, Info, CircleDot, Crown } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { BiWallet } from 'react-icons/bi';
+import WalletPill from '@/components/wallet/WalletPill';
 import { useWallet } from '@/hooks/useWallet';
 import {
   Dialog,
@@ -111,6 +114,27 @@ function GamePageContent() {
   const [isDisplayingDelayedLoader, setIsDisplayingDelayedLoader] = useState(false);
   const [shakeEntryFee, setShakeEntryFee] = useState(false);
   const entryFeeRef = useRef<HTMLDivElement>(null);
+  const confirmRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const prevSelectedCountRef = useRef<number>(0);
+  const scrollDownTimerRef = useRef<number | null>(null);
+  const scrollUpTimerRef = useRef<number | null>(null);
+
+  const handleWalletClick = useCallback(() => {
+    if (!userId) {
+      router.push('/login');
+      return;
+    }
+    if (hasWallet === true) {
+      router.push('/wallet');
+    } else {
+      router.push('/wallet-setup/location');
+    }
+  }, [userId, hasWallet, router]);
+
+  // Axis numbers for numbers reveal
+  const [homeAxisNumbers, setHomeAxisNumbers] = useState<string[]>([]);
+  const [awayAxisNumbers, setAwayAxisNumbers] = useState<string[]>([]);
 
   const isLoadingBoardRef = useRef(isLoadingBoard);
   useEffect(() => {
@@ -209,6 +233,17 @@ function GamePageContent() {
               } else {
                  console.error("gameDocRef is undefined, cannot set current board with non-optional gameID");
                  setCurrentBoard(null); // Still set to null if gameDocRef is missing
+              }
+              // Capture axis numbers when assigned
+              if (Array.isArray(boardData.home_numbers) && boardData.home_numbers.length === 10) {
+                setHomeAxisNumbers(boardData.home_numbers.map(String));
+              } else {
+                setHomeAxisNumbers([]);
+              }
+              if (Array.isArray(boardData.away_numbers) && boardData.away_numbers.length === 10) {
+                setAwayAxisNumbers(boardData.away_numbers.map(String));
+              } else {
+                setAwayAxisNumbers([]);
               }
               if (boardData.status !== 'open') {
                 toast.error("This board is now closed.", { id: `board-closed-${snapshot.id}` });
@@ -370,6 +405,60 @@ function GamePageContent() {
     });
   };
 
+  // Smoothly scroll only on transition from 0 -> >0 selections (avoids repeated jitter while adding more)
+  useEffect(() => {
+    const prev = prevSelectedCountRef.current;
+    if (scrollDownTimerRef.current) {
+      window.clearTimeout(scrollDownTimerRef.current);
+      scrollDownTimerRef.current = null;
+    }
+    if (prev === 0 && selectedSquares.size > 0) {
+      // wait for layout/confirm mount before scrolling
+      scrollDownTimerRef.current = window.setTimeout(() => {
+        const el = confirmRef.current;
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 120);
+    }
+  }, [selectedSquares.size]);
+
+  // When selections clear (pill heroes back to header), scroll to top after slight delay
+  useEffect(() => {
+    const prev = prevSelectedCountRef.current;
+    if (prev > 0 && selectedSquares.size === 0) {
+      if (scrollUpTimerRef.current) {
+        window.clearTimeout(scrollUpTimerRef.current);
+        scrollUpTimerRef.current = null;
+      }
+      // immediately scroll to top when selections clear
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // update tracker after logic so both effects can see correct previous
+    prevSelectedCountRef.current = selectedSquares.size;
+  }, [selectedSquares.size]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollDownTimerRef.current) window.clearTimeout(scrollDownTimerRef.current);
+      if (scrollUpTimerRef.current) window.clearTimeout(scrollUpTimerRef.current);
+    };
+  }, []);
+
+  // Clear selections when clicking outside the grid and confirm button
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      if (selectedSquares.size === 0) return;
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (gridRef.current && gridRef.current.contains(target)) return;
+      if (confirmRef.current && confirmRef.current.contains(target)) return;
+      setSelectedSquares(new Set());
+    };
+    document.addEventListener('mousedown', handleGlobalClick);
+    return () => document.removeEventListener('mousedown', handleGlobalClick);
+  }, [selectedSquares.size]);
+
   const handleConfirmSelection = async () => {
     if (selectedSquares.size === 0 || !currentBoard || currentBoard.status !== 'open' || !userId || walletIsLoading || isConfirming || isLoadingUserSquares) return;
     if (gameDetails && gameDetails.start_time.toMillis() < Date.now()) {
@@ -418,22 +507,54 @@ function GamePageContent() {
     if (!currentBoard?.isFreeEntry && balance < amount) {
       setShakeEntryFee(true);
       setTimeout(() => setShakeEntryFee(false), 500);
+      setRequiredDepositAmount(amount);
+      setIsDepositDialogOpen(true);
       return;
     }
+    // Changing entry fee resets current selections
+    setSelectedSquares(new Set());
     setSelectedEntryAmount(amount);
   };
 
   const renderGrid = () => {
     const commonContainerClasses = cn(
-      "p-2 bg-slate-800/70 rounded-lg shadow-xl border border-slate-700",
+      "relative overflow-hidden p-6 md:p-8 rounded-lg shadow-xl",
       "md:max-w-lg md:mx-auto",
       "min-h-[320px]"
     );
+    const gridBgStyle: React.CSSProperties = {
+      background: 'radial-gradient(ellipse at center, rgba(20,28,48,0.98) 0%, rgba(20,28,48,0.9) 60%, rgba(20,28,48,0) 100%), #0a0e1b'
+    };
 
     let content;
 
     // Loader condition combines delayed loader for board switching and general loading states
     const showGenericLoaderCondition = (isLoadingBoard && !currentBoard && !isDisplayingDelayedLoader) || (isLoadingUserSquares && currentBoard);
+
+    const hasAxisNumbers = homeAxisNumbers.length === 10 && awayAxisNumbers.length === 10;
+
+    const renderAxesWrapper = (gridEl: React.ReactNode) => (
+      <div className="flex flex-col items-center">
+        {hasAxisNumbers && (
+          <div className="grid grid-cols-11 gap-1 mb-1 w-full max-w-[480px]">
+            <div />
+            {homeAxisNumbers.map((n, i) => (
+              <div key={`h-${i}`} className="text-center text-[11px] sm:text-xs text-slate-300 font-mono">{n}</div>
+            ))}
+          </div>
+        )}
+        <div className="flex items-start w-full max-w-[480px]">
+          {hasAxisNumbers && (
+            <div className="grid grid-rows-10 gap-1 mr-1">
+              {awayAxisNumbers.map((n, i) => (
+                <div key={`a-${i}`} className="h-8 sm:h-9 flex items-center justify-center text-[11px] sm:text-xs text-slate-300 font-mono">{n}</div>
+              ))}
+            </div>
+          )}
+          <div className="flex-1">{gridEl}</div>
+        </div>
+      </div>
+    );
 
     if (isDisplayingDelayedLoader || showGenericLoaderCondition) {
       content = (
@@ -447,17 +568,11 @@ function GamePageContent() {
           <p className="text-center text-slate-400">No open board found for ${selectedEntryAmount} entry.</p>
         </div>
       );
-    } else if (currentBoard.status !== 'open' && currentBoard.status !== undefined) { 
-      content = (
-        <div className="flex justify-center items-center h-full">
-          <p className="text-center text-yellow-400 py-8">This board is now {currentBoard.status}.</p>
-        </div>
-      );
     } else {
       const gridItems = [];
       const gameHasStarted = gameDetails && gameDetails.start_time && gameDetails.start_time.toMillis() < Date.now();
-      const boardIsNotOpen = currentBoard.status !== 'open';
-      
+      const boardIsOpen = currentBoard.status === 'open';
+
       for (let i = 0; i < 100; i++) {
         const isPurchasedByCurrentUser = currentUserPurchasedSquaresSet.has(i);
         const isTakenByOtherUser = currentBoard.selected_indexes?.includes(i) && !isPurchasedByCurrentUser;
@@ -466,7 +581,7 @@ function GamePageContent() {
         const isDisabledForSelection = Boolean(
           isConfirming || 
           gameHasStarted || 
-          boardIsNotOpen || 
+          !boardIsOpen || 
           isPurchasedByCurrentUser || 
           isTakenByOtherUser
         );
@@ -484,7 +599,7 @@ function GamePageContent() {
         } else {
           squareClasses = "bg-gradient-to-br from-slate-700/80 to-slate-800/80 hover:from-cyan-500/80 hover:to-cyan-700/80 text-cyan-200"; 
         }
-        
+
         gridItems.push(
           <button
             key={i}
@@ -500,15 +615,29 @@ function GamePageContent() {
           </button>
         );
       }
-      content = (
+      const gridEl = (
         <div className="grid grid-cols-10 gap-1.5">
           {gridItems}
         </div>
       );
+
+      // When board not open, show read-only grid with axes instead of hiding it
+      if (!boardIsOpen) {
+        content = (
+          <div className="space-y-2">
+            {hasAxisNumbers && (
+              <p className="text-center text-yellow-400 text-sm">Numbers revealed</p>
+            )}
+            {renderAxesWrapper(gridEl)}
+          </div>
+        );
+      } else {
+        content = renderAxesWrapper(gridEl);
+      }
     }
 
     return (
-      <div className={commonContainerClasses}>
+      <div ref={gridRef} className={commonContainerClasses} style={gridBgStyle}>
         {content}
       </div>
     );
@@ -536,19 +665,53 @@ function GamePageContent() {
     return <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-slate-400"><AlertTriangle className="w-12 h-12 mb-4" /><p className="text-xl">Game not found.</p></div>;
   }
 
+  // Logo glow styles using team accent colors (matches lobby card aesthetic)
+  const glowHexA = gameDetails.teamA.color;
+  const glowHexB = gameDetails.teamB.color;
+  const glowA = glowHexA ? `${glowHexA}cc` : 'rgba(27,176,242,0.8)';
+  const glowB = glowHexB ? `${glowHexB}cc` : 'rgba(27,176,242,0.8)';
+
   return (
     <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-slate-900"><Loader2 className="h-16 w-16 animate-spin text-accent-1" /></div>}> 
       <div className="flex flex-col min-h-screen bg-background-primary text-slate-200">
         <Toaster position="top-center" />
-        <main className="flex-grow container mx-auto px-2 sm:px-4 py-6">
-          <button onClick={() => router.back()} className="flex items-center text-sm text-accent-1 hover:text-accent-1/80 mb-3 group">
-            <ArrowLeft className="w-4 h-4 mr-1.5 transform transition-transform group-hover:-translate-x-1" /> Back to Lobby
-          </button>
+        <div className="w-full bg-background-primary">
+          {!(selectedSquares.size > 0 && currentBoard && currentBoard.status === 'open') && (
+            <div className="flex justify-end px-4 pt-2 pb-1">
+              <WalletPill balance={balance} onClick={handleWalletClick} variant="header" />
+            </div>
+          )}
+        </div>
+        <main className="flex-grow container mx-auto px-2 sm:px-4 pt-0 pb-4">
+          <motion.button
+            onClick={() => router.back()}
+            aria-label="Back"
+            className="inline-flex items-center justify-center h-9 w-9 rounded-full glass bg-white/5 border-white/15 text-accent-1 hover:bg-white/10 mb-3"
+            whileHover={{ scale: 1.05, x: -2 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </motion.button>
 
-          <div className="bg-gradient-to-b from-[#0a0e1b] to-[#1f2937] to-25% backdrop-blur-md shadow-2xl rounded-xl p-3 sm:p-4 mb-5 border border-slate-700/80">
-            <div className="flex items-center justify-between">
+          {/* Billboard glow backdrop (replaces boxed game info container) */}
+          <div className="relative mb-3">
+            <div className="pointer-events-none absolute inset-x-0 -top-4 mx-auto h-32 sm:h-40 max-w-3xl rounded-[28px] bg-gradient-to-b from-accent-1/15 via-accent-2/10 to-transparent blur-2xl shadow-[0_40px_120px_-20px_rgba(27,176,242,0.35)]" />
+          </div>
+
+          {/* Game info content without container box */}
+          <div className="relative z-10 mb-2">
+            <div className="max-w-3xl mx-auto px-2 flex items-center justify-between">
               <div className="flex flex-col items-center text-center w-1/3 px-1">
-                <Image src={gameDetails.teamA.logo || '/brandkit/logo-icon-only.svg'} alt={gameDetails.teamA.name} width={48} height={48} className="mb-1.5 h-10 w-10 sm:h-12 sm:w-12 object-contain"/>
+                <div className="relative mb-1.5">
+                  <Image src={gameDetails.teamA.logo || '/brandkit/logo-icon-only.svg'} alt={gameDetails.teamA.name} width={48} height={48} className="h-10 w-10 sm:h-12 sm:w-12 object-contain relative z-10" style={{ filter: `drop-shadow(0 0 6px ${glowA})` }}/>
+                  <div
+                    className="pointer-events-none absolute -bottom-1 left-1/2 h-3 w-12 -translate-x-1/2 rounded-full opacity-100"
+                    style={{
+                      background: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0) 100%)',
+                      filter: 'blur(3px)'
+                    }}
+                  />
+                </div>
                 <span className="font-semibold text-xs sm:text-sm md:text-base leading-tight">{gameDetails.teamA.name}</span>
                 <span className="text-[10px] sm:text-xs text-slate-400">({gameDetails.teamA.record})</span>
              </div>
@@ -573,7 +736,16 @@ function GamePageContent() {
                 )}
              </div>
               <div className="flex flex-col items-center text-center w-1/3 px-1">
-                <Image src={gameDetails.teamB.logo || '/brandkit/logo-icon-only.svg'} alt={gameDetails.teamB.name} width={48} height={48} className="mb-1.5 h-10 w-10 sm:h-12 sm:w-12 object-contain"/>
+                <div className="relative mb-1.5">
+                  <Image src={gameDetails.teamB.logo || '/brandkit/logo-icon-only.svg'} alt={gameDetails.teamB.name} width={48} height={48} className="h-10 w-10 sm:h-12 sm:w-12 object-contain relative z-10" style={{ filter: `drop-shadow(0 0 6px ${glowB})` }}/>
+                  <div
+                    className="pointer-events-none absolute -bottom-1 left-1/2 h-3 w-12 -translate-x-1/2 rounded-full opacity-100"
+                    style={{
+                      background: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0) 100%)',
+                      filter: 'blur(3px)'
+                    }}
+                  />
+                </div>
                 <span className="font-semibold text-xs sm:text-sm md:text-base leading-tight">{gameDetails.teamB.name}</span>
                 <span className="text-[10px] sm:text-xs text-slate-400">({gameDetails.teamB.record})</span>
               </div>
@@ -582,24 +754,29 @@ function GamePageContent() {
 
           {error && <p className="text-center text-red-400 mb-3 bg-red-900/30 p-2 rounded-md">Error: {error}</p>} 
 
+          <div className="h-px w-full bg-white/10 mb-3" />
+
           <div
             ref={entryFeeRef}
             className={cn(
-              "mb-5 p-3 bg-gradient-to-b from-[#0a0e1b] to-[#1f2937] to-25% rounded-lg border border-slate-700/70 max-w-md md:max-w-lg mx-auto",
+              "mb-4 p-2 rounded-lg max-w-md md:max-w-lg mx-auto",
               shakeEntryFee && "animate-shake"
             )}
+            style={{
+              background: 'radial-gradient(ellipse at center, rgba(20,28,48,0.98) 0%, rgba(20,28,48,0.9) 60%, rgba(20,28,48,0.0) 100%), #0a0e1b'
+            }}
           >
-            <div className="text-center mb-3">
+            <div className="text-center mb-2">
               <p className="text-sm font-medium text-slate-300">Entry Fee:</p>
             </div>
-            <div className="flex justify-center space-x-1 sm:space-x-2 mb-3">
+            <div className="flex justify-center space-x-1 sm:space-x-2 mb-2">
               {entryAmounts.map(amount => (
                 <Button
                   key={amount}
                   variant={selectedEntryAmount === amount ? "default" : "outline"}
                   onClick={() => handleEntryAmountClick(amount)}
                   className={cn(
-                    "h-11 text-sm sm:text-base font-semibold border-slate-600 hover:border-slate-500 px-4",
+                    "h-9 text-sm font-semibold border-slate-600 hover:border-slate-500 px-3",
                     selectedEntryAmount === amount ?
                       "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] hover:from-[#108bcc] hover:to-[#0c6ca3] text-white border-[#108bcc] ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-slate-800" :
                       "bg-gradient-to-br from-slate-700/70 to-slate-800/70 hover:from-slate-600/70 hover:to-slate-700/70 text-slate-300"
@@ -617,31 +794,32 @@ function GamePageContent() {
           </div>
 
           {selectedSquares.size > 0 && currentBoard && currentBoard.status === 'open' && (
-             <div className="text-center px-2 mt-8 mb-8">
+             <div className="text-center px-2 mt-8 mb-8" ref={confirmRef}>
                 <div className="relative inline-block max-w-md mx-auto w-full group transform hover:scale-105 transition-transform duration-150 ease-out">
-                  <Button 
-                      size="lg" 
+                  <button
+                    type="button"
                       onClick={handleConfirmSelection} 
                       disabled={isConfirming || isLoadingBoard || (gameDetails && gameDetails.start_time.toMillis() < Date.now()) || walletIsLoading || currentBoard.status !== 'open' || isLoadingUserSquares}
-                      className="w-full shadow-2xl bg-gradient-to-br from-green-400 to-emerald-500 group-hover:from-green-300 group-hover:to-emerald-400 text-white font-bold text-base sm:text-lg tracking-wide transition-colors duration-150 ease-out disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:hover:bg-gradient-to-br disabled:from-gray-600 disabled:to-gray-700 rounded-md rounded-tr-none"
+                    className={cn(
+                      "w-full rounded-xl px-4 py-3 font-bold text-base sm:text-lg tracking-wide",
+                      "glass border text-white border-green-500/95 backdrop-blur-xl backdrop-saturate-200",
+                      "bg-gradient-to-br from-green-400/40 via-green-500/35 to-green-600/40",
+                      "hover:from-green-400/50 hover:via-green-500/45 hover:to-green-600/50",
+                      "shadow-[0_18px_40px_rgba(34,197,94,0.55),inset_0_1px_2px_rgba(255,255,255,0.55)] ring-1 ring-green-400/70",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-300/80",
+                      "disabled:opacity-60 disabled:cursor-not-allowed"
+                    )}
+                    style={{ textShadow: '0 1px 0 rgba(0,0,0,0.25)' }}
                   >
                       {isConfirming ? (
-                          <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</>
+                      <><Loader2 className="mr-2 h-5 w-5 inline-block animate-spin" /> Processing...</>
                       ) : (
                           `Confirm ${selectedSquares.size} Square${selectedSquares.size > 1 ? 's' : ''} ($${(selectedSquares.size * selectedEntryAmount).toFixed(2)})`
                       )}
-                  </Button>
-                  {balance !== null && (
-                    <div 
-                      className="absolute top-0 right-0 transform translate-y-[-100%] text-slate-100 px-3 py-1.5 text-xs font-semibold rounded-t-lg shadow-lg border border-b-0"
-                      style={{
-                        backgroundImage: 'linear-gradient(to bottom right, #5855e4, #4a47d0)',
-                        borderColor: '#3e3cc0',
-                        minWidth: '120px', 
-                        textAlign: 'center' 
-                      }}
-                    >
-                      Current Balance: ${balance.toFixed(2)}
+                  </button>
+                  {selectedSquares.size > 0 && (
+                    <div className="absolute -top-3 right-3 z-40 pointer-events-auto">
+                      <WalletPill balance={balance} onClick={handleWalletClick} variant="docked" />
                     </div>
                   )}
                 </div>
@@ -676,7 +854,7 @@ function GamePageContent() {
          </Dialog>
 
          <Dialog open={isDepositDialogOpen} onOpenChange={setIsDepositDialogOpen}>
-  <DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b] to-[#B8860B] to-15% border-accent-1/50 text-white py-8">
+  <DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0e1b]/95 to-[#B8860B]/95 to-15% border-accent-1/50 text-white py-8 backdrop-blur-md">
     <DialogHeader>
       <DialogTitle className="flex items-center text-xl font-semibold">Insufficient Funds</DialogTitle>
       <DialogDescription className="text-gray-300 opacity-90 pt-2">

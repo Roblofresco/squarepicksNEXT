@@ -22,7 +22,7 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
   , [boardData?.selected_indexes]);
 
   return (
-    <div className="grid grid-cols-10 gap-px p-1 bg-black/20 border border-white rounded-sm">
+    <div className="grid grid-cols-10 gap-[2px] p-1 bg-black/20 backdrop-blur-[1px] border border-white/10 rounded-md">
       {squares.map((sq) => {
         const isCurrentUserPurchased = currentUserSelectedSquares ? currentUserSelectedSquares.has(sq) : false; 
         const isPreSelectedByCurrentUser = preSelectedSq !== null && sq === preSelectedSq;
@@ -35,11 +35,11 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         let additionalClasses = '';
 
         if (isCurrentUserPurchased) {
-          // Game Page `isPurchasedByCurrentUser` style
-          squareStyle = 'bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]'; 
+          // Current user's purchased square (clean cyan look)
+          squareStyle = 'bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]';
           textColor = 'text-white';
-          additionalClasses = 'font-semibold opacity-90';
-          textStyle = {}; 
+          additionalClasses = 'font-semibold opacity-90 ring-2 ring-cyan-300/60 shadow-[0_0_10px_rgba(27,176,242,0.25)]';
+          textStyle = {};
         } else if (isTakenByOther) {
           // Darker/duller green with X style, further increased opacity
           squareStyle = 'bg-gradient-to-br from-green-900/60 to-green-950/60'; 
@@ -48,11 +48,11 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
           textStyle = {};
           additionalClasses = ''; // Reset any unintended carry-over
         } else if (isPreSelectedByCurrentUser) {
-          // Game Page `isSelectedByCurrentUserPreConfirmation` style
-          squareStyle = 'bg-gradient-to-br from-[#d43dae] to-[#c02090]'; 
+          // Pre-selected by current user (clean magenta look to match cyan style)
+          squareStyle = 'bg-gradient-to-br from-fuchsia-500 to-purple-600';
           textColor = 'text-white';
-          additionalClasses = 'ring-2 ring-[#d43dae]'; 
-          textStyle = { textShadow: '0px 0px 5px rgba(255, 255, 255, 0.7)' }; 
+          additionalClasses = 'ring-2 ring-fuchsia-400/70 shadow-[0_0_10px_rgba(236,72,153,0.35)] font-semibold';
+          textStyle = {};
         } else {
           // Reverted to original BoardMiniGrid available square style - hover effects removed
           squareStyle = 'bg-gradient-to-br from-green-700/70 to-green-900/70';

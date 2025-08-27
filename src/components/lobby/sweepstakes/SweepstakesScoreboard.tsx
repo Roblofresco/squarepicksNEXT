@@ -28,7 +28,7 @@ function SweepstakesScoreboardComponent({
   const isFinal = status === 'final';
 
   // Define base styles for team sections to avoid repetition
-  const teamSectionBaseStyle = "flex flex-col items-center text-center w-1/3";
+  const teamSectionBaseStyle = "flex flex-col items-center text-center flex-1";
 
   // Define text shadow style for scores and the '@' symbol
   const textShadowStyle = {
@@ -80,7 +80,7 @@ function SweepstakesScoreboardComponent({
   };
 
   return (
-    <div className="bg-gradient-to-b from-background-primary to-accent-2 p-4 sm:p-6 rounded-lg shadow-lg glow-border-blue max-w-md mx-auto">
+    <div className="bg-gradient-to-b from-background-primary to-accent-2 p-4 sm:p-6 rounded-lg shadow-lg glow-border-blue w-full">
       <div className="flex items-stretch justify-between text-white font-bold min-h-[150px]"> {/* Use items-stretch and min-height */} 
         
         {/* Away Team Section */}
@@ -111,7 +111,7 @@ function SweepstakesScoreboardComponent({
         </div>
 
         {/* Center Section (Time/Status) */}
-        <div className="flex flex-col items-center justify-center text-center w-1/3 px-2 h-full min-h-[150px]">
+        <div className="flex flex-col items-center justify-center text-center w-auto px-4 h-full min-h-[150px]">
           {isLive ? (
             <div className="flex flex-col items-center"> {/* Container for column layout */} 
                <span className="text-4xl sm:text-5xl font-mono mb-1" style={textShadowStyle}>-</span>

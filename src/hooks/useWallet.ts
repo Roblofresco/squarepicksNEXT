@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { auth, db } from '@/lib/firebase';
-import { onAuthStateChanged, User, sendEmailVerification } from 'firebase/auth';
+import { auth, db } from '@/lib/firebase-client';
+import { onAuthStateChanged, User, sendEmailVerification, useDeviceLanguage } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 
 interface WalletState {
@@ -142,6 +142,7 @@ export function useWallet() {
       return { success: false, message: 'No user logged in to resend verification email.' };
     }
     try {
+      useDeviceLanguage(auth);
       await sendEmailVerification(auth.currentUser);
       return { success: true, message: 'Verification email sent! Please check your inbox (and spam folder).' };
     } catch (error: any) {

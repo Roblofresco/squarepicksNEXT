@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoardCard Ultra Mobile Component</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="boardcard_theme.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans) !important;
+            background: var(--background) !important;
+            color: var(--foreground) !important;
+            line-height: 1.3 !important;
+            padding: 0.25rem !important;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .board-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto;
+            height: fit-content;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .team-matchup {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        
+        .team-logo {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e11d48, #dc2626);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.5rem;
+        }
+        
+        .team-logo.eagles {
+            background: linear-gradient(135deg, #065f46, #047857);
+        }
+        
+        .status-badges {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .status-badge {
+            padding: 0.125rem 0.375rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-live {
+            background: var(--status-live);
+            color: var(--destructive-foreground);
+            animation: pulse 2s infinite;
+        }
+        
+        .price-badge {
+            background: var(--primary);
+            color: var(--primary-foreground);
+        }
+        
+        .game-info {
+            color: var(--muted-foreground);
+            font-size: 0.65rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 100px;
+            gap: 0.5rem;
+            align-items: start;
+        }
+        
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border-radius: var(--radius-sm);
+            padding: 3px;
+            width: 100%;
+            max-width: 200px;
+        }
+        
+        .grid-cell {
+            aspect-ratio: 1;
+            border-radius: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.4rem;
+            font-weight: 500;
+            transition: all 150ms ease-out;
+            cursor: pointer;
+            min-height: 15px;
+        }
+        
+        .grid-cell:active {
+            transform: scale(1.3);
+            z-index: 10;
+        }
+        
+        .grid-header {
+            background: var(--muted);
+            color: var(--muted-foreground);
+            font-weight: 600;
+            cursor: default;
+            font-size: 0.35rem;
+        }
+        
+        .grid-header:active {
+            transform: none;
+        }
+        
+        .grid-available {
+            background: var(--grid-available);
+            color: var(--foreground);
+        }
+        
+        .grid-available:active {
+            background: var(--accent);
+            color: var(--accent-foreground);
+        }
+        
+        .grid-user-owned {
+            background: var(--grid-user-owned);
+            color: var(--primary-foreground);
+            animation: userSquarePulse 3s infinite;
+        }
+        
+        .grid-taken {
+            background: var(--grid-taken);
+            color: var(--muted-foreground);
+            cursor: not-allowed;
+        }
+        
+        .grid-taken:active {
+            transform: none;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+            height: fit-content;
+        }
+        
+        .square-input {
+            width: 100%;
+            padding: 0.375rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card);
+            color: var(--foreground);
+            font-size: 0.75rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .square-input:focus {
+            outline: none;
+            border-color: var(--ring);
+            box-shadow: 0 0 0 1px var(--ring);
+        }
+        
+        .user-info {
+            font-size: 0.55rem;
+            text-align: center;
+            color: var(--primary);
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        
+        .btn {
+            padding: 0.375rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            transition: all 150ms ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            min-height: 32px;
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+        
+        .btn-secondary:active {
+            transform: scale(0.95);
+            background: hsl(from var(--secondary) h s calc(l - 10%));
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.95);
+            background: hsl(from var(--primary) h s calc(l - 10%));
+        }
+        
+        .bottom-section {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+        
+        .view-full-board {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            padding: 0.375rem;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            font-size: 0.65rem;
+            transition: all 150ms ease-out;
+            min-height: 32px;
+        }
+        
+        .view-full-board:active {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            transform: scale(0.98);
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            font-size: 0.55rem;
+            color: var(--muted-foreground);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .legend-square {
+            width: 6px;
+            height: 6px;
+            border-radius: 1px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes userSquarePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+        
+        /* Ultra compact for very small screens */
+        @media (max-height: 650px) {
+            .game-info {
+                display: none;
+            }
+            
+            .legend {
+                display: none;
+            }
+            
+            .board-card {
+                padding: 0.5rem;
+            }
+        }
+        
+        @media (max-height: 580px) {
+            .mini-grid {
+                max-width: 180px;
+            }
+            
+            .grid-cell {
+                min-height: 13px;
+                font-size: 0.35rem;
+            }
+            
+            .controls {
+                gap: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="board-card">
+        <!-- Header -->
+        <div class="game-header">
+            <div class="team-matchup">
+                <div class="team-logo">KC</div>
+                <span>KC vs PHI</span>
+                <div class="team-logo eagles">PHI</div>
+            </div>
+            <div class="status-badges">
+                <span class="status-badge status-live">Live</span>
+                <span class="status-badge price-badge">$1</span>
+            </div>
+        </div>
+        
+        <!-- Info -->
+        <div class="game-info">73/100 available • Your: 5</div>
+        
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Grid -->
+            <div class="mini-grid">
+                <!-- Headers -->
+                <div class="grid-cell grid-header"></div>
+                <div class="grid-cell grid-header">0</div>
+                <div class="grid-cell grid-header">1</div>
+                <div class="grid-cell grid-header">2</div>
+                <div class="grid-cell grid-header">3</div>
+                <div class="grid-cell grid-header">4</div>
+                <div class="grid-cell grid-header">5</div>
+                <div class="grid-cell grid-header">6</div>
+                <div class="grid-cell grid-header">7</div>
+                <div class="grid-cell grid-header">8</div>
+                <div class="grid-cell grid-header">9</div>
+                
+                <!-- Rows 0-9 with simplified content -->
+                <div class="grid-cell grid-header">0</div>
+                <div class="grid-cell grid-available">0</div>
+                <div class="grid-cell grid-available">1</div>
+                <div class="grid-cell grid-user-owned">2</div>
+                <div class="grid-cell grid-user-owned">3</div>
+                <div class="grid-cell grid-available">4</div>
+                <div class="grid-cell grid-available">5</div>
+                <div class="grid-cell grid-available">6</div>
+                <div class="grid-cell grid-available">7</div>
+                <div class="grid-cell grid-available">8</div>
+                <div class="grid-cell grid-available">9</div>
+                
+                <div class="grid-cell grid-header">1</div>
+                <div class="grid-cell grid-available">0</div>
+                <div class="grid-cell grid-user-owned">1</div>
+                <div class="grid-cell grid-available">2</div>
+                <div class="grid-cell grid-available">3</div>
+                <div class="grid-cell grid-user-owned">4</div>
+                <div class="grid-cell grid-available">5</div>
+                <div class="grid-cell grid-available">6</div>
+                <div class="grid-cell grid-available">7</div>
+                <div class="grid-cell grid-available">8</div>
+                <div class="grid-cell grid-available">9</div>
+                
+                <div class="grid-cell grid-header">2</div>
+                <div class="grid-cell grid-available">0</div>
+                <div class="grid-cell grid-available">1</div>
+                <div class="grid-cell grid-available">2</div>
+                <div class="grid-cell grid-available">3</div>
+                <div class="grid-cell grid-available">4</div>
+                <div class="grid-cell grid-available">5</div>
+                <div class="grid-cell grid-user-owned">6</div>
+                <div class="grid-cell grid-available">7</div>
+                <div class="grid-cell grid-available">8</div>
+                <div class="grid-cell grid-available">9</div>
+                
+                <div class="grid-cell grid-header">3</div>
+                <div class="grid-cell grid-available">0</div>
+                <div class="grid-cell grid-available">1</div>
+                <div class="grid-cell grid-available">2</div>
+                <div class="grid-cell grid-taken">3</div>
+                <div class="grid-cell grid-available">4</div>
+                <div class="grid-cell grid-available">5</div>
+                <div class="grid-cell grid-available">6</div>
+                <div class="grid-cell grid-available">7</div>
+                <div class="grid-cell grid-available">8</div>
+                <div class="grid-cell grid-available">9</div>
+                
+                <div class="grid-cell grid-header">4</div>
+                <div class="grid-cell grid-available">0</div>
+                <div class="grid-cell grid-available">1</div>
+                <div class="grid-cell grid-available">2</div>
+                <div class="grid-cell grid-available">3</div>
+                <div class="grid-cell grid-available">4</div>
+                <div class="grid-cell grid-available">5</div>
+                <div class="grid-cell grid-available">6</div>
+                <div class="grid-cell grid-available">7</div>
+                <div class="grid-cell grid-available">8</div>
+                <div class="grid-cell grid-available">9</div>
+                
+                <div class="grid-cell grid-header">5</div>
+                <div class="grid-cell grid-available">0</div>
+                <div class="grid-cell grid-available">1</div>
+                <div class="grid-cell grid-available">2</div>
+                <div class="grid-cell grid-available">3</div>
+                <div class="grid-cell grid-available">4</div>
+                <div class="grid-cell grid-available">5</div>
+                <div class="grid-cell grid-available">6</div>
+                <div class="grid-cell grid-available">7</div>
+                <div class="grid-cell grid-available">8</div>
+                <div class="grid-cell grid-available">9</div>
+                
+                <div class="grid-cell grid-header">6</div>
+                <div class="grid-cell grid-available">0</div>
+                <div class="grid-cell grid-available">1</div>
+                <div class="grid-cell grid-available">2</div>
+                <div class="grid-cell grid-available">3</div>
+                <div class="grid-cell grid-available">4</div>
+                <div class="grid-cell grid-available">5</div>
+                <div class="grid-cell grid-available">6</div>
+                <div class="grid-cell grid-available">7</div>
+                <div class="grid-cell grid-available">8</div>
+                <div class="grid-cell grid-available">9</div>
+                
+                <div class="grid-cell grid-header">7</div>
+                <div class="grid-cell grid-available">0</div>
+                <div class="grid-cell grid-available">1</div>
+                <div class="grid-cell grid-available">2</div>
+                <div class="grid-cell grid-available">3</div>
+                <div class="grid-cell grid-available">4</div>
+                <div class="grid-cell grid-available">5</div>
+                <div class="grid-cell grid-available">6</div>
+                <div class="grid-cell grid-available">7</div>
+                <div class="grid-cell grid-available">8</div>
+                <div class="grid-cell grid-available">9</div>
+                
+                <div class="grid-cell grid-header">8</div>
+                <div class="grid-cell grid-available">0</div>
+                <div class="grid-cell grid-available">1</div>
+                <div class="grid-cell grid-available">2</div>
+                <div class="grid-cell grid-available">3</div>
+                <div class="grid-cell grid-available">4</div>
+                <div class="grid-cell grid-available">5</div>
+                <div class="grid-cell grid-available">6</div>
+                <div class="grid-cell grid-available">7</div>
+                <div class="grid-cell grid-available">8</div>
+                <div class="grid-cell grid-available">9</div>
+                
+                <div class="grid-cell grid-header">9</div>
+                <div class="grid-cell grid-available">0</div>
+                <div class="grid-cell grid-available">1</div>
+                <div class="grid-cell grid-available">2</div>
+                <div class="grid-cell grid-available">3</div>
+                <div class="grid-cell grid-available">4</div>
+                <div class="grid-cell grid-available">5</div>
+                <div class="grid-cell grid-available">6</div>
+                <div class="grid-cell grid-available">7</div>
+                <div class="grid-cell grid-available">8</div>
+                <div class="grid-cell grid-available">9</div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <input type="number" class="square-input" value="23" min="0" max="99">
+                <div class="user-info">Your: 2,3,11,14,26</div>
+                <button class="btn btn-secondary">
+                    <i data-lucide="shuffle"></i>
+                    Rand
+                </button>
+                <button class="btn btn-primary">
+                    <i data-lucide="check"></i>
+                    Buy
+                </button>
+            </div>
+        </div>
+        
+        <!-- Bottom -->
+        <div class="bottom-section">
+            <a href="#" class="view-full-board">
+                <span>View Full Board</span>
+                <i data-lucide="arrow-right"></i>
+            </a>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-square" style="background: var(--grid-available);"></div>
+                    <span>Open</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-square" style="background: var(--grid-user-owned);"></div>
+                    <span>Yours</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-square" style="background: var(--grid-taken);"></div>
+                    <span>Taken</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const gridCells = document.querySelectorAll('.grid-available');
+            const squareInput = document.querySelector('.square-input');
+            const randomBtn = document.querySelector('.btn-secondary');
+            const confirmBtn = document.querySelector('.btn-primary');
+            
+            // Grid cell tap handler
+            gridCells.forEach(cell => {
+                cell.addEventListener('click', function() {
+                    const row = Array.from(this.parentElement.children).indexOf(this.parentElement.children[0]);
+                    const col = Array.from(this.parentElement.children).indexOf(this) - 1;
+                    const squareNumber = (Math.floor((Array.from(this.parentElement.parentElement.children).indexOf(this.parentElement) - 1) / 11) * 10) + (Array.from(this.parentElement.children).indexOf(this) - 1);
+                    
+                    if (squareNumber >= 0 && squareNumber <= 99) {
+                        squareInput.value = squareNumber;
+                    }
+                    
+                    // Visual feedback
+                    this.style.transform = 'scale(1.4)';
+                    this.style.background = 'var(--accent)';
+                    this.style.color = 'var(--accent-foreground)';
+                    
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        this.style.background = '';
+                        this.style.color = '';
+                    }, 200);
+                });
+            });
+            
+            // Random button
+            randomBtn.addEventListener('click', function() {
+                const randomSquare = Math.floor(Math.random() * 100);
+                squareInput.value = randomSquare;
+                
+                this.style.transform = 'rotate(10deg) scale(1.1)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+            
+            // Confirm button
+            confirmBtn.addEventListener('click', function() {
+                this.innerHTML = '<i data-lucide="check"></i> Done!';
+                this.style.background = 'var(--primary)';
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i data-lucide="check"></i> Buy';
+                    lucide.createIcons();
+                }, 800);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, memo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,7 +11,12 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { NotificationIcon } from '@/components/notifications/NotificationIcon';
 
-const InAppHeaderComponent = () => {
+interface InAppHeaderProps {
+  showBalancePill?: boolean;
+  balance?: number | null;
+}
+
+const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InAppHeaderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -94,14 +100,42 @@ const InAppHeaderComponent = () => {
       {user && (
         <div className="flex items-center space-x-3">
           <NotificationIcon />
-          <button 
-            onClick={handleWalletClick} 
-            aria-label="Wallet" 
-            className="hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading}
-          >
-            <BiWallet size={24} style={{ color: '#1bb0f2' }} />
-          </button>
+          <div className="relative flex items-center justify-end min-w-[28px]">
+          <AnimatePresence mode="wait" initial={false}>
+            {showBalancePill ? (
+              <motion.button
+                key="pill"
+                onClick={handleWalletClick}
+                aria-label="Wallet Balance"
+                className="h-7 px-2 rounded-full bg-black/20 border border-white/10 text-white backdrop-blur-sm hover:bg-black/30 flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+                style={{ transformOrigin: 'center right' }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+              >
+                <BiWallet size={18} style={{ color: '#1bb0f2' }} />
+                <span className="text-xs tabular-nums">${(balance ?? 0).toFixed(2)}</span>
+              </motion.button>
+            ) : (
+              <motion.button 
+                key="icon"
+                onClick={handleWalletClick} 
+                aria-label="Wallet" 
+                className="h-7 w-7 rounded-full flex items-center justify-center hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+                style={{ transformOrigin: 'center right' }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.6 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+              >
+                <BiWallet size={22} style={{ color: '#1bb0f2' }} />
+              </motion.button>
+            )}
+          </AnimatePresence>
+          </div>
         </div>
       )}
     </div>

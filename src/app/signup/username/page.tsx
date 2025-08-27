@@ -14,6 +14,7 @@ import { toast } from 'react-hot-toast';
 import { MailCheck, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { motion } from 'framer-motion'
 
 export default function UsernamePage() {
   const router = useRouter();
@@ -157,7 +158,7 @@ export default function UsernamePage() {
   return (
     <div className="min-h-screen flex flex-col justify-between bg-background">
       {/* Main content block matching email */}
-      <div className="flex-grow flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex-grow flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
           <h1 className="text-2xl font-semibold text-white mb-6">Choose a username</h1>
           <p className="text-sm text-text-secondary mb-6">
              Create a username between 3 to 20 characters, letters and numbers only no spaces.
@@ -203,7 +204,7 @@ export default function UsernamePage() {
           </form>
 
           {/* Checkbox container is MOVED to footer */}
-      </div>
+      </motion.div>
       {/* Footer block matching email */}
       <div className="w-full max-w-sm mx-auto px-5 pb-8">
         {/* Checkbox and Terms - Moved here, remove mt-4, add mb-4 */}
@@ -229,15 +230,17 @@ export default function UsernamePage() {
         <div>
           <SignupProgressDots currentStep={currentStep} totalSteps={totalSteps} />
         </div>
-        <Button
-            type="submit" 
-            form="username-form" 
-            disabled={isLoading}
-            className={`w-full flex items-center justify-center gap-2 font-medium text-base py-3.5 px-5 rounded-lg transition-opacity mt-6 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
-            style={{ backgroundColor: isLoading ? '#cccccc' : '#1bb0f2', color: isLoading ? '#666666' : '#202020' }}
-        >
-            {isLoading ? 'Completing Signup...' : 'Complete Signup'} {isLoading && <FiCheck className="animate-pulse"/>}
-        </Button>
+        <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+          <Button
+              type="submit" 
+              form="username-form" 
+              disabled={isLoading}
+              className={`w-full flex items-center justify-center gap-2 font-medium text-base py-3.5 px-5 rounded-lg transition-opacity mt-6 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
+              style={{ backgroundColor: isLoading ? '#cccccc' : '#1bb0f2', color: isLoading ? '#666666' : '#202020' }}
+          >
+              {isLoading ? 'Completing Signup...' : 'Complete Signup'} {isLoading && <FiCheck className="animate-pulse"/>}
+          </Button>
+        </motion.div>
         <div className="text-center mt-4">
           <Link href="/signup/identity" className="text-sm text-gray-400 hover:text-white hover:underline">Back</Link>
         </div>

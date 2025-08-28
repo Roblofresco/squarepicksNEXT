@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -39,7 +39,7 @@ const functionsInstance = getFunctions(app, 'us-east1'); // NEW: Specify region
 // Initialize the callable function reference directly here if not already done elsewhere
 const verifyLocationFromCoordsCallable = httpsCallable(functionsInstance, 'verifyLocationFromCoords');
 
-export default function LocationSetupPage() {
+function LocationSetupPageContent() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   // Renamed isLoading to isVerifyingLocation, default to false for initial page render
@@ -104,8 +104,8 @@ export default function LocationSetupPage() {
     setError(null);
     console.log("Attempting geolocation...");
 
-    if (!navigator.geolocation) {
-      console.error('Geolocation API not supported.');
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      console.error('Geolocation API not supported or running in SSR.');
       setError('Geolocation is not supported by your browser. Please ensure it is enabled in your browser settings.');
       setIsVerifyingLocation(false); // Spinner off
       return;
@@ -335,5 +335,13 @@ export default function LocationSetupPage() {
         </AlertDialog>
     </div>
     </>
+  );
+} 
+
+export default function LocationSetupPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LocationSetupPageContent />
+    </Suspense>
   );
 } 

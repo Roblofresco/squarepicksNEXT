@@ -28,8 +28,6 @@ export default function InfoPageShell({
   }, [])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
     const handleMouseMove = (event: MouseEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY })
     }
@@ -38,7 +36,7 @@ export default function InfoPageShell({
   }, [])
 
   useEffect(() => {
-    if (!isMounted || !canvasRef.current || typeof window === 'undefined') return
+    if (!isMounted || !canvasRef.current) return
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     if (!(ctx instanceof CanvasRenderingContext2D)) return
@@ -98,15 +96,13 @@ export default function InfoPageShell({
 
   return (
     <div className="min-h-screen bg-background-primary text-white relative">
-      {isMounted && <canvas ref={canvasRef} className="fixed inset-0 -z-1 pointer-events-none" id={canvasId} />}
-      {isMounted && (
-        <div
-          className="pointer-events-none fixed inset-0 z-0 transition duration-300"
-          style={{
-            background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
-          }}
-        />
-      )}
+      <canvas ref={canvasRef} className="fixed inset-0 -z-1 pointer-events-none" id={canvasId} />
+      <div
+        className="pointer-events-none fixed inset-0 z-0 transition duration-300"
+        style={{
+          background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
+        }}
+      />
       <main className="container mx-auto px-4 py-12 relative z-10">
         <nav className="py-6 flex justify-between items-center">
           <Link href="/" className="block">

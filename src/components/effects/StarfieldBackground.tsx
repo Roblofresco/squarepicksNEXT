@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useEffect, memo, useState } from 'react';
+import React, { useRef, useEffect, memo } from 'react';
 import { cn } from '@/lib/utils'; // Assuming cn utility exists
 
 interface StarfieldBackgroundProps {
@@ -19,14 +19,9 @@ const StarfieldBackgroundComponent: React.FC<StarfieldBackgroundProps> = ({
     resetAreaSize = 100,
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (!canvasRef.current || !isMounted || typeof window === 'undefined') return;
+        if (!canvasRef.current) return;
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -38,7 +33,6 @@ const StarfieldBackgroundComponent: React.FC<StarfieldBackgroundProps> = ({
         let canvasCenterY = window.innerHeight / 2;
 
         const setup = () => {
-            if (!canvas || typeof window === 'undefined') return;
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             canvasCenterX = canvas.width / 2;
@@ -66,7 +60,7 @@ const StarfieldBackgroundComponent: React.FC<StarfieldBackgroundProps> = ({
         };
 
         const animate = () => {
-            if (!canvasRef.current || !ctx || typeof window === 'undefined') return; // Ensure canvas exists in loop
+            if (!canvasRef.current) return; // Ensure canvas exists in loop
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             stars.forEach((star, index) => {
@@ -117,24 +111,13 @@ const StarfieldBackgroundComponent: React.FC<StarfieldBackgroundProps> = ({
         animate();
 
         const handleResize = () => setup();
-        if (typeof window !== 'undefined') {
-            window.addEventListener('resize', handleResize);
-        }
+        window.addEventListener('resize', handleResize);
 
         return () => {
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-            if (typeof window !== 'undefined') {
-                window.removeEventListener('resize', handleResize);
-            }
+            cancelAnimationFrame(animationFrameId);
+            window.removeEventListener('resize', handleResize);
         };
-    }, [numStars, starColor, speedFactor, resetAreaSize, isMounted]); // Add props to dependency array
-
-    // Don't render canvas during SSR
-    if (!isMounted) {
-        return null;
-    }
+    }, [numStars, starColor, speedFactor, resetAreaSize]); // Add props to dependency array
 
     return (
         <canvas

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { getDoc, setDoc, doc } from "firebase/firestore";
+import { db }from "@/lib/firebase";
 import Link from "next/link";
 import { Loader2, AlertCircle, Save, KeyRound, User, Shield, ArrowRight, X } from "lucide-react";
 import { z } from "zod";
@@ -19,22 +21,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Breadcrumbs from "@/components/navigation/Breadcrumbs";
 
-// Conditional Firebase imports to prevent SSR issues
-let getDoc: any;
-let setDoc: any;
-let doc: any;
-let db: any;
-
-if (typeof window !== 'undefined') {
-  const firestore = require('firebase/firestore');
-  getDoc = firestore.getDoc;
-  setDoc = firestore.setDoc;
-  doc = firestore.doc;
-  
-  const { db: dbInstance } = require('@/lib/firebase');
-  db = dbInstance;
-}
-
 const accountFormSchema = z.object({
   displayName: z.string()
     .min(3, { message: "Display name must be at least 3 characters." })
@@ -51,29 +37,6 @@ interface ProfileData {
 }
 
 const AccountSettingsPage = () => {
-  const [isClient, setIsClient] = useState(false);
-  
-  // Only render auth-dependent content on the client side
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Don't render anything during SSR
-  if (!isClient) {
-    return (
-      <div className="min-h-screen bg-background-primary text-text-primary p-0 flex flex-col">
-        <Breadcrumbs className="mb-3 pl-4 sm:pl-6 mt-2 sm:mt-3" ellipsisOnly backHref="/profile" />
-        <div className="mb-4 pl-4 sm:pl-6">
-          <h1 className="text-2xl font-semibold">Account Settings</h1>
-        </div>
-        <div className="flex justify-center items-center py-20">
-          <Loader2 className="h-12 w-12 animate-spin text-accent-1" />
-        </div>
-      </div>
-    );
-  }
-
-  // Client-side auth hook usage
   const { user, loading: authLoading, reauthenticate, updateEmailAddress } = useAuth();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -95,7 +58,7 @@ const AccountSettingsPage = () => {
   });
 
   useEffect(() => {
-    if (authLoading || !db) return;
+    if (authLoading) return;
     if (!user) {
       setIsLoading(false);
       return;
@@ -122,7 +85,7 @@ const AccountSettingsPage = () => {
     };
 
     fetchProfileData();
-  }, [user, authLoading, form, db]);
+  }, [user, authLoading, form]);
 
   const onSubmit = async (data: AccountFormValues) => {
     if (!user) {

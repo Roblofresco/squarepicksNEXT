@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Info, Trophy, ListChecks, SlidersHorizontal } from 'lucide-react';
+import { Loader2, Info, Trophy, ListChecks } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import SquareCard from '@/components/my-boards/SquareCard'; // Updated import
@@ -17,7 +17,6 @@ import {
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle
 } from "@/components/ui/dialog"; // Import Dialog components
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
 import { AppBoard, TeamInfo, BoardSquare, BoardStatus } from '../../types/myBoards';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,13 +35,12 @@ export default function MyBoardsPage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false); // Added state for login modal
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
-  const [historySort, setHistorySort] = useState<'date' | 'winnings' | 'entry_fee'>('date');
-  const [activeSort, setActiveSort] = useState<'purchased' | 'game_date' | 'entry_fee'>('game_date');
-  const [sortDirActive, setSortDirActive] = useState<'asc' | 'desc'>('asc');
-  const [sortDirHistory, setSortDirHistory] = useState<'asc' | 'desc'>('asc');
+  const [historySort, setHistorySort] = useState<'date' | 'winnings'>('date');
+  const [activeSort, setActiveSort] = useState<'purchased' | 'game_date'>('purchased');
+  const [sortDirActive, setSortDirActive] = useState<'asc' | 'desc'>('desc');
+  const [sortDirHistory, setSortDirHistory] = useState<'asc' | 'desc'>('desc');
   const [sportFilter, setSportFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [amountFilter, setAmountFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   
@@ -50,10 +48,9 @@ export default function MyBoardsPage() {
   const [historyPage, setHistoryPage] = useState<number>(1);
   const pageSize = 9;
   const boardListenersRef = React.useRef<Map<string, { board: () => void; squares: () => void; winners?: () => void; wins?: (() => void)[] }>>(new Map());
-  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user: FirebaseUser | null) => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
       setCurrentUser(user);
         setAuthLoading(false);
       if (!user) {
@@ -465,9 +462,8 @@ export default function MyBoardsPage() {
     const filtered = activeBoardsData.filter((b) => {
       const sportOk = sportFilter === 'all' || (b.sport || '').toLowerCase() === sportFilter.toLowerCase();
       const statusOk = statusFilter === 'all' || statusBucket(b.status) === statusFilter;
-      const amountOk = amountFilter === 'all' || (typeof b.stake === 'number' && b.stake === Number(amountFilter));
       // Active has no search; ignore term
-      return sportOk && statusOk && amountOk;
+      return sportOk && statusOk;
     });
     const multiplier = sortDirActive === 'asc' ? 1 : -1;
     const sorted = [...filtered].sort((a, b) => {
@@ -476,27 +472,21 @@ export default function MyBoardsPage() {
         const tb = b.purchasedAt ? new Date(b.purchasedAt).getTime() : 0;
         return (ta - tb) * multiplier;
       }
-      if (activeSort === 'entry_fee') {
-        const ta = typeof a.stake === 'number' ? a.stake : Number.MAX_SAFE_INTEGER;
-        const tb = typeof b.stake === 'number' ? b.stake : Number.MAX_SAFE_INTEGER;
-        return (ta - tb) * multiplier;
-      }
       const ta = new Date(a.gameDateTime).getTime();
       const tb = new Date(b.gameDateTime).getTime();
       return (ta - tb) * multiplier;
     });
     return sorted;
-  }, [activeBoardsData, sportFilter, statusFilter, amountFilter, activeSort, sortDirActive]);
+  }, [activeBoardsData, sportFilter, statusFilter, activeSort, sortDirActive]);
 
   const filteredHistoricalBoards = useMemo(() => {
     const term = debouncedSearch.trim().toLowerCase();
     const base = historicalBoardsData.filter((b) => {
       const sportOk = sportFilter === 'all' || (b.sport || '').toLowerCase() === sportFilter.toLowerCase();
       const statusOk = statusFilter === 'all' || statusBucket(b.status) === statusFilter;
-      const amountOk = amountFilter === 'all' || (typeof b.stake === 'number' && b.stake === Number(amountFilter));
       const teamText = `${b.homeTeam?.name || ''} ${b.awayTeam?.name || ''}`.toLowerCase();
       const searchOk = term === '' || teamText.includes(term);
-      return sportOk && statusOk && amountOk && searchOk;
+      return sportOk && statusOk && searchOk;
     });
     const multiplier = sortDirHistory === 'asc' ? 1 : -1;
     return [...base].sort((a, b) => {
@@ -505,16 +495,11 @@ export default function MyBoardsPage() {
         const tb = new Date(b.gameDateTime).getTime();
         return (ta - tb) * multiplier;
       }
-      if (historySort === 'entry_fee') {
-        const ta = typeof a.stake === 'number' ? a.stake : Number.MAX_SAFE_INTEGER;
-        const tb = typeof b.stake === 'number' ? b.stake : Number.MAX_SAFE_INTEGER;
-        return (ta - tb) * multiplier;
-      }
       const ta = a.winnings || 0;
       const tb = b.winnings || 0;
       return (ta - tb) * multiplier;
     });
-  }, [historicalBoardsData, sportFilter, statusFilter, amountFilter, debouncedSearch, historySort, sortDirHistory]);
+  }, [historicalBoardsData, sportFilter, statusFilter, debouncedSearch, historySort, sortDirHistory]);
 
   // Debounce History search
   useEffect(() => {
@@ -523,8 +508,8 @@ export default function MyBoardsPage() {
   }, [searchTerm]);
 
   // Reset pagination on filter/sort/search changes
-  useEffect(() => { setActivePage(1); }, [sportFilter, statusFilter, amountFilter, activeSort]);
-  useEffect(() => { setHistoryPage(1); }, [sportFilter, statusFilter, amountFilter, historySort, debouncedSearch]);
+  useEffect(() => { setActivePage(1); }, [sportFilter, statusFilter, activeSort]);
+  useEffect(() => { setHistoryPage(1); }, [sportFilter, statusFilter, historySort, debouncedSearch]);
 
   const FiltersRow: React.FC<{ kind: 'active' | 'history' }> = ({ kind }) => (
     <div className="mb-4 hidden md:flex flex-wrap gap-3 items-center">
@@ -559,29 +544,15 @@ export default function MyBoardsPage() {
           )}
         </SelectContent>
       </Select>
-      <Select value={amountFilter} onValueChange={(v) => setAmountFilter(v)}>
-        <SelectTrigger className="w-[140px] h-8 glass bg-white/5 border-white/15 text-slate-100 hover:bg-white/10">
-          <SelectValue placeholder="Entries" />
-        </SelectTrigger>
-        <SelectContent className="glass bg-white/8 backdrop-blur-md border-white/15 text-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-          <SelectItem value="all">All Entries</SelectItem>
-          <SelectItem value="0">Sweepstakes ($0)</SelectItem>
-          <SelectItem value="1">$1</SelectItem>
-          <SelectItem value="5">$5</SelectItem>
-          <SelectItem value="10">$10</SelectItem>
-          <SelectItem value="20">$20</SelectItem>
-        </SelectContent>
-      </Select>
       {kind === 'active' ? (
         <div className="flex items-center gap-2">
         <Select value={activeSort} onValueChange={(v: any) => setActiveSort(v)}>
-          <SelectTrigger className="w-[220px] h-8 glass bg-white/5 border-white/15 text-slate-100 hover:bg-white/10">
+          <SelectTrigger className="w-[200px] h-8 glass bg-white/5 border-white/15 text-slate-100 hover:bg-white/10">
             <SelectValue placeholder="Sort" />
           </SelectTrigger>
           <SelectContent className="glass bg-white/8 backdrop-blur-md border-white/15 text-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-            <SelectItem value="game_date">Sort: Game Date</SelectItem>
             <SelectItem value="purchased">Sort: Purchased</SelectItem>
-            <SelectItem value="entry_fee">Sort: Entry Fee</SelectItem>
+            <SelectItem value="game_date">Sort: Game Date</SelectItem>
           </SelectContent>
         </Select>
         <Button size="icon" variant="outline" className="h-8 w-8 glass bg-white/5 border-white/15 text-slate-100"
@@ -593,12 +564,11 @@ export default function MyBoardsPage() {
       ) : (
         <div className="flex items-center gap-2">
         <Select value={historySort} onValueChange={(v: any) => setHistorySort(v)}>
-          <SelectTrigger className="w-[180px] h-8 glass bg-white/5 border-white/15 text-slate-100 hover:bg-white/10">
+          <SelectTrigger className="w-[150px] h-8 glass bg-white/5 border-white/15 text-slate-100 hover:bg-white/10">
             <SelectValue placeholder="Sort" />
           </SelectTrigger>
           <SelectContent className="glass bg-white/8 backdrop-blur-md border-white/15 text-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
             <SelectItem value="date">Sort: Date</SelectItem>
-            <SelectItem value="entry_fee">Sort: Entry Fee</SelectItem>
             <SelectItem value="winnings">Sort: Winnings</SelectItem>
           </SelectContent>
         </Select>
@@ -614,7 +584,7 @@ export default function MyBoardsPage() {
           <Input placeholder="Search teams" className="h-8 glass bg-white/5 border-white/15 text-slate-100 placeholder:text-slate-400" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
       )}
-      <Button variant="outline" size="sm" className="ml-auto md:ml-0 glass bg-white/5 border-white/15 text-slate-100 hover:bg-white/10" onClick={() => { setSportFilter('all'); setStatusFilter('all'); setAmountFilter('all'); setHistorySort('date'); setSortDirHistory('asc'); setActiveSort('game_date'); setSortDirActive('asc'); setSearchTerm(''); }}>Reset</Button>
+      <Button variant="outline" size="sm" className="ml-auto md:ml-0 glass bg-white/5 border-white/15 text-slate-100 hover:bg-white/10" onClick={() => { setSportFilter('all'); setStatusFilter('all'); setHistorySort('date'); setActiveSort('purchased'); setSearchTerm(''); }}>Reset</Button>
     </div>
   );
 
@@ -734,8 +704,8 @@ export default function MyBoardsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background-primary pb-16"> {/* Added pb-16 for BottomNav clearance */}
-      <main className="flex-grow container mx-auto py-2 px-4">
-        <header className="mb-8 flex items-center gap-3">
+      <main className="flex-grow container mx-auto py-8 px-4">
+        <header className="mb-4 flex items-center gap-3">
           <Image src="/brandkit/logos/sp-logo-app-icon.png" alt="SquarePicks" width={28} height={28} className="rounded" />
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-text-primary">My Boards</h1>
         </header>
@@ -745,28 +715,20 @@ export default function MyBoardsPage() {
             <TabsList className="inline-flex gap-2">
             <TabsTrigger 
               value="active"
-              className="relative overflow-hidden px-3 py-1.5 rounded-md text-text-secondary transition-colors hover:text-text-primary hover:bg-black/10 data-[state=active]:text-text-primary data-[state=active]:bg-transparent data-[state=active]:before:content-[''] data-[state=active]:before:absolute data-[state=active]:before:inset-0 data-[state=active]:before:rounded-md data-[state=active]:before:pointer-events-none data-[state=active]:before:-z-10 data-[state=active]:before:bg-[radial-gradient(ellipse_at_center,rgba(20,28,48,0.6)_0%,rgba(20,28,48,0.35)_65%,rgba(20,28,48,0)_100%)]"
+              className="px-3 py-1.5 rounded-md text-text-secondary transition-colors hover:text-text-primary hover:bg-black/10 data-[state=active]:text-white data-[state=active]:bg-[radial-gradient(ellipse_at_center,rgba(20,28,48,0.6)_0%,rgba(20,28,48,0.35)_65%,rgba(20,28,48,0)_100%)]"
             >
               Active
             </TabsTrigger>
-            <span aria-hidden className="mx-0.5 h-5 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
             <TabsTrigger 
               value="history"
-              className="relative overflow-hidden px-3 py-1.5 rounded-md text-text-secondary transition-colors hover:text-text-primary hover:bg-black/10 data-[state=active]:text-text-primary data-[state=active]:bg-transparent data-[state=active]:before:content-[''] data-[state=active]:before:absolute data-[state=active]:before:inset-0 data-[state=active]:before:rounded-md data-[state=active]:before:pointer-events-none data-[state=active]:before:-z-10 data-[state=active]:before:bg-[radial-gradient(ellipse_at_center,rgba(20,28,48,0.6)_0%,rgba(20,28,48,0.35)_65%,rgba(20,28,48,0)_100%)]"
+              className="px-3 py-1.5 rounded-md text-text-secondary transition-colors hover:text-text-primary hover:bg-black/10 data-[state=active]:text-white data-[state=active]:bg-[radial-gradient(ellipse_at_center,rgba(20,28,48,0.6)_0%,rgba(20,28,48,0.35)_65%,rgba(20,28,48,0)_100%)]"
             >
               History
             </TabsTrigger>
           </TabsList>
-            {/* Mobile Filter Button */}
-            <div className="md:hidden ml-auto">
-              <Button variant="outline" size="sm" className="glass bg-white/5 border-white/15 text-slate-100 hover:bg-white/10"
-                onClick={() => setIsFilterOpen(true)} aria-label="Open filters">
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
-                Filter
-              </Button>
-            </div>
+            
           </div>
-          <div className="mt-1 mb-0 h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <div className="border-b border-white/10 my-4" />
           <TabsContent value="active" className="mt-0">
             {renderBoardGrid(filteredActiveBoards, 'active')}
           </TabsContent>
@@ -774,128 +736,6 @@ export default function MyBoardsPage() {
             {renderBoardGrid(filteredHistoricalBoards, 'history')}
           </TabsContent>
         </Tabs>
-        {/* Mobile Filters Drawer */}
-        <Drawer open={isFilterOpen} onOpenChange={setIsFilterOpen} direction="bottom">
-          <DrawerContent className="md:hidden bg-background/80 backdrop-blur-md border-white/15 text-text-primary">
-            <div className="mx-auto mt-1 h-1.5 w-14 rounded-full bg-white/30" aria-hidden="true" />
-            <DrawerHeader className="pt-3 pb-1">
-              <DrawerTitle className="text-text-primary">Filters</DrawerTitle>
-            </DrawerHeader>
-            <div className="px-4 pb-4 space-y-4">
-              <div className="grid grid-cols-1 gap-3">
-                <div className="space-y-2">
-                  <div className="text-sm text-text-secondary">Sport</div>
-                  <Select value={sportFilter} onValueChange={(v) => setSportFilter(v)}>
-                    <SelectTrigger className="h-10 glass bg-white/5 border-white/15 text-text-primary hover:bg-white/10">
-                      <SelectValue placeholder="Sport" />
-                    </SelectTrigger>
-                    <SelectContent className="glass bg-white/8 backdrop-blur-md border-white/15 text-text-primary z-[80]">
-                      <SelectItem value="all">All Sports</SelectItem>
-                      <SelectItem value="NFL">NFL</SelectItem>
-                      <SelectItem value="NBA">NBA</SelectItem>
-                      <SelectItem value="WNBA">WNBA</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="text-sm text-text-secondary">Status</div>
-                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
-                    <SelectTrigger className="h-10 glass bg-white/5 border-white/15 text-text-primary hover:bg-white/10">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent className="glass bg-white/8 backdrop-blur-md border-white/15 text-text-primary z-[80]">
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      {activeTab === 'active' ? (
-                        <>
-                          <SelectItem value="open">Open</SelectItem>
-                          <SelectItem value="full">Full</SelectItem>
-                          <SelectItem value="in_progress">In Progress</SelectItem>
-                        </>
-                      ) : (
-                        <>
-                          <SelectItem value="final">Processed</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                        </>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="text-sm text-text-secondary">Entries</div>
-                  <Select value={amountFilter} onValueChange={(v) => setAmountFilter(v)}>
-                    <SelectTrigger className="h-10 glass bg-white/5 border-white/15 text-text-primary hover:bg-white/10">
-                      <SelectValue placeholder="Entries" />
-                    </SelectTrigger>
-                    <SelectContent className="glass bg-white/8 backdrop-blur-md border-white/15 text-text-primary z-[80]">
-                      <SelectItem value="all">All Entries</SelectItem>
-                      <SelectItem value="0">Sweepstakes ($0)</SelectItem>
-                      <SelectItem value="1">$1</SelectItem>
-                      <SelectItem value="5">$5</SelectItem>
-                      <SelectItem value="10">$10</SelectItem>
-                      <SelectItem value="20">$20</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {activeTab === 'active' ? (
-                  <div className="space-y-2">
-                    <div className="text-sm text-text-secondary">Sort</div>
-                    <div className="flex items-center gap-2">
-                      <Select value={activeSort} onValueChange={(v: any) => setActiveSort(v)}>
-                        <SelectTrigger className="flex-1 h-10 glass bg-white/5 border-white/15 text-text-primary hover:bg-white/10">
-                          <SelectValue placeholder="Sort" />
-                        </SelectTrigger>
-                        <SelectContent className="glass bg-white/8 backdrop-blur-md border-white/15 text-text-primary z-[80]">
-                          <SelectItem value="game_date">Sort: Game Date</SelectItem>
-                          <SelectItem value="purchased">Sort: Purchased</SelectItem>
-                          <SelectItem value="entry_fee">Sort: Entry Fee</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <ToggleGroup type="single" value={sortDirActive} onValueChange={(v) => v && setSortDirActive(v as 'asc' | 'desc')}>
-                        <ToggleGroupItem value="asc" aria-label="Ascending" className="h-10">↑</ToggleGroupItem>
-                        <ToggleGroupItem value="desc" aria-label="Descending" className="h-10">↓</ToggleGroupItem>
-                      </ToggleGroup>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <div className="text-sm text-text-secondary">Sort</div>
-                      <div className="flex items-center gap-2">
-                        <Select value={historySort} onValueChange={(v: any) => setHistorySort(v)}>
-                          <SelectTrigger className="flex-1 h-10 glass bg-white/5 border-white/15 text-text-primary hover:bg-white/10">
-                            <SelectValue placeholder="Sort" />
-                          </SelectTrigger>
-                          <SelectContent className="glass bg-white/8 backdrop-blur-md border-white/15 text-text-primary z-[80]">
-                            <SelectItem value="date">Sort: Date</SelectItem>
-                            <SelectItem value="entry_fee">Sort: Entry Fee</SelectItem>
-                            <SelectItem value="winnings">Sort: Winnings</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <ToggleGroup type="single" value={sortDirHistory} onValueChange={(v) => v && setSortDirHistory(v as 'asc' | 'desc')}>
-                          <ToggleGroupItem value="asc" aria-label="Ascending" className="h-10">↑</ToggleGroupItem>
-                          <ToggleGroupItem value="desc" aria-label="Descending" className="h-10">↓</ToggleGroupItem>
-                        </ToggleGroup>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm text-text-secondary">Search teams</div>
-                      <Input placeholder="Search teams" className="h-10 glass bg-white/5 border-white/15 text-text-primary placeholder:text-slate-400" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-            <DrawerFooter className="border-t border-white/10">
-              <div className="flex items-center gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => { setSportFilter('all'); setStatusFilter('all'); setAmountFilter('all'); setHistorySort('date'); setSortDirHistory('asc'); setActiveSort('game_date'); setSortDirActive('asc'); setSearchTerm(''); }}>Reset</Button>
-                <Button className="flex-1" onClick={() => setIsFilterOpen(false)}>Apply</Button>
-              </div>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
       </main>
       <BottomNav user={currentUser} onProtectedAction={handleProtectedAction} /> {/* Passed props */}
       

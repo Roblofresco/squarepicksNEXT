@@ -16,21 +16,17 @@ const firebaseConfig = {
   // measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID // Optional: Add if using Analytics
 };
 
-// Initialize Firebase only on the client side
-let app: any = null;
-let db: any = null;
-let auth: any = null;
+// Initialize Firebase
+// Check if Firebase app has already been initialized to avoid errors during hot-reloading
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
+// Get Firebase services
+const db = getFirestore(app);
+const auth = getAuth(app);
+// const analytics = getAnalytics(app); // Optional
+
+// Initialize App Check in the browser to satisfy Firestore/AppCheck enforcement
 if (typeof window !== 'undefined') {
-  // Check if Firebase app has already been initialized to avoid errors during hot-reloading
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-  // Get Firebase services
-  db = getFirestore(app);
-  auth = getAuth(app);
-  // const analytics = getAnalytics(app); // Optional
-
-  // Initialize App Check in the browser to satisfy Firestore/AppCheck enforcement
   try {
     // Enable debug token on localhost if configured
     if (process.env.NEXT_PUBLIC_APPCHECK_DEBUG === 'true') {

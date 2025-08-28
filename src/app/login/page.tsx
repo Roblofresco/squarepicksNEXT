@@ -5,7 +5,7 @@
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 // Added useRef
-import { useState, useEffect, useRef, Suspense } from 'react' 
+import { useState, useEffect, useRef } from 'react' 
 import { FiUser, FiLock, FiArrowLeft, FiEye, FiEyeOff } from 'react-icons/fi'
 import { useRouter } from 'next/navigation'
 // Firebase Imports
@@ -18,7 +18,7 @@ import { LoginForm } from "@/components/auth/LoginForm"
 // Import the correct LogoCube component dynamically
 const LogoCube = dynamic(() => import('@/components/LogoCube'), { ssr: false })
 
-function LoginPageContent() {
+export default function LoginPage() {
   const router = useRouter();
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   // --- Login State ---
@@ -41,8 +41,6 @@ function LoginPageContent() {
 
   // Combined useEffect for pointer/mouse tracking
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
     const handlePointerMove = (event: PointerEvent) => {
       // Rotation logic (remains the same)
       const windowHalfX = window.innerWidth / 2;
@@ -64,7 +62,7 @@ function LoginPageContent() {
 
   // Canvas Animation for Twinkling Stars (copied from page.tsx)
   useEffect(() => {
-    if (!isMounted || !canvasRef.current || typeof window === 'undefined') return;
+    if (!isMounted || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -318,13 +316,5 @@ function LoginPageContent() {
         </div>
       </div>
     </main>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LoginPageContent />
-    </Suspense>
   );
 } 

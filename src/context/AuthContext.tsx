@@ -1,11 +1,30 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User as FirebaseUser, reauthenticateWithCredential, EmailAuthProvider, updateEmail } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+
+// Conditional Firebase imports to prevent SSR issues
+let onAuthStateChanged: any;
+let User: any;
+let reauthenticateWithCredential: any;
+let EmailAuthProvider: any;
+let updateEmail: any;
+let auth: any;
+
+if (typeof window !== 'undefined') {
+  const firebaseAuth = require('firebase/auth');
+  onAuthStateChanged = firebaseAuth.onAuthStateChanged;
+  User = firebaseAuth.User;
+  reauthenticateWithCredential = firebaseAuth.reauthenticateWithCredential;
+  EmailAuthProvider = firebaseAuth.EmailAuthProvider;
+  updateEmail = firebaseAuth.updateEmail;
+  
+  // Import the auth instance
+  const { auth: authInstance } = require('@/lib/firebase');
+  auth = authInstance;
+}
 
 interface AuthContextType {
-  user: FirebaseUser | null;
+  user: any;
   loading: boolean;
   reauthenticate: (password: string) => Promise<void>;
   updateEmailAddress: (newEmail: string, password: string) => Promise<void>;
@@ -14,11 +33,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (!auth) return;
+    
+    const unsubscribe = onAuthStateChanged(auth, (user: any) => {
       setUser(user);
       setLoading(false);
     });

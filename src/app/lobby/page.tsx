@@ -19,7 +19,7 @@ import InAppHeader from '@/components/InAppHeader';
 import { Sport, Game as GameType, Board as BoardType, TeamInfo, SquareEntry } from '@/types/lobby';
 import { initialSportsData, SWEEPSTAKES_SPORT_ID, FREE_BOARD_ENTRY_FEE, BOARD_STATUS_OPEN, DEFAULT_BOARD_ENTRY_FEE } from '@/config/lobbyConfig';
 import SweepstakesScoreboard from '@/components/lobby/sweepstakes/SweepstakesScoreboard';
-import StarfieldBackground from '@/components/effects/StarfieldBackground';
+// StarfieldBackground now imported dynamically above
 import SweepstakesBoardCard from '@/components/lobby/sweepstakes/SweepstakesBoardCard';
 import {
   collection, query, where, onSnapshot, doc, getDoc, getDocs,
@@ -30,6 +30,15 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import { useWallet } from '@/hooks/useWallet';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Wallet } from 'lucide-react';
+
+// Import StarfieldBackground dynamically to prevent SSR issues
+import dynamic from 'next/dynamic';
+
+// Dynamic import with no SSR to prevent build errors
+const StarfieldBackground = dynamic(() => import('@/components/effects/StarfieldBackground'), { 
+  ssr: false,
+  loading: () => null
+});
 
 // Define EntryInteractionState locally
 interface EntryInteractionState {

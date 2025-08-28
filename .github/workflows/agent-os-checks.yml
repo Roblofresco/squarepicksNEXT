@@ -8,6 +8,32 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install deps
+        run: npm ci --no-audit --no-fund
+      - name: Run Agent OS verification
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/agent-os-verify.mjs
+
+  e2e:
+    if: github.event_name == 'pull_request' && contains(join(fromJson(toJson(github.event.pull_request.labels)).*.name, ','), 'e2e')
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -15,7 +41,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Run Agent OS verification
+      - name: Install deps
+        run: npm ci --no-audit --no-fund
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+      - name: Run Playwright tests
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/agent-os-verify.mjs 
+          PW_BASE_URL: https://localhost:3000
+        run: npx playwright test -c playwright.config.ts 

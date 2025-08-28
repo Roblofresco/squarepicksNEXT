@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { InfoNavbar } from './InfoNavbar';
 
 export type InfoPageShellProps = PropsWithChildren<{
   canvasId?: string;
@@ -124,8 +125,22 @@ export default function InfoPageShell({
         </nav>
 
         <section className={`py-12 relative ${containerClassName ?? ''}`}>
-          <div className="absolute inset-0 opacity-65 bg-gradient-to-b from-[rgb(var(--color-background-primary))] via-[rgb(var(--color-background-secondary))] via-15% to-[rgb(var(--color-background-secondary))] backdrop-blur-sm rounded-lg border border-gray-600/60 shadow-lg -z-10"></div>
-          <div className="relative z-0 p-6 md:p-10">{children}</div>
+          <div 
+            className="absolute inset-0 opacity-65 bg-gradient-to-b from-[rgb(var(--color-background-primary))] via-[rgb(var(--color-background-secondary))] via-15% to-[rgb(var(--color-background-secondary))] backdrop-blur-sm rounded-lg border border-white/10 shadow-xl -z-10"
+            style={{
+              boxShadow: `
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                0 4px 12px -2px rgba(0, 0, 0, 0.4),
+                0 0 40px -10px rgba(88, 85, 228, 0.15)
+              `
+            }}
+          />
+          <div className="relative z-0">
+            <InfoNavbar />
+            <div className="p-6 md:p-10 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+              {children}
+            </div>
+          </div>
         </section>
 
         <footer className="py-12 border-t border-gray-800">

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solid Wallet Icon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .icon-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .icon-wrapper {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Basic Wallet Icon */
+        .wallet-icon {
+            width: 120px;
+            height: 100px;
+            position: relative;
+        }
+        
+        .wallet-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Wallet as Container */
+        .wallet-container-icon {
+            width: 200px;
+            height: 250px;
+            background: #1f2937;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .wallet-container-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: #111827;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .wallet-container-icon::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 20px;
+            background: #fbbf24;
+            border-radius: 10px;
+        }
+        
+        .wallet-content-area {
+            position: absolute;
+            top: 80px;
+            left: 15px;
+            right: 15px;
+            bottom: 0;
+            background: #374151;
+            border-radius: 10px 10px 0 0;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .wallet-item {
+            background: #4b5563;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            color: #e5e7eb;
+            font-size: 0.875rem;
+        }
+        
+        /* Minimalist Wallet Icon */
+        .wallet-minimal {
+            width: 100px;
+            height: 80px;
+            background: #3b82f6;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .wallet-minimal::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 20px;
+            background: #2563eb;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .wallet-minimal::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+        
+        /* Outline Wallet Icon */
+        .wallet-outline {
+            width: 100px;
+            height: 80px;
+            border: 4px solid #10b981;
+            border-radius: 12px;
+            position: relative;
+            background: transparent;
+        }
+        
+        .wallet-outline::before {
+            content: '';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 20px;
+            border: 4px solid #10b981;
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            background: white;
+        }
+        
+        /* 3D Wallet Icon */
+        .wallet-3d {
+            width: 100px;
+            height: 80px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border-radius: 12px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateY(-15deg);
+            box-shadow: 
+                10px 10px 20px rgba(0, 0, 0, 0.2),
+                -5px -5px 10px rgba(255, 255, 255, 0.1);
+        }
+        
+        .wallet-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .wallet-3d::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 10px;
+            background: #fbbf24;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Flat Design Wallet */
+        .wallet-flat {
+            width: 100px;
+            height: 80px;
+            background: #ec4899;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .wallet-flat::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        
+        /* Labels */
+        .label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            text-align: center;
+        }
+        
+        /* Hover Effects */
+        .wallet-icon:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .wallet-minimal:hover,
+        .wallet-outline:hover,
+        .wallet-3d:hover,
+        .wallet-flat:hover {
+            transform: scale(1.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .wallet-3d:hover {
+            transform: rotateY(-15deg) scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase">
+        <!-- SVG Wallet Icon -->
+        <div class="icon-container">
+            <div class="icon-wrapper">
+                <div class="wallet-icon">
+                    <svg viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Wallet Body -->
+                        <rect x="10" y="20" width="100" height="70" rx="10" fill="#1f2937"/>
+                        
+                        <!-- Wallet Flap -->
+                        <path d="M10 30 Q10 20 20 20 L100 20 Q110 20 110 30 L110 35 Q110 40 105 40 L15 40 Q10 40 10 35 Z" fill="#111827"/>
+                        
+                        <!-- Clasp -->
+                        <rect x="45" y="25" width="30" height="10" rx="5" fill="#fbbf24"/>
+                        
+                        <!-- Card Slots -->
+                        <rect x="20" y="50" width="80" height="8" rx="2" fill="#374151"/>
+                        <rect x="20" y="62" width="80" height="8" rx="2" fill="#374151"/>
+                        <rect x="20" y="74" width="80" height="8" rx="2" fill="#374151"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="label">SVG Wallet Icon</p>
+        </div>
+        
+        <!-- Wallet Container -->
+        <div class="icon-container">
+            <div class="icon-wrapper">
+                <div class="wallet-container-icon">
+                    <div class="wallet-content-area">
+                        <div class="wallet-item">Item 1</div>
+                        <div class="wallet-item">Item 2</div>
+                        <div class="wallet-item">Item 3</div>
+                    </div>
+                </div>
+            </div>
+            <p class="label">Wallet Container</p>
+        </div>
+        
+        <!-- Minimalist Wallet -->
+        <div class="icon-container">
+            <div class="icon-wrapper">
+                <div class="wallet-minimal"></div>
+            </div>
+            <p class="label">Minimal Wallet</p>
+        </div>
+        
+        <!-- Outline Wallet -->
+        <div class="icon-container">
+            <div class="icon-wrapper">
+                <div class="wallet-outline"></div>
+            </div>
+            <p class="label">Outline Wallet</p>
+        </div>
+        
+        <!-- 3D Wallet -->
+        <div class="icon-container">
+            <div class="icon-wrapper">
+                <div class="wallet-3d"></div>
+            </div>
+            <p class="label">3D Wallet</p>
+        </div>
+        
+        <!-- Flat Design Wallet -->
+        <div class="icon-container">
+            <div class="icon-wrapper">
+                <div class="wallet-flat"></div>
+            </div>
+            <p class="label">Flat Wallet</p>
+        </div>
+    </div>
+    
+    <!-- Single Large Wallet Icon -->
+    <div style="position: fixed; bottom: 20px; right: 20px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);">
+        <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 15px; text-align: center;">Large Icon</h3>
+        <svg width="200" height="160" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Main Wallet Body -->
+            <rect x="20" y="40" width="160" height="110" rx="15" fill="#1f2937" stroke="#111827" stroke-width="2"/>
+            
+            <!-- Wallet Flap -->
+            <path d="M20 55 Q20 40 35 40 L165 40 Q180 40 180 55 L180 65 Q180 70 175 70 L25 70 Q20 70 20 65 Z" fill="#111827"/>
+            
+            <!-- Clasp/Buckle -->
+            <rect x="75" y="45" width="50" height="20" rx="10" fill="#fbbf24"/>
+            <rect x="85" y="52" width="30" height="6" rx="3" fill="#f59e0b"/>
+            
+            <!-- Inner Pocket -->
+            <rect x="35" y="85" width="130" height="50" rx="8" fill="#374151"/>
+            
+            <!-- Card Slots -->
+            <rect x="45" y="95" width="110" height="10" rx="2" fill="#4b5563"/>
+            <rect x="45" y="110" width="110" height="10" rx="2" fill="#4b5563"/>
+            <rect x="45" y="125" width="110" height="10" rx="2" fill="#4b5563"/>
+            
+            <!-- Side Detail -->
+            <rect x="170" y="60" width="10" height="70" rx="5" fill="#111827" opacity="0.5"/>
+        </svg>
+    </div>
+</body>
+</html>

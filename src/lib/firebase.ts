@@ -1,28 +1,18 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics"; // Optional: Analytics
+// Server-safe Firebase configuration
+// This file is for server-side operations and type definitions only
+// For client-side Firebase operations, use firebase-client.ts
 
-// Your web app's Firebase configuration using environment variables
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  // measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID // Optional: Add if using Analytics
-};
+export interface FirebaseConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  storageBucket: string;
+  messagingSenderId: string;
+  appId: string;
+  measurementId?: string;
+}
 
-// Initialize Firebase
-// Check if Firebase app has already been initialized to avoid errors during hot-reloading
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-// Get Firebase services
-const db = getFirestore(app);
-const auth = getAuth(app);
-// const analytics = getAnalytics(app); // Optional
-
-// Export the initialized services
-export { app, db, auth /*, analytics */ }; // Add other services like 'analytics' if needed
+// Export empty objects for server-side safety
+export const app = null;
+export const db = null;
+export const auth = null;

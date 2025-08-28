@@ -53,7 +53,7 @@ export default function MyBoardsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
+    const unsubscribe = auth.onAuthStateChanged((user: FirebaseUser | null) => {
       setCurrentUser(user);
         setAuthLoading(false);
       if (!user) {

@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getDoc, setDoc, doc } from "firebase/firestore";
-import { db }from "@/lib/firebase";
 import Link from "next/link";
 import { Loader2, AlertCircle, Save, KeyRound, User, Shield, ArrowRight, X } from "lucide-react";
 import { z } from "zod";
@@ -20,6 +18,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Breadcrumbs from "@/components/navigation/Breadcrumbs";
+
+// Conditional Firebase imports to prevent SSR issues
+let getDoc: any;
+let setDoc: any;
+let doc: any;
+let db: any;
+
+if (typeof window !== 'undefined') {
+  const firestore = require('firebase/firestore');
+  getDoc = firestore.getDoc;
+  setDoc = firestore.setDoc;
+  doc = firestore.doc;
+  
+  const { db: dbInstance } = require('@/lib/firebase');
+  db = dbInstance;
+}
 
 const accountFormSchema = z.object({
   displayName: z.string()
@@ -58,7 +72,7 @@ const AccountSettingsPage = () => {
   });
 
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || !db) return;
     if (!user) {
       setIsLoading(false);
       return;
@@ -85,7 +99,7 @@ const AccountSettingsPage = () => {
     };
 
     fetchProfileData();
-  }, [user, authLoading, form]);
+  }, [user, authLoading, form, db]);
 
   const onSubmit = async (data: AccountFormValues) => {
     if (!user) {

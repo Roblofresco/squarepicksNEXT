@@ -51,6 +51,29 @@ interface ProfileData {
 }
 
 const AccountSettingsPage = () => {
+  const [isClient, setIsClient] = useState(false);
+  
+  // Only render auth-dependent content on the client side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Don't render anything during SSR
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-background-primary text-text-primary p-0 flex flex-col">
+        <Breadcrumbs className="mb-3 pl-4 sm:pl-6 mt-2 sm:mt-3" ellipsisOnly backHref="/profile" />
+        <div className="mb-4 pl-4 sm:pl-6">
+          <h1 className="text-2xl font-semibold">Account Settings</h1>
+        </div>
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="h-12 w-12 animate-spin text-accent-1" />
+        </div>
+      </div>
+    );
+  }
+
+  // Client-side auth hook usage
   const { user, loading: authLoading, reauthenticate, updateEmailAddress } = useAuth();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);

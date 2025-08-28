@@ -1,6 +1,6 @@
 'use client'; // Add use client directive
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; // Import useRouter
 import { DollarSign, ArrowDownCircle, ArrowUpCircle, History, Loader2, ArrowLeft, Home } from 'lucide-react'; // Import Home
@@ -22,7 +22,7 @@ import { useSearchParams } from 'next/navigation';
 //   balance: 123.45, // Using the balance from the profile context
 // };
 
-const WalletPage = () => {
+function WalletPageContent() {
   const router = useRouter(); // Get router instance
   const searchParams = useSearchParams();
   const { 
@@ -289,6 +289,14 @@ const WalletPage = () => {
 
       </motion.div>
     </div>
+  );
+}
+
+const WalletPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <WalletPageContent />
+    </Suspense>
   );
 };
 

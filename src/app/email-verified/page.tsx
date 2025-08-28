@@ -2,7 +2,7 @@
 
 import React, { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { auth } from '@/lib/firebase-client'
+import { auth } from '@/lib/firebase'
 import { applyActionCode } from 'firebase/auth'
 import AuthBackground from '@/components/layout/AuthBackground'
 import { Button } from '@/components/ui/button'
@@ -34,11 +34,6 @@ function EmailVerifiedContent() {
 
     if (mode === 'verifyEmail' && oobCode) {
       setIsVerifying(true)
-      if (!auth) {
-        setIsVerifying(false)
-        setIsSuccess(false)
-        return
-      }
       applyActionCode(auth, oobCode)
         .then(() => {
           setIsSuccess(true)

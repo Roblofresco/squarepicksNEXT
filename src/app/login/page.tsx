@@ -9,7 +9,7 @@ import { useState, useEffect, useRef } from 'react'
 import { FiUser, FiLock, FiArrowLeft, FiEye, FiEyeOff } from 'react-icons/fi'
 import { useRouter } from 'next/navigation'
 // Firebase Imports
-import { auth } from '@/lib/firebase-client';
+import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

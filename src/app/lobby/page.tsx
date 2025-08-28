@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast, Toaster } from 'react-hot-toast';
-import { db, auth } from '@/lib/firebase-client'; // Import auth here
+import { db, auth } from '@/lib/firebase'; // Import auth here
 import { User as FirebaseUser } from 'firebase/auth'; // Renamed to avoid conflict
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter

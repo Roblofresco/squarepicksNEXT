@@ -1,0 +1,3 @@
+[33m77835e7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: complete SquarePicks application with Vercel build fixes
+[33mcd11aba[m ui(auth): shared AuthBackground; refactor email-verified and reset-password pages to centered content; fix Suspense usage
+[33m12dd69c[m ui(auth): shared AuthBackground for email-verified/reset-password pages; simplify pages to centered content without card/header/footer

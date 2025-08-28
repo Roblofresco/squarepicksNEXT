@@ -38,6 +38,7 @@ const StarfieldBackgroundComponent: React.FC<StarfieldBackgroundProps> = ({
         let canvasCenterY = window.innerHeight / 2;
 
         const setup = () => {
+            if (!canvas || typeof window === 'undefined') return;
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             canvasCenterX = canvas.width / 2;
@@ -65,7 +66,7 @@ const StarfieldBackgroundComponent: React.FC<StarfieldBackgroundProps> = ({
         };
 
         const animate = () => {
-            if (!canvasRef.current) return; // Ensure canvas exists in loop
+            if (!canvasRef.current || !ctx || typeof window === 'undefined') return; // Ensure canvas exists in loop
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             stars.forEach((star, index) => {
@@ -116,11 +117,17 @@ const StarfieldBackgroundComponent: React.FC<StarfieldBackgroundProps> = ({
         animate();
 
         const handleResize = () => setup();
-        window.addEventListener('resize', handleResize);
+        if (typeof window !== 'undefined') {
+            window.addEventListener('resize', handleResize);
+        }
 
         return () => {
-            cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('resize', handleResize);
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('resize', handleResize);
+            }
         };
     }, [numStars, starColor, speedFactor, resetAreaSize, isMounted]); // Add props to dependency array
 

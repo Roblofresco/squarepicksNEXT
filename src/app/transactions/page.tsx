@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth'; // Assuming you have an auth hook
 import { db } from '@/lib/firebase'; // Assuming Firebase initialized here
@@ -16,7 +16,7 @@ import Breadcrumbs from '@/components/navigation/Breadcrumbs';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // --- Main Component ---
-export default function TransactionsPage() {
+function TransactionsPageContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -266,5 +266,13 @@ export default function TransactionsPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TransactionsPageContent />
+    </Suspense>
   );
 } 

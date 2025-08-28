@@ -2,46 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { toast } from 'sonner';
-
-// Conditional Firebase imports to prevent SSR issues
-let getFirestore: any;
-let collection: any;
-let query: any;
-let where: any;
-let orderBy: any;
-let onSnapshot: any;
-let doc: any;
-let updateDoc: any;
-let writeBatch: any;
-let serverTimestamp: any;
-let Timestamp: any;
-let limit: any;
-let getAuth: any;
-let onAuthStateChanged: any;
-let firestoreInstance: any;
-
-if (typeof window !== 'undefined') {
-  const firebase = require('firebase/firestore');
-  const firebaseAuth = require('firebase/auth');
-  getFirestore = firebase.getFirestore;
-  collection = firebase.collection;
-  query = firebase.query;
-  where = firebase.where;
-  orderBy = firebase.orderBy;
-  onSnapshot = firebase.onSnapshot;
-  doc = firebase.doc;
-  updateDoc = firebase.updateDoc;
-  writeBatch = firebase.writeBatch;
-  serverTimestamp = firebase.serverTimestamp;
-  Timestamp = firebase.Timestamp;
-  limit = firebase.limit;
-  getAuth = firebaseAuth.getAuth;
-  onAuthStateChanged = firebaseAuth.onAuthStateChanged;
-  
-  // Import the db instance
-  const { db } = require('@/lib/firebase');
-  firestoreInstance = db;
-}
+import {
+  getFirestore, collection, query, where, orderBy, onSnapshot,
+  doc, updateDoc, writeBatch, serverTimestamp, Timestamp, limit 
+} from 'firebase/firestore';
+import { getAuth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { db as firestoreInstance } from '@/lib/firebase'; // Assuming db is exported from your firebase config
 
 // Mirror the Notification interface from your components
 // It's good practice to define this in a shared types file (e.g., src/types/notifications.ts)
@@ -72,16 +38,14 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [currentFirebaseUser, setCurrentFirebaseUser] = useState<any>(null);
+  const [currentFirebaseUser, setCurrentFirebaseUser] = useState<FirebaseUser | null>(null);
   const [userPreferences, setUserPreferences] = useState<{ prefersEmail: boolean; prefersSMS: boolean } | null>(null);
 
-  const auth = typeof window !== 'undefined' ? getAuth() : null;
+  const auth = getAuth();
   // const db = getFirestore(); // Using imported firestoreInstance
 
   useEffect(() => {
-    if (!auth) return;
-    
-    const unsubscribeAuth = onAuthStateChanged(auth, (user: any) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setCurrentFirebaseUser(user);
       if (!user) {
         setNotifications([]);
@@ -93,7 +57,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   // Effect for Firestore listener based on currentFirebaseUser
   useEffect(() => {
-    if (currentFirebaseUser && firestoreInstance) {
+    if (currentFirebaseUser) {
       setIsLoading(true);
       const notificationsQuery = query(
         collection(firestoreInstance, "notifications"),
@@ -103,14 +67,14 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       );
 
       const unsubscribeFirestore = onSnapshot(notificationsQuery, 
-        (querySnapshot: any) => {
-          const fetchedNotifications = querySnapshot.docs.map((docSnap: any) => {
+        (querySnapshot) => {
+          const fetchedNotifications = querySnapshot.docs.map(docSnap => {
             const data = docSnap.data();
             return {
               id: docSnap.id,
               message: data.message || 'No message content',
               title: data.title,
-              timestamp: (data.timestamp as any)?.toDate() || new Date(), // Convert Firestore Timestamp to JS Date
+              timestamp: (data.timestamp as Timestamp)?.toDate() || new Date(), // Convert Firestore Timestamp to JS Date
               isRead: data.isRead || false,
               link: data.link,
               type: data.type,
@@ -120,7 +84,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
           setNotifications(fetchedNotifications);
           setIsLoading(false);
         },
-        (error: any) => {
+        (error) => {
           console.error("Error fetching notifications: ", error);
           toast.error("Could not load notifications.");
           setIsLoading(false);
@@ -141,7 +105,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (currentFirebaseUser) {
       const userDocRef = doc(firestoreInstance, "users", currentFirebaseUser.uid);
-      const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnap: any) => {
+      const unsubscribeUserDoc = onSnapshot(userDocRef, (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setUserPreferences({

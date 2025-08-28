@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -25,20 +25,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-// Import StarfieldBackground dynamically to prevent SSR issues
-import dynamic from 'next/dynamic';
+// Import StarfieldBackground
+import StarfieldBackground from '@/components/effects/StarfieldBackground';
 import ProgressBar from '@/components/ui/ProgressBar';
-
-// Dynamic import with no SSR to prevent build errors
-const StarfieldBackground = dynamic(() => import('@/components/effects/StarfieldBackground'), { 
-  ssr: false,
-  loading: () => null
-});
 
 // Define the list of ineligible states
 const INELIGIBLE_STATES: string[] = ['CO', 'MD', 'NE', 'ND', 'VT'];
 
-function LocationSetupPageContent() {
+// Get a Functions instance, specifying the region
+// const functionsInstance = getFunctions(); // OLD
+const functionsInstance = getFunctions(app, 'us-east1'); // NEW: Specify region
+
+// Initialize the callable function reference directly here if not already done elsewhere
+const verifyLocationFromCoordsCallable = httpsCallable(functionsInstance, 'verifyLocationFromCoords');
+
+export default function LocationSetupPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   // Renamed isLoading to isVerifyingLocation, default to false for initial page render
@@ -50,20 +51,6 @@ function LocationSetupPageContent() {
   const [determinedState, setDeterminedState] = useState<string | null>(null);
   const [ineligibleStateDetected, setIneligibleStateDetected] = useState<string | null>(null);
   const [showIneligibleDialog, setShowIneligibleDialog] = useState(false);
-
-  // Initialize Firebase functions only when component mounts
-  const [functionsInstance, setFunctionsInstance] = useState<any>(null);
-  const [verifyLocationFromCoordsCallable, setVerifyLocationFromCoordsCallable] = useState<any>(null);
-
-  useEffect(() => {
-    // Only initialize Firebase functions on the client side
-    if (typeof window !== 'undefined') {
-      const functions = getFunctions(app, 'us-east1');
-      const callable = httpsCallable(functions, 'verifyLocationFromCoords');
-      setFunctionsInstance(functions);
-      setVerifyLocationFromCoordsCallable(callable);
-    }
-  }, []);
 
   // Check auth state and redirect if necessary
   useEffect(() => {
@@ -118,7 +105,7 @@ function LocationSetupPageContent() {
     console.log("Attempting geolocation...");
 
     if (!navigator.geolocation) {
-      console.error('Geolocation API not supported or running in SSR.');
+      console.error('Geolocation API not supported.');
       setError('Geolocation is not supported by your browser. Please ensure it is enabled in your browser settings.');
       setIsVerifyingLocation(false); // Spinner off
       return;
@@ -189,7 +176,7 @@ function LocationSetupPageContent() {
       },
       { timeout: 10000, enableHighAccuracy: true } 
     );
-  }, [setIsVerifyingLocation, setError, handleStateVerification, functionsInstance, verifyLocationFromCoordsCallable]);
+  }, [setIsVerifyingLocation, setError, handleStateVerification]);
 
   // Effect to attempt geolocation once user is confirmed and auth loading is complete
   useEffect(() => {
@@ -348,13 +335,5 @@ function LocationSetupPageContent() {
         </AlertDialog>
     </div>
     </>
-  );
-} 
-
-export default function LocationSetupPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LocationSetupPageContent />
-    </Suspense>
   );
 } 

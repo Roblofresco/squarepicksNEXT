@@ -14,8 +14,6 @@ export default function AuthBackground({ canvasId, children }: AuthBackgroundPro
   useEffect(() => setIsMounted(true), [])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
     const handlePointerMove = (event: PointerEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY })
     }
@@ -24,7 +22,7 @@ export default function AuthBackground({ canvasId, children }: AuthBackgroundPro
   }, [])
 
   useEffect(() => {
-    if (!isMounted || !canvasRef.current || typeof window === 'undefined') return
+    if (!isMounted || !canvasRef.current) return
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -86,15 +84,13 @@ export default function AuthBackground({ canvasId, children }: AuthBackgroundPro
 
   return (
     <main className="relative w-full h-[100dvh] overflow-hidden flex flex-col bg-background-primary text-white">
-      {isMounted && <canvas ref={canvasRef} className="fixed inset-0 -z-1 pointer-events-none" id={canvasId} />}
-      {isMounted && (
-        <div
-          className="pointer-events-none fixed inset-0 z-0 transition duration-300"
-          style={{
-            background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
-          }}
-        />
-      )}
+      <canvas ref={canvasRef} className="fixed inset-0 -z-1 pointer-events-none" id={canvasId} />
+      <div
+        className="pointer-events-none fixed inset-0 z-0 transition duration-300"
+        style={{
+          background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
+        }}
+      />
       <div className="relative flex-grow flex flex-col items-center justify-center p-5">
         {children}
       </div>

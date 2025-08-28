@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { FiSearch, FiGrid, FiShoppingCart, FiAward } from 'react-icons/fi'
 import { LogoIcon } from "@/components/LogoIcon";
@@ -8,7 +8,7 @@ import { LogoWithText } from "@/components/LogoWithText";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [easterEggActivated, setEasterEggActivated] = useState(false);
@@ -26,6 +26,8 @@ export default function Home() {
   
   // Easter egg activation
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleKeyDown = (e: KeyboardEvent) => {
       // Secret code is "squares"
       setSecretCode(prev => {
@@ -49,7 +51,7 @@ export default function Home() {
   
   // Generate random grid cell highlight
   useEffect(() => {
-    if (isMounted) {
+    if (isMounted && typeof window !== 'undefined') {
       const interval = setInterval(() => {
         const newHighlightedCells = Array.from({ length: 10 }).map(() => 
           Math.floor(Math.random() * 100)
@@ -62,6 +64,8 @@ export default function Home() {
 
   // Track mouse position
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleMouseMove = (event: MouseEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
@@ -75,7 +79,7 @@ export default function Home() {
 
   // Canvas Animation for Twinkling Stars
   useEffect(() => {
-    if (!isMounted || !canvasRef.current) return;
+    if (!isMounted || !canvasRef.current || typeof window === 'undefined') return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -526,5 +530,21 @@ export default function Home() {
         </div>
       </main>
     </div>
+  );
+}
+
+function LoadingSpinner() {
+  return (
+    <div className="flex justify-center items-center min-h-screen bg-background-primary">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-accent-1"></div>
+    </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <HomeContent />
+    </Suspense>
   );
 }

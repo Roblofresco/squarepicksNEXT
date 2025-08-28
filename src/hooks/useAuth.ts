@@ -1,7 +1,7 @@
 // src/hooks/useAuth.ts
 import { useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
-import { app } from '@/lib/firebase-client'; // Adjust this path if your Firebase init is elsewhere
+import { app } from '@/lib/firebase'; // Adjust this path if your Firebase init is elsewhere
 
 interface AuthState {
   user: User | null;

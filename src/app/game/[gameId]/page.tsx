@@ -144,8 +144,9 @@ function GamePageContent() {
 
   const entryAmounts = [1, 5, 10, 20];
 
+  // Fetch Game Details Effect
   useEffect(() => {
-    if (!gameId) return;
+    if (!gameId || !db) return; // Add db null check
     setIsLoadingGame(true);
     setError(null);
     const fetchGame = async () => {
@@ -176,11 +177,11 @@ function GamePageContent() {
       finally { setIsLoadingGame(false); }
     };
     fetchGame();
-  }, [gameId]);
+  }, [gameId, db]); // Add db to dependencies
 
   // Fetch Board Details Effect (and re-fetch on entrySuccessCount change)
   useEffect(() => {
-    if (!gameId) return;
+    if (!gameId || !db) return; // Add db null check
     let unsubscribeBoardListener: (() => void) | null = null;
 
     // Clear previous timer and reset delayed loader when effect re-runs
@@ -289,7 +290,7 @@ function GamePageContent() {
         loaderTimerId.current = null;
       }
     };
-  }, [gameId, selectedEntryAmount, entrySuccessCount]);
+  }, [gameId, selectedEntryAmount, entrySuccessCount, db]); // Add db to dependencies
 
   // Effect to fetch current user's purchased squares for the current board
   useEffect(() => {
@@ -326,7 +327,7 @@ function GamePageContent() {
     } else {
       setCurrentUserPurchasedSquaresSet(new Set());
     }
-  }, [currentBoard?.id, userId, entrySuccessCount]);
+  }, [currentBoard?.id, userId, entrySuccessCount, db]); // Add db to dependencies
 
   // New useEffect for redirection based on email verification status
   useEffect(() => {

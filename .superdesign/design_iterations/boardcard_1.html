@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoardCard Component Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="boardcard_theme.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans) !important;
+            background: var(--background) !important;
+            color: var(--foreground) !important;
+            line-height: 1.5 !important;
+            padding: 2rem !important;
+        }
+        
+        .board-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            transition: all 200ms ease-out;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .board-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            scale: 1.02;
+        }
+        
+        .board-card:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .team-matchup {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+        
+        .team-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e11d48, #dc2626);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+        
+        .team-logo.eagles {
+            background: linear-gradient(135deg, #065f46, #047857);
+        }
+        
+        .status-badges {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-live {
+            background: var(--status-live);
+            color: var(--destructive-foreground);
+            animation: pulse 2s infinite;
+        }
+        
+        .price-badge {
+            background: var(--primary);
+            color: var(--primary-foreground);
+        }
+        
+        .game-info {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        .grid-container {
+            position: relative;
+        }
+        
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 2px;
+            background: var(--border);
+            border-radius: var(--radius);
+            padding: 8px;
+            max-width: 350px;
+        }
+        
+        .grid-cell {
+            aspect-ratio: 1;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem;
+            font-weight: 500;
+            transition: all 150ms ease-out;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .grid-cell:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow);
+            z-index: 10;
+        }
+        
+        .grid-header {
+            background: var(--muted);
+            color: var(--muted-foreground);
+            font-weight: 600;
+            cursor: default;
+        }
+        
+        .grid-header:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .grid-available {
+            background: var(--grid-available);
+            color: var(--foreground);
+        }
+        
+        .grid-available:hover {
+            background: var(--accent);
+            color: var(--accent-foreground);
+        }
+        
+        .grid-user-owned {
+            background: var(--grid-user-owned);
+            color: var(--primary-foreground);
+            animation: userSquarePulse 2s infinite;
+        }
+        
+        .grid-taken {
+            background: var(--grid-taken);
+            color: var(--muted-foreground);
+            cursor: not-allowed;
+        }
+        
+        .grid-taken:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .quick-entry {
+            background: var(--muted);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+        
+        .quick-entry h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--foreground);
+        }
+        
+        .square-input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .square-input-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--foreground);
+        }
+        
+        .square-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card);
+            color: var(--foreground);
+            font-size: 1rem;
+            text-align: center;
+            font-weight: 600;
+            transition: all 200ms ease-out;
+        }
+        
+        .square-input:focus {
+            outline: none;
+            border-color: var(--ring);
+            box-shadow: 0 0 0 3px hsl(from var(--ring) h s l / 0.1);
+        }
+        
+        .user-squares {
+            margin-bottom: 1.5rem;
+        }
+        
+        .user-squares-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-squares-list {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 200ms ease-out;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+            flex: 1;
+        }
+        
+        .btn-secondary:hover {
+            background: hsl(from var(--secondary) h s calc(l - 5%));
+            transform: scale(1.05);
+        }
+        
+        .btn-secondary:active {
+            transform: scale(0.95) rotate(2deg);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            flex: 1;
+        }
+        
+        .btn-primary:hover {
+            background: hsl(from var(--primary) h s calc(l - 5%));
+            transform: scale(1.05);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+        
+        .view-full-board {
+            width: 100%;
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            transition: all 200ms ease-out;
+        }
+        
+        .view-full-board:hover {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .legend {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .legend-square {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes userSquarePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .mini-grid {
+                max-width: 100%;
+            }
+            
+            .board-card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="board-card">
+        <!-- Game Header -->
+        <div class="game-header">
+            <div class="team-matchup">
+                <div class="team-logo">KC</div>
+                <span>CHIEFS (14-3) vs EAGLES (11-6)</span>
+                <div class="team-logo eagles">PHI</div>
+            </div>
+            <div class="status-badges">
+                <span class="status-badge status-live">Live</span>
+                <span class="status-badge price-badge">$1.00</span>
+            </div>
+        </div>
+        
+        <!-- Game Info -->
+        <div class="game-info">
+            Super Bowl LVII • Feb 12, 2024 • 73/100 squares available
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Mini Grid -->
+            <div class="grid-container">
+                <div class="mini-grid">
+                    <!-- Headers -->
+                    <div class="grid-cell grid-header"></div>
+                    <div class="grid-cell grid-header">0</div>
+                    <div class="grid-cell grid-header">1</div>
+                    <div class="grid-cell grid-header">2</div>
+                    <div class="grid-cell grid-header">3</div>
+                    <div class="grid-cell grid-header">4</div>
+                    <div class="grid-cell grid-header">5</div>
+                    <div class="grid-cell grid-header">6</div>
+                    <div class="grid-cell grid-header">7</div>
+                    <div class="grid-cell grid-header">8</div>
+                    <div class="grid-cell grid-header">9</div>
+                    
+                    <!-- Row 0 -->
+                    <div class="grid-cell grid-header">0</div>
+                    <div class="grid-cell grid-available">00</div>
+                    <div class="grid-cell grid-available">01</div>
+                    <div class="grid-cell grid-user-owned">02</div>
+                    <div class="grid-cell grid-user-owned">03</div>
+                    <div class="grid-cell grid-available">04</div>
+                    <div class="grid-cell grid-available">05</div>
+                    <div class="grid-cell grid-available">06</div>
+                    <div class="grid-cell grid-available">07</div>
+                    <div class="grid-cell grid-available">08</div>
+                    <div class="grid-cell grid-available">09</div>
+                    
+                    <!-- Row 1 -->
+                    <div class="grid-cell grid-header">1</div>
+                    <div class="grid-cell grid-available">10</div>
+                    <div class="grid-cell grid-user-owned">11</div>
+                    <div class="grid-cell grid-available">12</div>
+                    <div class="grid-cell grid-available">13</div>
+                    <div class="grid-cell grid-user-owned">14</div>
+                    <div class="grid-cell grid-available">15</div>
+                    <div class="grid-cell grid-available">16</div>
+                    <div class="grid-cell grid-available">17</div>
+                    <div class="grid-cell grid-available">18</div>
+                    <div class="grid-cell grid-available">19</div>
+                    
+                    <!-- Row 2 -->
+                    <div class="grid-cell grid-header">2</div>
+                    <div class="grid-cell grid-available">20</div>
+                    <div class="grid-cell grid-available">21</div>
+                    <div class="grid-cell grid-available">22</div>
+                    <div class="grid-cell grid-available">23</div>
+                    <div class="grid-cell grid-available">24</div>
+                    <div class="grid-cell grid-available">25</div>
+                    <div class="grid-cell grid-user-owned">26</div>
+                    <div class="grid-cell grid-available">27</div>
+                    <div class="grid-cell grid-available">28</div>
+                    <div class="grid-cell grid-available">29</div>
+                    
+                    <!-- Row 3 -->
+                    <div class="grid-cell grid-header">3</div>
+                    <div class="grid-cell grid-available">30</div>
+                    <div class="grid-cell grid-available">31</div>
+                    <div class="grid-cell grid-available">32</div>
+                    <div class="grid-cell grid-taken">33</div>
+                    <div class="grid-cell grid-available">34</div>
+                    <div class="grid-cell grid-available">35</div>
+                    <div class="grid-cell grid-available">36</div>
+                    <div class="grid-cell grid-available">37</div>
+                    <div class="grid-cell grid-available">38</div>
+                    <div class="grid-cell grid-available">39</div>
+                    
+                    <!-- Row 4 -->
+                    <div class="grid-cell grid-header">4</div>
+                    <div class="grid-cell grid-available">40</div>
+                    <div class="grid-cell grid-available">41</div>
+                    <div class="grid-cell grid-available">42</div>
+                    <div class="grid-cell grid-available">43</div>
+                    <div class="grid-cell grid-available">44</div>
+                    <div class="grid-cell grid-available">45</div>
+                    <div class="grid-cell grid-available">46</div>
+                    <div class="grid-cell grid-available">47</div>
+                    <div class="grid-cell grid-available">48</div>
+                    <div class="grid-cell grid-available">49</div>
+                    
+                    <!-- Row 5 -->
+                    <div class="grid-cell grid-header">5</div>
+                    <div class="grid-cell grid-available">50</div>
+                    <div class="grid-cell grid-available">51</div>
+                    <div class="grid-cell grid-available">52</div>
+                    <div class="grid-cell grid-available">53</div>
+                    <div class="grid-cell grid-available">54</div>
+                    <div class="grid-cell grid-available">55</div>
+                    <div class="grid-cell grid-available">56</div>
+                    <div class="grid-cell grid-available">57</div>
+                    <div class="grid-cell grid-available">58</div>
+                    <div class="grid-cell grid-available">59</div>
+                    
+                    <!-- Row 6 -->
+                    <div class="grid-cell grid-header">6</div>
+                    <div class="grid-cell grid-available">60</div>
+                    <div class="grid-cell grid-available">61</div>
+                    <div class="grid-cell grid-available">62</div>
+                    <div class="grid-cell grid-available">63</div>
+                    <div class="grid-cell grid-available">64</div>
+                    <div class="grid-cell grid-available">65</div>
+                    <div class="grid-cell grid-available">66</div>
+                    <div class="grid-cell grid-available">67</div>
+                    <div class="grid-cell grid-available">68</div>
+                    <div class="grid-cell grid-available">69</div>
+                    
+                    <!-- Row 7 -->
+                    <div class="grid-cell grid-header">7</div>
+                    <div class="grid-cell grid-available">70</div>
+                    <div class="grid-cell grid-available">71</div>
+                    <div class="grid-cell grid-available">72</div>
+                    <div class="grid-cell grid-available">73</div>
+                    <div class="grid-cell grid-available">74</div>
+                    <div class="grid-cell grid-available">75</div>
+                    <div class="grid-cell grid-available">76</div>
+                    <div class="grid-cell grid-available">77</div>
+                    <div class="grid-cell grid-available">78</div>
+                    <div class="grid-cell grid-available">79</div>
+                    
+                    <!-- Row 8 -->
+                    <div class="grid-cell grid-header">8</div>
+                    <div class="grid-cell grid-available">80</div>
+                    <div class="grid-cell grid-available">81</div>
+                    <div class="grid-cell grid-available">82</div>
+                    <div class="grid-cell grid-available">83</div>
+                    <div class="grid-cell grid-available">84</div>
+                    <div class="grid-cell grid-available">85</div>
+                    <div class="grid-cell grid-available">86</div>
+                    <div class="grid-cell grid-available">87</div>
+                    <div class="grid-cell grid-available">88</div>
+                    <div class="grid-cell grid-available">89</div>
+                    
+                    <!-- Row 9 -->
+                    <div class="grid-cell grid-header">9</div>
+                    <div class="grid-cell grid-available">90</div>
+                    <div class="grid-cell grid-available">91</div>
+                    <div class="grid-cell grid-available">92</div>
+                    <div class="grid-cell grid-available">93</div>
+                    <div class="grid-cell grid-available">94</div>
+                    <div class="grid-cell grid-available">95</div>
+                    <div class="grid-cell grid-available">96</div>
+                    <div class="grid-cell grid-available">97</div>
+                    <div class="grid-cell grid-available">98</div>
+                    <div class="grid-cell grid-available">99</div>
+                </div>
+                
+                <!-- Legend -->
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-square" style="background: var(--grid-available);"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-square" style="background: var(--grid-user-owned);"></div>
+                        <span>Your Squares</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-square" style="background: var(--grid-taken);"></div>
+                        <span>Taken</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Entry Controls -->
+            <div class="quick-entry">
+                <h3>Quick Entry Controls</h3>
+                
+                <div class="square-input-group">
+                    <label for="square-input">Square:</label>
+                    <input type="number" id="square-input" class="square-input" value="23" min="0" max="99">
+                </div>
+                
+                <div class="user-squares">
+                    <div class="user-squares-label">Your Squares:</div>
+                    <div class="user-squares-list">02, 03, 11, 14, 26</div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-secondary">
+                        <i data-lucide="shuffle"></i>
+                        Random
+                    </button>
+                    <button class="btn btn-primary">
+                        <i data-lucide="check"></i>
+                        Confirm
+                    </button>
+                </div>
+                
+                <a href="#" class="view-full-board">
+                    <span>View Full Board</span>
+                    <i data-lucide="arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Add interactive functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const gridCells = document.querySelectorAll('.grid-available');
+            const squareInput = document.getElementById('square-input');
+            const randomBtn = document.querySelector('.btn-secondary');
+            const confirmBtn = document.querySelector('.btn-primary');
+            
+            // Grid cell click handler
+            gridCells.forEach(cell => {
+                cell.addEventListener('click', function() {
+                    const squareNumber = this.textContent;
+                    squareInput.value = squareNumber;
+                    
+                    // Visual feedback
+                    this.style.transform = 'scale(1.2)';
+                    this.style.background = 'var(--accent)';
+                    this.style.color = 'var(--accent-foreground)';
+                    
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        this.style.background = '';
+                        this.style.color = '';
+                    }, 300);
+                });
+            });
+            
+            // Random button handler
+            randomBtn.addEventListener('click', function() {
+                const availableSquares = Array.from(gridCells).map(cell => cell.textContent);
+                const randomSquare = availableSquares[Math.floor(Math.random() * availableSquares.length)];
+                squareInput.value = randomSquare;
+                
+                // Animation
+                this.style.transform = 'rotate(5deg) scale(1.05)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+            
+            // Confirm button handler
+            confirmBtn.addEventListener('click', function() {
+                const square = squareInput.value;
+                if (square >= 0 && square <= 99) {
+                    // Success animation
+                    this.style.background = 'var(--primary)';
+                    this.style.transform = 'scale(1.2)';
+                    this.innerHTML = '<i data-lucide="check"></i> Success!';
+                    
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        this.innerHTML = '<i data-lucide="check"></i> Confirm';
+                        lucide.createIcons();
+                    }, 1000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

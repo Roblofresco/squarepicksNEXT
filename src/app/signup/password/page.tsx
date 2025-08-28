@@ -8,6 +8,7 @@ import { FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
 import SignupProgressDots from '@/components/SignupProgressDots'; // Import dots
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { motion } from 'framer-motion'
 
 export default function PasswordPage() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function PasswordPage() {
   return (
     <>
       {/* Main content block matching email */}
-      <div className="flex-grow flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex-grow flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
         <h1 className="text-2xl font-semibold text-white mb-2 text-left">Set A Password</h1>
 
         {/* Password Criteria List */}
@@ -126,19 +127,21 @@ export default function PasswordPage() {
           {/* Error message area */}
           {error && <p id="password-error" className="text-red-500 text-sm text-left">{error}</p>}
         </form>
-      </div>
+      </motion.div>
 
       {/* Footer block matching email */}
       <div className="w-full max-w-sm mx-auto px-5 pb-8">
         <SignupProgressDots currentStep={currentStep} totalSteps={totalSteps} />
-        <Button
-          type="submit"
-          form="password-form"
-          className="w-full flex items-center justify-center gap-2 text-gray-800 font-medium text-base py-3.5 px-5 rounded-lg hover:opacity-90 transition-opacity mt-6"
-          style={{ backgroundColor: '#1bb0f2' }}
-        >
-          Next <FiArrowRight />
-        </Button>
+        <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+          <Button
+            type="submit"
+            form="password-form"
+            className="w-full flex items-center justify-center gap-2 text-gray-800 font-medium text-base py-3.5 px-5 rounded-lg hover:opacity-90 transition-opacity mt-6"
+            style={{ backgroundColor: '#1bb0f2' }}
+          >
+            Next <FiArrowRight />
+          </Button>
+        </motion.div>
         <div className="text-center mt-4">
           <Link href="/signup/email" className="text-sm text-gray-400 hover:text-white hover:underline">Back</Link>
         </div>

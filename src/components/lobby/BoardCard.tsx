@@ -7,6 +7,10 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, limit, DocumentData, DocumentReference, doc } from 'firebase/firestore';
 import { BOARD_STATUS_OPEN } from '@/config/lobbyConfig';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { CheckCircle2 } from 'lucide-react';
 
 import BoardMiniGrid from './BoardMiniGrid';
 import QuickEntrySelector from './QuickEntrySelector';
@@ -57,6 +61,7 @@ const BoardCard = memo((props: BoardCardProps) => {
   const [boardError, setBoardError] = useState<string | null>(null);
   const [boardCardCurrentUserSquaresSet, setBoardCardCurrentUserSquaresSet] = useState<Set<number>>(new Set()); // New state for user's squares
   const [purchaseTrigger, setPurchaseTrigger] = useState<number>(0); // Added for re-fetching
+  const [isPurchaseDialogOpen, setIsPurchaseDialogOpen] = useState<boolean>(false);
 
   // Effect to listen for the active board for this game
   useEffect(() => {
@@ -182,6 +187,7 @@ const BoardCard = memo((props: BoardCardProps) => {
   const handlePurchaseSuccess = (boardId: string) => {
     if (activeBoard && boardId === activeBoard.id) {
       setPurchaseTrigger(prev => prev + 1); // Increment to trigger re-fetch
+      setIsPurchaseDialogOpen(true);
     }
   };
 
@@ -210,9 +216,15 @@ const BoardCard = memo((props: BoardCardProps) => {
 
   // --- Render Card with Active Board --- 
   return (
-    <div
+    <>
+    <motion.div
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       className={`w-full max-w-[390px] h-auto mx-auto p-4 text-white relative overflow-hidden flex flex-col 
-                 ${gradientBg} ${borderStyle} ${shadowStyle} ${containerRounding} ${isActiveInteraction ? 'border-[#5855e4]' : 'border-transparent'}`}>
+                 ${gradientBg} ${borderStyle} ${shadowStyle} ${containerRounding} ${isActiveInteraction ? 'border-[#5855e4] z-40' : 'border-transparent'}
+                 transition-shadow duration-200 ease-out hover:shadow-xl hover:ring-2 hover:ring-accent-1/40 will-change-transform`}
+    >
       {activeBoard.isFreeEntry && (
          <div className="absolute top-0 left-0 bg-gradient-accent1-accent4 text-white text-xs font-bold px-3 py-1 rounded-br-lg z-10">
           Free Entry!
@@ -221,7 +233,7 @@ const BoardCard = memo((props: BoardCardProps) => {
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center space-x-2 w-1/3 justify-start">
           {teamA?.logo ? (
-            <Image src={teamA.logo} alt={`${teamA.name} logo`} width={45} height={45} className="rounded-full object-contain flex-shrink-0" style={logoFilterStyleA}/>
+            <Image src={teamA.logo} alt={`${teamA.name} logo`} width={45} height={45} className="rounded-full object-contain flex-shrink-0 transition-transform duration-200 will-change-transform hover:scale-105" style={logoFilterStyleA}/>
           ) : (
             <div className="w-[45px] h-[45px] rounded-full bg-gray-600 flex-shrink-0"></div>
           )}
@@ -237,7 +249,7 @@ const BoardCard = memo((props: BoardCardProps) => {
             <div className="text-xs text-gray-400">{teamB?.record}</div>
           </div>
           {teamB?.logo ? (
-            <Image src={teamB.logo} alt={`${teamB.name} logo`} width={45} height={45} className="rounded-full object-contain flex-shrink-0" style={logoFilterStyleB}/>
+            <Image src={teamB.logo} alt={`${teamB.name} logo`} width={45} height={45} className="rounded-full object-contain flex-shrink-0 transition-transform duration-200 will-change-transform hover:scale-105" style={logoFilterStyleB}/>
           ) : (
             <div className="w-[45px] h-[45px] rounded-full bg-gray-600 flex-shrink-0"></div>
           )}
@@ -277,7 +289,26 @@ const BoardCard = memo((props: BoardCardProps) => {
             />
         </div>
       </div>
-    </div>
+    </motion.div>
+
+    {/* Purchase Success Dialog */}
+    <Dialog open={isPurchaseDialogOpen} onOpenChange={setIsPurchaseDialogOpen}>
+      <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
+        <DialogHeader className="text-center space-y-2">
+          <DialogTitle className="text-2xl font-bold flex items-center justify-center gap-2">
+            <CheckCircle2 className="h-6 w-6 text-green-400" />
+            Entry Successful
+          </DialogTitle>
+          <DialogDescription className="text-white/70">
+            Your square has been locked in. Good luck!
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-center">
+          <Button onClick={() => setIsPurchaseDialogOpen(false)} className="bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90">Got it</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </>
   );
 });
 BoardCard.displayName = 'BoardCard';

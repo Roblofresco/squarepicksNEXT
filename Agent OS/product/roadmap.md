@@ -13,10 +13,10 @@ This document outlines the development roadmap for SquarePicks. This version has
 -   **User Stories:**
     -   `[x]` As a new user, I can create an account with my email and password.
     -   `[x]` As a user, I can log in to my account.
-    -   `[ ]` As a user, I can reset my password if I forget it.
+    -   `[x]` As a user, I can reset my password if I forget it.
     -   `[x]` As a new user, I must verify my email address to fully activate my account.
     -   `[x]` As a user, I can view my profile information.
-    -   `[~]` As a user, I can edit my profile information (e.g., username, avatar). *(Note: Display Name/Phone is editable, but username/avatar is not fully implemented).*
+    -   `[~]` As a user, I can edit my profile information (e.g., username, avatar). *(Display Name/Phone editable; username avatar change not fully implemented).* 
     -   `[x]` As a user, I can navigate the application using a persistent header and navigation bar.
 
 ---
@@ -25,12 +25,11 @@ This document outlines the development roadmap for SquarePicks. This version has
 
 -   **User Stories:**
     -   `[x]` As a user, I can see a lobby of all available game boards.
-    -   `[ ]` As a user, I can filter and sort the game boards in the lobby (e.g., by sport, entry fee).
     -   `[x]` As a user, I can click on a board to see its details (e.g., rules, participants, grid).
     -   `[x]` As a user, I can join a game by selecting my squares on the grid.
-    -   `[x]` As a user, I should see real-time updates on the board as other users join and squares are filled. *(Note: Confirmed use of Firestore onSnapshot).*
+    -   `[x]` As a user, I should see real-time updates on the board as other users join and squares are filled. *(Confirmed via Firestore onSnapshot).* 
     -   `[x]` As a user, I can view all the boards I have personally joined in a "My Boards" section.
-    -   `[~]` As the numbers are revealed for a game, I can see them update on the board grid. *(Note: UI is in place, but full end-to-end logic needs verification).*
+    -   `[x]` As the numbers are revealed for a game, I can see them update on the board grid. *(My Boards and Game pages listen to `home_numbers`/`away_numbers` and reflect XY and winners live).* 
 
 ---
 
@@ -41,7 +40,7 @@ This document outlines the development roadmap for SquarePicks. This version has
     -   `[x]` As a user, I can deposit funds into my wallet using a payment provider (e.g., PayPal).
     -   `[x]` As a user, I can withdraw funds from my wallet.
     -   `[x]` As a user, I can view a detailed history of all my transactions.
-    -   `[x]` As a user, I must complete a location and personal information check (KYC) before I can make a deposit or withdrawal. *(Note: Confirmed via wallet-setup-flow).*
+    -   `[x]` As a user, I must complete a location and personal information check (KYC) before I can make a deposit or withdrawal. *(Confirmed via wallet-setup-flow).* 
 
 ---
 
@@ -50,8 +49,8 @@ This document outlines the development roadmap for SquarePicks. This version has
 -   **User Stories:**
     -   `[x]` As a user, I can see a notification icon that indicates when I have new, unread notifications.
     -   `[x]` As a user, I can view a list of my recent notifications.
-    -   `[ ]` As a user, I should receive notifications for key events (e.g., when a game I joined is full, when results are in, when I win). *(Note: Frontend context exists, but backend triggers are not implemented).*
-    -   `[ ]` As a user, I can manage my notification preferences.
+    -   `[x]` As a user, I should receive notifications for key events (board full, numbers revealed, win, deposit/withdrawal). *(Entry, deposit, withdrawal implemented; board full/numbers reveal/winnings implemented in Cloud Functions; push/email/SMS via notification sink).* 
+    -   `[~]` As a user, I can manage my notification preferences.
 
 ---
 
@@ -70,9 +69,34 @@ This document outlines the development roadmap for SquarePicks. This version has
 ## Epic 6: Technical Debt & Refactoring
 
 -   **User Stories:**
-    -   `[x]` As a developer, I want to refactor the informational pages to use a shared layout component for the background effects, removing significant code duplication. *(Done via `src/components/info/InfoPageShell.tsx` and applied to terms, privacy, FAQ, how-to-play, contact-support, account-guide, responsible-gaming-policy).* 
+    -   `[x]` As a developer, I want to refactor the informational pages to use a shared layout component for the background effects, removing significant code duplication. *(Done via `src/components/info/InfoPageShell.tsx` and applied across info/support pages).* 
 
 ## Epic 7: Knowledge Base & Documentation Enforcement
 
-- **User Stories:**
-  - `[x]`
+-   **User Stories:**
+    -   `[x]` Knowledge pages for reset-password check-email and confirm
+    -   `[x]` Component doc for `AuthBackground` added and indexed
+    -   `[x]` Knowledge `INDEX.md` updated with new auth pages
+    -   `[x]` CI: Agent OS verification and optional Playwright E2E (via `e2e` PR label)
+    -   `[x]` PR diff checks require knowledge updates when `src/app/**` or components change
+
+    ---
+
+## Epic 8: Quarter Winners & Final Settlement
+
+-   **User Stories:**
+    -   `[x]` As a system, I can detect quarter boundaries and final state from `games/{gameId}` updates and trigger winner assignment idempotently.
+    -   `[x]` As a system, I assign a quarter winner for each board tied to a game at the end of Q1/Q2/Q3 and at FINAL, using last-score digits and the board’s `home_numbers`/`away_numbers` mapping.
+    -   `[x]` As a user, I can see a public, non-identifying summary of winners for each quarter on a board (index and square), without exposing player IDs.
+    -   `[x]` As a winner, I receive a private record of my win at `users/{uid}/wins/{boardId_period}` that I can view later.
+    -   `[x]` As a winner, I only receive a payout after the game is FINAL; my wallet balance is credited and a `winnings` transaction is created.
+    -   `[x]` As a user, my Transactions view shows entries as `entry` (type `entry_fee`), sweepstakes entries as `sweepstakes`, and payouts as `winnings`.
+    -   `[x]` As a user, I receive notifications when quarter winners are assigned and when final winnings are paid.
+
+-   **Technical Tasks:**
+    -   `[x]` Cloud Function: `onDocumentUpdated('games/{gameId}')` detects Q1→Q2, Q2→Q3, Q3→Q4, and FINAL transitions and calls a shared helper to assign winners.
+    -   `[x]` Helper: compute `winningIndex` from last-score digits via `home_numbers`/`away_numbers`; query `boards/{boardId}/squares` where `index == winningIndex`; write public summary to `boards/{boardId}/winners/{period}`; write private wins to `users/{uid}/wins/{boardId_period}`; set `board.winners.{period}.assigned=true` (idempotency); set `settlement.finalReady=true` on FINAL.
+    -   `[x]` Cloud Function: final settlement processes boards with `settlement.finalReady && !settlement.finalPaid`, splits pot, writes `winnings` transactions, increments balances, and marks `finalPaid=true`.
+    -   `[x]` Security rules: boards public read; `boards/*/squares/*` no read; `boards/*/winners/*` public read; `users/{uid}/wins/*` private to uid; transactions readable by owner (userID match).
+    -   `[x]` Indexes: `transactions(userID asc, timestamp desc)`, `boards(gameID asc, status asc)`, `boards/{boardId}/squares(index asc)`.
+    -   `[x]` UI: show quarter winners on board pages; ensure Transactions tabs include DEPOSIT, WITHDRAW, ENTRY, SWEEPSTAKES, WINNINGS; Wallet recent activity reflects normalized types.

@@ -36,6 +36,8 @@ export interface AppBoard {
   homeTeam: TeamInfo;
   awayTeam: TeamInfo;
   gameDateTime: string;
+  // For Active tab sorting by purchase time
+  purchasedAt?: string;
   status: BoardStatus;
   is_live?: boolean;
   broadcast_provider?: string;

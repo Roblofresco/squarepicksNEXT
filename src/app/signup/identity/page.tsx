@@ -9,6 +9,7 @@ import SignupProgressDots from '@/components/SignupProgressDots';
 import { parse, isValid, isBefore, subYears } from 'date-fns';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { motion } from 'framer-motion'
 
 export default function IdentityPage() {
   const router = useRouter();
@@ -75,7 +76,7 @@ export default function IdentityPage() {
   return (
     <>
       {/* Main content block matching email */}
-      <div className="flex-grow flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex-grow flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
           <h1 className="text-2xl font-semibold text-white mb-1">Verify Your Identity</h1>
           <p className="text-sm text-text-secondary mb-6">
             Please make sure your details match exactly what&apos;s on your photo I.D. or passport.
@@ -137,19 +138,20 @@ export default function IdentityPage() {
             {/* Error message inside the form - remove wrapper */}
             {error && <p className="text-red-500 text-sm text-left">{error}</p>}
           </form>
-      </div>
-
+      </motion.div>
       {/* Footer block matching email */}
       <div className="w-full max-w-sm mx-auto px-5 pb-8">
         <SignupProgressDots currentStep={currentStep} totalSteps={totalSteps} />
-        <Button
-          type="submit"
-          form="identity-form"
-          className="w-full flex items-center justify-center gap-2 text-gray-800 font-medium text-base py-3.5 px-5 rounded-lg hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 ease-in-out mt-6 disabled:opacity-70"
-          style={{ backgroundColor: '#1bb0f2' }}
-        >
-          Next <FiArrowRight />
-        </Button>
+        <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+          <Button
+            type="submit"
+            form="identity-form"
+            className="w-full flex items-center justify-center gap-2 text-gray-800 font-medium text-base py-3.5 px-5 rounded-lg hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 ease-in-out mt-6 disabled:opacity-70"
+            style={{ backgroundColor: '#1bb0f2' }}
+          >
+            Next <FiArrowRight />
+          </Button>
+        </motion.div>
         <div className="text-center mt-4">
           <Link href="/signup/password" className="text-sm text-gray-400 hover:text-white hover:underline">Back</Link>
         </div>

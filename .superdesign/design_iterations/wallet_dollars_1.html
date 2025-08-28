@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet with Dollar Bills</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .wallet-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .wallet-wrapper {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px;
+        }
+        
+        /* Wallet with Dollar Bills */
+        .wallet-dollars {
+            width: 220px;
+            height: 180px;
+            position: relative;
+            background: #1f2937;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Dollar Bills Peeking Out */
+        .dollar-bill {
+            position: absolute;
+            width: 200px;
+            height: 80px;
+            border-radius: 4px;
+            top: -40px;
+            left: 50%;
+            transform-origin: bottom center;
+        }
+        
+        .dollar-1 {
+            background: #2d6a4f;
+            transform: translateX(-50%) rotate(-8deg);
+            z-index: 1;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .dollar-2 {
+            background: #40916c;
+            transform: translateX(-50%) rotate(-3deg);
+            z-index: 2;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .dollar-3 {
+            background: #52b788;
+            transform: translateX(-50%) rotate(2deg);
+            z-index: 3;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Dollar Bill Details */
+        .dollar-bill::before {
+            content: '$';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .dollar-bill::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+        
+        /* Wallet Interior */
+        .wallet-interior {
+            position: absolute;
+            top: 60px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            background: #374151;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .card-slot {
+            background: #4b5563;
+            height: 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        
+        /* Blue Wallet Variant */
+        .wallet-blue {
+            background: #1e3a8a;
+        }
+        
+        .wallet-blue .dollar-1 {
+            background: #1e40af;
+        }
+        
+        .wallet-blue .dollar-2 {
+            background: #2563eb;
+        }
+        
+        .wallet-blue .dollar-3 {
+            background: #3b82f6;
+        }
+        
+        .wallet-blue .wallet-interior {
+            background: #1e40af;
+        }
+        
+        .wallet-blue .card-slot {
+            background: #2563eb;
+        }
+        
+        /* Purple Wallet Variant */
+        .wallet-purple {
+            background: #581c87;
+        }
+        
+        .wallet-purple .dollar-1 {
+            background: #6b21a8;
+        }
+        
+        .wallet-purple .dollar-2 {
+            background: #7c3aed;
+        }
+        
+        .wallet-purple .dollar-3 {
+            background: #8b5cf6;
+        }
+        
+        .wallet-purple .wallet-interior {
+            background: #6b21a8;
+        }
+        
+        .wallet-purple .card-slot {
+            background: #7c3aed;
+        }
+        
+        /* Animated Wallet */
+        .wallet-animated .dollar-1 {
+            animation: flutter1 3s ease-in-out infinite;
+        }
+        
+        .wallet-animated .dollar-2 {
+            animation: flutter2 3s ease-in-out infinite 0.2s;
+        }
+        
+        .wallet-animated .dollar-3 {
+            animation: flutter3 3s ease-in-out infinite 0.4s;
+        }
+        
+        @keyframes flutter1 {
+            0%, 100% { transform: translateX(-50%) rotate(-8deg); }
+            50% { transform: translateX(-50%) rotate(-10deg) translateY(-5px); }
+        }
+        
+        @keyframes flutter2 {
+            0%, 100% { transform: translateX(-50%) rotate(-3deg); }
+            50% { transform: translateX(-50%) rotate(-5deg) translateY(-3px); }
+        }
+        
+        @keyframes flutter3 {
+            0%, 100% { transform: translateX(-50%) rotate(2deg); }
+            50% { transform: translateX(-50%) rotate(4deg) translateY(-2px); }
+        }
+        
+        /* Large Showcase Wallet */
+        .wallet-showcase {
+            width: 300px;
+            height: 240px;
+            position: relative;
+            background: #111827;
+            border-radius: 0 0 16px 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+        
+        .wallet-showcase .dollar-bill {
+            width: 280px;
+            height: 110px;
+            top: -55px;
+        }
+        
+        .wallet-showcase .dollar-1 {
+            background: linear-gradient(135deg, #14532d, #166534);
+        }
+        
+        .wallet-showcase .dollar-2 {
+            background: linear-gradient(135deg, #166534, #15803d);
+        }
+        
+        .wallet-showcase .dollar-3 {
+            background: linear-gradient(135deg, #15803d, #16a34a);
+        }
+        
+        /* Minimal Wallet */
+        .wallet-minimal {
+            width: 180px;
+            height: 140px;
+            background: #374151;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .wallet-minimal .dollar-bill {
+            width: 160px;
+            height: 60px;
+            top: -30px;
+        }
+        
+        .wallet-minimal .dollar-1 {
+            background: #4b5563;
+            transform: translateX(-50%) rotate(-6deg);
+        }
+        
+        .wallet-minimal .dollar-2 {
+            background: #6b7280;
+            transform: translateX(-50%) rotate(-2deg);
+        }
+        
+        .wallet-minimal .dollar-3 {
+            background: #9ca3af;
+            transform: translateX(-50%) rotate(3deg);
+        }
+        
+        /* Labels */
+        .label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            text-align: center;
+        }
+        
+        /* Hover Effects */
+        .wallet-dollars:hover .dollar-1 {
+            transform: translateX(-50%) rotate(-10deg) translateY(-3px);
+        }
+        
+        .wallet-dollars:hover .dollar-2 {
+            transform: translateX(-50%) rotate(-5deg) translateY(-5px);
+        }
+        
+        .wallet-dollars:hover .dollar-3 {
+            transform: translateX(-50%) rotate(4deg) translateY(-7px);
+        }
+        
+        .wallet-dollars,
+        .dollar-bill {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase">
+        <!-- Green Wallet with Dollars -->
+        <div class="wallet-container">
+            <div class="wallet-wrapper">
+                <div class="wallet-dollars">
+                    <div class="dollar-bill dollar-1"></div>
+                    <div class="dollar-bill dollar-2"></div>
+                    <div class="dollar-bill dollar-3"></div>
+                    <div class="wallet-interior">
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="label">Green Money Wallet</p>
+        </div>
+        
+        <!-- Blue Wallet with Dollars -->
+        <div class="wallet-container">
+            <div class="wallet-wrapper">
+                <div class="wallet-dollars wallet-blue">
+                    <div class="dollar-bill dollar-1"></div>
+                    <div class="dollar-bill dollar-2"></div>
+                    <div class="dollar-bill dollar-3"></div>
+                    <div class="wallet-interior">
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="label">Blue Money Wallet</p>
+        </div>
+        
+        <!-- Purple Wallet with Dollars -->
+        <div class="wallet-container">
+            <div class="wallet-wrapper">
+                <div class="wallet-dollars wallet-purple">
+                    <div class="dollar-bill dollar-1"></div>
+                    <div class="dollar-bill dollar-2"></div>
+                    <div class="dollar-bill dollar-3"></div>
+                    <div class="wallet-interior">
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="label">Purple Money Wallet</p>
+        </div>
+        
+        <!-- Animated Wallet -->
+        <div class="wallet-container">
+            <div class="wallet-wrapper">
+                <div class="wallet-dollars wallet-animated">
+                    <div class="dollar-bill dollar-1"></div>
+                    <div class="dollar-bill dollar-2"></div>
+                    <div class="dollar-bill dollar-3"></div>
+                    <div class="wallet-interior">
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="label">Animated Money Wallet</p>
+        </div>
+        
+        <!-- Large Showcase Wallet -->
+        <div class="wallet-container">
+            <div class="wallet-wrapper">
+                <div class="wallet-showcase">
+                    <div class="dollar-bill dollar-1"></div>
+                    <div class="dollar-bill dollar-2"></div>
+                    <div class="dollar-bill dollar-3"></div>
+                    <div class="wallet-interior">
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                        <div class="card-slot"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="label">Showcase Money Wallet</p>
+        </div>
+        
+        <!-- Minimal Wallet -->
+        <div class="wallet-container">
+            <div class="wallet-wrapper">
+                <div class="wallet-minimal">
+                    <div class="dollar-bill dollar-1"></div>
+                    <div class="dollar-bill dollar-2"></div>
+                    <div class="dollar-bill dollar-3"></div>
+                </div>
+            </div>
+            <p class="label">Minimal Money Wallet</p>
+        </div>
+    </div>
+</body>
+</html>

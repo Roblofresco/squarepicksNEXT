@@ -148,14 +148,14 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
   };
 
   return (
-    <div className="mt-4 mb-2 w-full">
-      <div className="flex justify-center space-x-3 pb-4 flex-wrap"> 
+    <div className="mb-2 w-full min-h-[64px]">
+      <div className="w-full"> 
         <AnimatePresence mode="wait" initial={false}>
           {sportSelectorView === 'sweepstakes' ? (
             // --- Sweepstakes Active State wrapped in motion.div ---
             (<motion.div 
               key="sweepstakes-view" 
-              className="flex w-full space-x-3" 
+              className="flex w-full items-center gap-1 px-0.5 sm:px-[50px]" 
               initial="hidden" animate="visible" exit="exit" variants={variants}
             >
               {/* Expanded Sweepstakes Button - 3 Color Gradient */}
@@ -221,7 +221,7 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
             // --- All Regular Sports View --- 
             (<motion.div 
               key="all-sports-view"
-              className="flex items-center gap-2 px-2.5 py-1" // MODIFIED: flex, items-center, reduced gap, kept padding. No wrap/scroll explicit.
+              className="flex w-full items-center gap-1 px-0.5 sm:px-[50px]" 
               initial="hidden" animate="visible" exit="exit" variants={variants}
             >
               {/* "Back to Sweepstakes" Button */}

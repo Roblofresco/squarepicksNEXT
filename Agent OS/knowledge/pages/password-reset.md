@@ -1,20 +1,10 @@
-# Knowledge: Password Reset (`/reset-password`, `/reset-password/confirm`)
+# Password Reset
 
-## Overview & Purpose
-- Allow users to request a password reset email and set a new password using Firebase Auth.
-
-## Responsibilities & Functionality
-- Request page: collects email and calls `sendPasswordResetEmail`
-- Confirm page: reads `oobCode`, verifies with `verifyPasswordResetCode`, applies new password via `confirmPasswordReset`
-- Generic success messaging to avoid leaking account existence
-
-## Core Components Used
-- `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/button`
-
-## Data Dependencies & Hooks
-- Firebase Auth client via `@/lib/firebase`
-- Next.js `useSearchParams` for reading `oobCode`
-
-## Files
-- `src/app/reset-password/page.tsx`
-- `src/app/reset-password/confirm/page.tsx` 
+- Start: `/reset-password`
+- Flow:
+  1) Server checks email existence via Cloud Function
+  2) Sends reset link with continue URL to `/reset-password/confirm`
+  3) After submit, redirects to `/login`
+- Pages:
+  - [reset-password-check-email.md](./reset-password-check-email.md)
+  - [reset-password-confirm.md](./reset-password-confirm.md) 

@@ -6,6 +6,7 @@ import { User as FirebaseUser } from 'firebase/auth';
 import { getApp } from 'firebase/app';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Define EntryInteractionState stages if not imported from a central types file
 // For now, defining stages directly as QuickEntrySelectorProps needs it.
@@ -189,8 +190,7 @@ const QuickEntrySelector = memo((props: QuickEntrySelectorProps) => {
     try {
         const result = await enterBoardFn({ boardId: boardId, selectedNumber: selectedNumInt });
         if ((result.data as any)?.success) {
-            toast.success('Entry successful! Your square is locked in.');
-            onPurchaseSuccess(boardId); // Call the new callback
+            onPurchaseSuccess(boardId); // Trigger parent to show success dialog
             handleBoardAction('ENTRY_COMPLETED_RESET', boardId); // Signal LobbyPage to reset UI
         } else {
             throw new Error((result.data as any)?.error || 'Cloud function reported failure.');
@@ -205,18 +205,15 @@ const QuickEntrySelector = memo((props: QuickEntrySelectorProps) => {
 
   if (!isActiveCard || stage === 'idle') {
     return (
-      <div ref={wrapperRef} className="rounded-lg overflow-hidden shadow-md w-full" style={{ borderRadius: '10px' }}>
+      <motion.div ref={wrapperRef} className="rounded-lg overflow-hidden shadow-md w-full" style={{ borderRadius: '10px' }}
+        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
         {/* Price Display Area */}
         <div 
-          className="flex justify-center items-center"
+          className="flex justify-center items-center bg-black/20 backdrop-blur-sm border-t border-white/10"
           style={{
-            backgroundColor: 'rgba(74, 72, 187, 0.05)', 
             width: '100%', 
             height: '95px',
-            // transform: isPriceAreaHovered ? 'translateY(-3px)' : 'translateY(0px)', // Removed
           }}
-          // onMouseEnter={() => setIsPriceAreaHovered(true)} // Removed
-          // onMouseLeave={() => setIsPriceAreaHovered(false)} // Removed
         >
           <span 
             style={{
@@ -236,6 +233,16 @@ const QuickEntrySelector = memo((props: QuickEntrySelectorProps) => {
       <Button 
         onClick={() => {
             if (!user) { onProtectedAction(); return; }
+            if (entryFee > 0) {
+                if (walletHasWallet === false) {
+                    openWalletDialog('setup', entryFee, boardId);
+                    return;
+                }
+                if (walletBalance < entryFee) {
+                    openWalletDialog('deposit', entryFee, boardId);
+                    return;
+                }
+            }
             handleBoardAction('START_ENTRY', boardId);
         }}
           className="w-full font-semibold text-sm relative overflow-hidden transition-all duration-300 ease-in-out group"
@@ -259,13 +266,14 @@ const QuickEntrySelector = memo((props: QuickEntrySelectorProps) => {
           {/* For now, an overlay span that animates */}
           <SheenEffect />
       </Button>
-      </div>
+      </motion.div>
     );
   }
 
   if (stage === 'selecting') {
     return (
-      <>
+      <AnimatePresence mode="wait">
+      <motion.div key="selecting" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
         <HideNumberInputSpinners />
         <div ref={wrapperRef} className="rounded-lg overflow-hidden shadow-md w-full flex flex-col items-center" style={{ borderRadius: '10px' }}>
           {/* Random Button - New Element based on Figma */}
@@ -299,11 +307,10 @@ const QuickEntrySelector = memo((props: QuickEntrySelectorProps) => {
 
           {/* Number Input/Display Area */}
           <div 
-            className="w-full flex justify-center items-center transition-all duration-200 ease-out"
+            className="w-full flex justify-center items-center transition-all duration-200 ease-out bg-black/20 backdrop-blur-sm border-y border-white/10"
             style={{ 
-              backgroundColor: 'rgba(74, 72, 187, 0.36)',
               height: '95px',
-              boxShadow: selectedNumber !== null && String(selectedNumber).trim() !== '' ? '0 0 8px 2px rgba(128, 90, 213, 0.5)' : 'none', // Glow effect if number selected
+              boxShadow: selectedNumber !== null && String(selectedNumber).trim() !== '' ? '0 0 8px 2px rgba(128, 90, 213, 0.5)' : 'none',
             }}
           >
         <Input 
@@ -365,89 +372,98 @@ const QuickEntrySelector = memo((props: QuickEntrySelectorProps) => {
             <SheenEffect />
         </Button>
       </div>
-      </>
+      </motion.div>
+      </AnimatePresence>
     );
   }
 
   if (stage === 'confirming') {
-    if (isConfirmingLoading) {
-      return (
-        <div 
-          ref={wrapperRef}
-          className="rounded-lg shadow-md w-full flex flex-col justify-center items-center"
-          style={{
-            borderRadius: '10px', 
-            backgroundColor: 'rgba(74, 72, 187, 0.85)',
-            height: '153px',
-            fontFamily: 'Inter, sans-serif',
-          }}
-        >
-          <Loader2 className="h-10 w-10 text-white animate-spin" />
-        </div>
-      );
-    }
-
     return (
-      <div 
+      <motion.div
         ref={wrapperRef}
-        className="rounded-lg shadow-md w-full flex flex-col overflow-hidden" 
-        style={{ borderRadius: '10px', height: '153px', fontFamily: 'Inter, sans-serif' }}
+        className="rounded-lg overflow-hidden shadow-md w-full flex flex-col items-center"
+        style={{ borderRadius: '10px' }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.18 }}
       >
-        {/* Wallet Balance Display Area - New */}
+        {/* Header bar duplicated from state 2, rendered as a non-interactive div */}
         <div
-          className="w-full flex justify-center items-center text-center"
+          className="w-full text-center text-sm font-semibold py-2 transition-all duration-150 ease-in-out"
           style={{
-            backgroundColor: 'rgba(68, 62, 180, 0.25)', // More distinct purple-toned background
-            padding: '4px 0', 
-            fontSize: '13px',
-            fontWeight: 400,
-            color: '#F3F4F6', // Brighter text for contrast
-            height: '28px', 
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)', // Light bottom border
-          }}
-        >
-          Balance: ${walletBalance !== null ? walletBalance.toFixed(2) : 'Loading...'}
-        </div>
-
-        {/* Top Button: "Select: [Number]" - Adjusted height/flex */}
-        <div
-          onClick={handleConfirmClick} 
-          className="w-full flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 ease-in-out hover:brightness-110 active:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          style={{
-            // Flipped gradient for the primary action
-            backgroundImage: 'linear-gradient(to top left, rgba(108, 99, 255, 1), rgba(80, 70, 220, 1))',
-            fontSize: '22px',
-            fontWeight: 600,
+            backgroundImage: 'linear-gradient(to top left, #5855E4, #403DAA)',
             color: '#FFFFFF',
-            height: 'calc((153px - 28px) / 2)', // Adjusted height
+            fontFamily: 'Inter, sans-serif',
+            borderRadius: '10px 10px 0 0',
+            padding: '8px',
+            borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
           }}
-          role="button"
-          tabIndex={0}
-          onKeyPress={(e) => e.key === 'Enter' && handleConfirmClick()}
         >
-          Select: {String(selectedNumber).padStart(2, '0')}
+          Confirm
         </div>
 
-        {/* Bottom Button: "Cancel" - Adjusted height/flex */}
+        {/* Middle display area (same height and bg as the number input area in state 2) */}
         <div
-          onClick={() => handleBoardAction('CANCEL_CONFIRM', boardId)} 
-          className="w-full flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 ease-in-out hover:brightness-110 active:brightness-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
-          style={{
-            // More subdued gradient for cancel, slightly darker/desaturated
-            backgroundImage: 'linear-gradient(to bottom right, rgba(65, 62, 140, 1), rgba(50, 47, 110, 1))',
-            fontSize: '15px',
-            fontWeight: 400,
-            color: '#E0E0E0', // Slightly less bright white for cancel text
-            borderTop: '1px solid rgba(0, 0, 0, 0.2)', // Darker separator for more distinction
-            height: 'calc((153px - 28px) / 2)', // Adjusted height
-          }}
-          role="button"
-          tabIndex={0}
-          onKeyPress={(e) => e.key === 'Enter' && handleBoardAction('CANCEL_CONFIRM', boardId)}
+          className="w-full min-w-0 flex flex-col items-center justify-center gap-1 px-2 transition-all duration-200 ease-out bg-black/20 backdrop-blur-sm border-y border-white/10"
+          style={{ height: '95px' }}
         >
-          Cancel
+          <div
+            className="font-extrabold text-center leading-none tracking-tight"
+            style={{
+              fontFamily: 'Inter, sans-serif',
+              fontSize: 'clamp(28px, 10vw, 40px)',
+              color: '#F3F4F6',
+              width: '100%'
+            }}
+          >
+            {String(selectedNumber).padStart(2, '0')}
+          </div>
+          <div
+            className="text-white/80 leading-none whitespace-nowrap text-center"
+            style={{ fontSize: 'clamp(9px, 2.8vw, 11px)' }}
+          >
+            Entry Fee: ${entryFee > 0 ? entryFee.toFixed(2) : '0.00'}
+          </div>
         </div>
-      </div>
+
+        {/* Bottom buttons (two equal buttons) */}
+        <div className="flex w-full gap-0 min-w-0 items-stretch">
+          <Button
+            type="button"
+            onClick={() => handleBoardAction('ENTRY_COMPLETED_RESET', boardId)}
+            variant="outline"
+            aria-label="Cancel"
+            className="flex-1 text-sm inline-flex items-center justify-center relative overflow-hidden transition-all duration-200 ease-in-out bg-black/30 hover:bg-black/40 border-white/10 text-white backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-accent-1/40 min-w-0 rounded-none rounded-bl-[10px] border-t"
+            style={{
+              padding: '8px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.15)'
+            }}
+          >
+            <X className="h-5 w-5 shrink-0 text-red-400" strokeWidth={3} />
+          </Button>
+          <Button
+            type="button"
+            onClick={handleConfirmClick}
+            disabled={isConfirmingLoading}
+            aria-label="Confirm"
+            className="flex-1 text-sm inline-flex items-center justify-center relative overflow-hidden transition-all duration-200 ease-in-out hover:brightness-110 hover:scale-[1.02] min-w-0 rounded-none rounded-br-[10px] border-t"
+            style={{
+              backgroundImage: 'linear-gradient(to bottom right, rgba(108, 99, 255, 1), rgba(68, 62, 180, 1))',
+              color: '#FFFFFF',
+              fontFamily: 'Inter, sans-serif',
+              padding: '8px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.15)'
+            }}
+          >
+            {isConfirmingLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin shrink-0 text-white" strokeWidth={3} />
+            ) : (
+              <Check className="h-5 w-5 shrink-0 text-green-400" strokeWidth={3} />
+            )}
+          </Button>
+        </div>
+      </motion.div>
     );
   }
 

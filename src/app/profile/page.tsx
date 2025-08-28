@@ -3,12 +3,14 @@
 import React, { useState, ChangeEvent, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, Mail, DollarSign, List, Settings, ShieldCheck, Scale, LogOut, Info, HelpCircle, BookOpen, FileText, ArrowRight, Edit2, Loader2 } from 'lucide-react';
+import { User, Mail, DollarSign, List, Settings, ShieldCheck, Scale, LogOut, Info, HelpCircle, BookOpen, FileText, ArrowRight, Edit2, Loader2, Bell } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@/hooks/useWallet';
+import { motion, AnimatePresence } from 'framer-motion'
+import { HeroText } from '@/components/ui/hero-text'
 
 // Import BottomNav
 import BottomNav from '@/components/lobby/BottomNav';
@@ -44,19 +46,18 @@ interface UserProfileData {
 // Define menu items based on your existing links
 const accountMenuItems = [
   { href: "/profile/settings", icon: Settings, label: "Account Settings" },
-  { href: "/transactions", icon: List, label: "Transaction History" },
+  { href: "/profile/notifications", icon: Bell, label: "Notifications" },
   // Logout is handled separately as a button
 ];
 
 const supportMenuItems = [
-  { href: "/how-to-play", icon: HelpCircle, label: "How to Play" },
-  { href: "/account-guide", icon: BookOpen, label: "Account Guide" },
-  { href: "/faq", icon: Info, label: "FAQ" },
-  { href: "/terms", icon: FileText, label: "Terms & Conditions" },
-  { href: "/privacy", icon: ShieldCheck, label: "Privacy Policy" },
-  { href: "/responsible-gaming-policy", icon: Scale, label: "Responsible Gaming Policy" },
-  // Using a mailto link for Contact Support
-  { href: "mailto:contact@squarpicks.com", icon: Mail, label: "Contact Support", isExternal: true },
+  { href: "/information-and-support/how-to-play", icon: HelpCircle, label: "How to Play", isExternal: false },
+  { href: "/information-and-support/account-guide", icon: BookOpen, label: "Account Guide", isExternal: false },
+  { href: "/information-and-support/faq", icon: Info, label: "FAQ", isExternal: false },
+  { href: "/information-and-support/terms", icon: FileText, label: "Terms & Conditions", isExternal: false },
+  { href: "/information-and-support/privacy", icon: ShieldCheck, label: "Privacy Policy", isExternal: false },
+  { href: "/information-and-support/responsible-gaming", icon: Scale, label: "Responsible Gaming", isExternal: false },
+  { href: "/contact-support", icon: Mail, label: "Contact Support", isExternal: false },
 ];
 
 const ProfilePage = () => {
@@ -162,7 +163,8 @@ const ProfilePage = () => {
     setIsWalletLoadingState(true);
     setTimeout(() => {
       setIsWalletLoadingState(false);
-      router.push('/wallet');
+      const url = '/wallet?prev=Profile&prevHref=%2Fprofile';
+      router.push(url);
     }, 900);
     e.preventDefault();
   };
@@ -206,35 +208,35 @@ const ProfilePage = () => {
           </div>
         ) : userProfile ? (
           <>
-            <div
-              className="w-full rounded-2xl p-6 flex flex-col items-center mb-6 border relative"
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full rounded-2xl p-6 flex flex-col items-center mb-6 border relative overflow-hidden"
               style={{
-                background: 'linear-gradient(145deg, #262c3d 80%, #23293a 100%)',
-                borderColor: 'rgba(255,255,255,0.04)',
+                background: 'linear-gradient(145deg, rgba(38, 44, 61, 0.5) 0%, rgba(35, 41, 58, 0.7) 100%)',
+                borderColor: 'rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(10px)',
                 boxShadow:
-                  'inset 0 2px 12px 0 rgba(255,255,255,0.07), inset 0 -8px 32px 0 rgba(0,0,0,0.18)',
+                  'inset 0 2px 12px 0 rgba(255,255,255,0.07), 0 2px 20px -5px rgba(0,0,0,0.3)',
               }}
             >
               <div className="absolute top-4 right-4 flex flex-col items-end gap-2 sm:flex-row sm:items-end sm:gap-3 z-10">
-                <span 
-                  className="px-3 py-1.5 text-[11px] sm:px-4 sm:py-2 sm:text-xs rounded-full bg-[#58513a] flex items-center justify-between gap-1 sm:gap-2 shadow-sm"
-                  style={{minHeight: '30px'}}
-                >
-                  <span className="text-text-primary/80">Balance:</span>
-                  <span className="text-yellow-400 font-bold text-sm sm:text-md">${userProfile.balance.toFixed(2)}</span>
-                </span>
-                <Link
-                  href="/wallet"
-                  onClick={handleManageClick}
-                  className={`text-accent-1 text-[11px] sm:text-xs font-semibold cursor-pointer flex items-center transition-colors duration-150 ${isWalletLoadingState ? 'pointer-events-none opacity-70' : 'hover:underline hover:text-accent-1/80 active:text-accent-1/90'}`}
-                  tabIndex={0}
-                  aria-disabled={isWalletLoadingState}
-                >
-                  <span>
-                    {isWalletLoadingState && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
-                    Manage
-                  </span>
-                </Link>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="text-text-primary/80 text-[11px] sm:text-xs">Balance: <span className="text-yellow-400 font-bold text-sm sm:text-md">${userProfile.balance.toFixed(2)}</span></div>
+                  <Link
+                    href={{ pathname: '/wallet', query: { prev: 'Profile', prevHref: '/profile' } }}
+                    onClick={handleManageClick}
+                    className={`text-[11px] sm:text-xs font-semibold cursor-pointer flex items-center justify-center min-w-[60px] transition-all duration-150 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/10 ${isWalletLoadingState ? 'pointer-events-none opacity-70' : 'hover:bg-accent-1/10 text-accent-1 hover:text-accent-1 active:text-accent-1/90'}`}
+                    tabIndex={0}
+                    aria-disabled={isWalletLoadingState}
+                  >
+                    {isWalletLoadingState ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      'Wallet'
+                    )}
+                  </Link>
+                </div>
               </div>
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 mb-3 group">
                 {imagePreview ? (
@@ -271,21 +273,24 @@ const ProfilePage = () => {
               </div>
               <div className="text-lg sm:text-xl font-bold text-text-primary mb-1">{userProfile.username}</div>
               {userProfile.email && <div className="text-xs text-text-secondary mb-2">{userProfile.email}</div>}
-            </div>
+            </motion.div>
 
             <div className="mb-8">
                <h2 className="text-xs uppercase text-text-secondary font-semibold mb-3 px-1">Account</h2>
                <div className="rounded-xl overflow-hidden bg-gradient-to-b from-background-primary via-background-primary via-5% to-background-secondary divide-y divide-gray-700/50 shadow-md">
                     {accountMenuItems.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group"
-                      >
-                        <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
-                        <span className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</span>
-                        <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
-                      </Link>
+                      <motion.div key={item.label} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                        <Link
+                          href={item.href}
+                          className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group"
+                        >
+                          <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
+                          <div className="relative">
+                            <HeroText id={item.label.toLowerCase().replace(/\s+/g, '-')} className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</HeroText>
+                          </div>
+                          <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
+                        </Link>
+                      </motion.div>
                     ))}
                      <Button
                        onClick={handleLogout}
@@ -303,25 +308,27 @@ const ProfilePage = () => {
                <div className="rounded-xl overflow-hidden bg-gradient-to-b from-background-primary via-background-primary via-5% to-background-secondary divide-y divide-gray-700/50 shadow-md">
                  {supportMenuItems.map((item) => (
                    item.isExternal ? (
-                     <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group">
+                     <motion.a key={item.label} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} href={item.href} target="_blank" rel="noopener noreferrer" className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group">
                         <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
                         <span className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</span>
                         <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
-                     </a>
+                     </motion.a>
                    ) : (
-                     <Link
-                       key={item.label}
-                       href={item.href}
-                       className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group"
-                     >
-                       <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
-                       <span className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</span>
-                       <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
-                     </Link>
+                     <motion.div key={item.label} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                       <Link
+                         href={item.href}
+                         {...(!item.isExternal ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+                         className="w-full p-4 flex items-center hover:bg-gray-700/30 hover:scale-[1.03] focus:scale-[1.03] active:scale-95 transition-all duration-150 hover:underline focus:underline rounded-none outline-none group"
+                       >
+                         <item.icon className="text-text-secondary mr-4 w-5 h-5 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
+                         <span className="text-text-primary transition-colors duration-150 group-hover:text-accent-1 group-focus:text-accent-1">{item.label}</span>
+                         <ArrowRight className="ml-auto text-text-secondary w-4 h-4 group-hover:text-accent-1 group-focus:text-accent-1 transition-colors duration-150" />
+                       </Link>
+                     </motion.div>
                    )
                  ))}
-               </div>
-             </div>
+                 </div>
+              </div>
 
           </>
         ) : (

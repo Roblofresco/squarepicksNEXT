@@ -6,12 +6,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow create: if request.auth.uid == userId;
       allow read: if request.auth.uid == userId;
-      allow update: if request.auth.uid == userId &&
-                       request.resource.data.keys().hasOnly([
-                         'displayName', 'photoURL', 'email', 
-                         'firstName', 'lastName', 'hasWallet', 'fcmToken',
-                         'state', 'country', 'lastKnownLocation', 'locationVerified', 'locationLastVerified'
-                       ]);
+      allow update: if request.auth.uid == userId;
       allow delete: if false;
 
       match /address/{document} {
@@ -22,6 +17,12 @@ service cloud.firestore {
       }
       match /wallet/{document} {
         allow create, read, write, delete: if request.auth.uid == userId;
+      }
+      // --- private wins Subcollection (per-user quarter/final wins) ---
+      match /wins/{winId} {
+        // Users can read their own wins; server (Admin SDK) writes
+        allow read: if request.auth.uid == userId;
+        allow create, update, delete: if false;
       }
     }
 
@@ -52,10 +53,15 @@ service cloud.firestore {
 
       // --- squares Subcollection (under boards) ---
       match /squares/{squareId} {
-        allow create: if false;
-        allow read: if request.auth != null;
-        allow update: if false;
-        allow delete: if false;
+        // Squares contain sensitive userIDs; disallow client reads/writes
+        allow create, read, update, delete: if false;
+      }
+
+      // --- winners Subcollection (public, non-PII summary) ---
+      match /winners/{periodId} {
+        // Public can read winner index/square/metadata; server writes
+        allow read: if true;
+        allow create, update, delete: if false;
       }
     }
 

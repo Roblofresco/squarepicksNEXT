@@ -1,25 +1,44 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { auth, db } from '@/lib/firebase';
-import { onAuthStateChanged, User as FirebaseUser, EmailAuthProvider, reauthenticateWithCredential, updateEmail } from 'firebase/auth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { ArrowLeft, User, Mail, Save, Shield, KeyRound, Loader2, AlertCircle, ArrowRight, X } from 'lucide-react';
+import { useState, useEffect, useMemo } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { getDoc, setDoc, doc } from "firebase/firestore";
+import { db }from "@/lib/firebase";
+import Link from "next/link";
+import { Loader2, AlertCircle, Save, KeyRound, User, Shield, ArrowRight, X } from "lucide-react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Breadcrumbs from "@/components/navigation/Breadcrumbs";
 
-interface UserProfileData {
-  displayName: string;
-  email: string;
+const accountFormSchema = z.object({
+  displayName: z.string()
+    .min(3, { message: "Display name must be at least 3 characters." })
+    .max(30, { message: "Display name must not be longer than 30 characters." }),
+  phone: z.string().optional(),
+});
+
+type AccountFormValues = z.infer<typeof accountFormSchema>;
+
+interface ProfileData {
+  display_name?: string;
   phone?: string;
+  email?: string;
 }
 
 const AccountSettingsPage = () => {
-  const router = useRouter();
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [profileData, setProfileData] = useState<UserProfileData | null>(null);
-  const [displayNameInput, setDisplayNameInput] = useState('');
-  const [phoneInput, setPhoneInput] = useState('');
+  const { user, loading: authLoading, reauthenticate, updateEmailAddress } = useAuth();
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,110 +52,69 @@ const AccountSettingsPage = () => {
   const [changeEmailError, setChangeEmailError] = useState<string | null>(null);
   const [changeEmailSuccess, setChangeEmailSuccess] = useState<string | null>(null);
 
+  const form = useForm<AccountFormValues>({
+    resolver: zodResolver(accountFormSchema),
+    mode: "onChange",
+  });
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        try {
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          const userDocSnap = await getDoc(userDocRef);
-          if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            setProfileData({
-              displayName: userData.display_name || currentUser.displayName || 'User',
-              email: userData.email || currentUser.email || 'N/A',
-              phone: userData.phone || '',
-            });
-            setDisplayNameInput(userData.display_name || currentUser.displayName || 'User');
-            setPhoneInput(userData.phone || '');
-          } else {
-            setError("User data not found. Please try again later.");
-            // Set defaults if user doc doesn't exist but auth user does
-            setProfileData({ displayName: currentUser.displayName || 'User', email: currentUser.email || 'N/A', phone: '' });
-            setDisplayNameInput(currentUser.displayName || 'User');
-            setPhoneInput('');
-          }
-        } catch (err) {
-          console.error("Error fetching user data:", err);
-          setError("Failed to load your profile data. Please refresh the page.");
-           // Set defaults on error
-          setProfileData({ displayName: currentUser.displayName || 'User', email: currentUser.email || 'N/A', phone: '' });
-          setDisplayNameInput(currentUser.displayName || 'User');
-          setPhoneInput('');
-        }
-      } else {
-        router.push('/login');
-      }
+    if (authLoading) return;
+    if (!user) {
       setIsLoading(false);
-    });
-    return () => unsubscribe();
-  }, [router]);
-
-  const handleDisplayNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setDisplayNameInput(e.target.value);
-    setSuccessMessage(null); // Clear success message on new input
-    setError(null); // Clear error on new input
-  };
-
-  const handlePhoneInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setPhoneInput(e.target.value);
-    setSuccessMessage(null);
-    setError(null);
-  };
-
-  const handleSubmitPersonalInformation = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!user || !profileData) return;
-
-    const isDisplayNameChanged = displayNameInput.trim() !== profileData.displayName;
-    const isPhoneChanged = phoneInput.trim() !== (profileData.phone || '');
-    const isDisplayNameValid = displayNameInput.trim().length >= 3;
-
-    if (!isDisplayNameChanged && !isPhoneChanged) {
-      // No actual change
       return;
     }
-    if (isDisplayNameChanged && !isDisplayNameValid) {
-        setError("Display name must be at least 3 characters long.");
-        return;
-    }
 
+    const fetchProfileData = async () => {
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const data = userDoc.data() as ProfileData;
+          setProfileData(data);
+          form.reset({
+            displayName: data.display_name || "",
+            phone: data.phone || "",
+          });
+        }
+      } catch (err) {
+        setError("Failed to load profile data.");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [user, authLoading, form]);
+
+  const onSubmit = async (data: AccountFormValues) => {
+    if (!user) {
+      setError("You must be logged in to save changes.");
+      return;
+    }
     setIsSaving(true);
     setError(null);
     setSuccessMessage(null);
 
     try {
-      const userDocRef = doc(db, 'users', user.uid);
-      const dataToUpdate: { [key: string]: any } = {};
+      const userDocRef = doc(db, "users", user.uid);
+      await setDoc(userDocRef, {
+        display_name: data.displayName,
+        phone: data.phone,
+      }, { merge: true });
 
-      if (isDisplayNameChanged && isDisplayNameValid) {
-        dataToUpdate.display_name = displayNameInput.trim();
-      }
-      if (isPhoneChanged) {
-        // Add phone validation here if needed, e.g., format
-        dataToUpdate.phone = phoneInput.trim();
-      }
-
-      if (Object.keys(dataToUpdate).length > 0) {
-        await updateDoc(userDocRef, dataToUpdate);
-        setProfileData(prev => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            displayName: dataToUpdate.display_name !== undefined ? dataToUpdate.display_name : prev.displayName,
-            phone: dataToUpdate.phone !== undefined ? dataToUpdate.phone : prev.phone,
-          };
-        });
-        setSuccessMessage("Information updated successfully!");
-      }
+      setProfileData(prev => ({ ...prev, display_name: data.displayName, phone: data.phone } as ProfileData));
+      setSuccessMessage("Your changes have been saved successfully.");
+      form.reset(data); // Resets the form's dirty state
     } catch (err) {
-      console.error("Error updating information:", err);
-      setError("Failed to update information. Please try again.");
+      setError("Failed to save changes. Please try again.");
+      console.error(err);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
-  const handleChangeEmail = async (e: FormEvent<HTMLFormElement>) => {
+  const handleChangeEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
 
@@ -145,38 +123,42 @@ const AccountSettingsPage = () => {
     setChangeEmailSuccess(null);
 
     try {
-      // Re-authenticate user
-      const credential = EmailAuthProvider.credential(user.email!, currentPassword);
-      await reauthenticateWithCredential(user, credential);
+      await updateEmailAddress(newEmail, currentPassword);
 
-      // Update email in Firebase Auth
-      await updateEmail(user, newEmail);
-
-      // Update email in Firestore
+      // Also update in Firestore
       const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, { email: newEmail });
+      await setDoc(userDocRef, { email: newEmail }, { merge: true });
 
-      // Update local state
-      setProfileData(prev => prev ? { ...prev, email: newEmail } : null);
-      setChangeEmailSuccess("Email updated successfully! A verification email has been sent to your new address.");
+      setProfileData(prev => prev ? { ...prev, email: newEmail } : { email: newEmail });
+      setChangeEmailSuccess("Email updated successfully! A verification link may be sent to your new address.");
       setShowChangeEmailModal(false);
       setNewEmail('');
       setCurrentPassword('');
+
     } catch (err: any) {
       console.error("Error updating email:", err);
-      if (err.code === 'auth/wrong-password') {
+      if (err.code === 'auth/wrong-password' || err.message.includes('wrong-password')) {
         setChangeEmailError("Incorrect password. Please try again.");
       } else if (err.code === 'auth/email-already-in-use') {
         setChangeEmailError("This email address is already in use by another account.");
       } else if (err.code === 'auth/invalid-email') {
         setChangeEmailError("The new email address is invalid.");
-      }
-       else {
+      } else {
         setChangeEmailError("Failed to update email. Please try again.");
       }
+    } finally {
+        setIsChangingEmail(false);
     }
-    setIsChangingEmail(false);
   };
+
+  const isFormUnchanged = useMemo(() => {
+    const { displayName, phone } = form.getValues();
+    return (
+      displayName === (profileData?.display_name || "") &&
+      phone === (profileData?.phone || "")
+    );
+  }, [form, profileData, form.watch('displayName'), form.watch('phone')]);
+
 
   if (isLoading) {
     return (
@@ -187,205 +169,210 @@ const AccountSettingsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background-primary text-gray-800 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6 flex items-center justify-between">
-            <button 
-                onClick={() => router.push('/profile')}
-                className="flex items-center text-sm text-accent-1 hover:text-accent-1/80 active:scale-95 focus:scale-105 transition-all duration-150 outline-none"
-            >
-                <ArrowLeft size={18} className="mr-1" />
-                Back to Profile
-            </button>
-            <h1 className="text-2xl font-semibold text-text-primary">Account Settings</h1>
-             {/* Placeholder for symmetry, or add a right-side action if needed */}
-            <div style={{ width: '110px' }}></div> 
+    <div className="min-h-screen bg-background-primary text-text-primary p-0 flex flex-col">
+      <Breadcrumbs className="mb-3 pl-4 sm:pl-6 mt-2 sm:mt-3" ellipsisOnly backHref="/profile" />
+      <div className="mb-4 pl-4 sm:pl-6">
+        <h1 className="text-2xl font-semibold">Account Settings</h1>
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 text-sm rounded-lg p-3 mb-4 flex items-center">
+        <div className="mx-4 sm:mx-6 bg-red-100 border border-red-400 text-red-700 text-sm rounded-lg p-3 mb-4 flex items-center">
             <AlertCircle size={18} className="mr-2 text-red-500" /> 
             {error}
           </div>
         )}
         {successMessage && (
-          <div className="bg-green-100 border border-green-400 text-green-700 text-sm rounded-lg p-3 mb-4">
+        <div className="mx-4 sm:mx-6 bg-green-100 border border-green-400 text-green-700 text-sm rounded-lg p-3 mb-4">
             {successMessage}
           </div>
         )}
 
-        {/* Personal Information Section */}
-        <div className="bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% p-6 rounded-lg mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mt-4 mb-4 flex items-center">
-            <User size={20} className="mr-2 text-accent-1" /> Personal Information
-          </h2>
-          <form onSubmit={handleSubmitPersonalInformation}>
-            <div className="mb-4">
-              <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
-                Display Name
-              </label>
-              <input
-                type="text"
-                id="displayName"
-                value={displayNameInput}
-                onChange={handleDisplayNameChange}
-                className="w-full p-2.5 bg-white border border-gray-400 rounded-md focus:ring-2 focus:ring-accent-1 focus:border-accent-1 outline-none transition-colors duration-150 text-gray-800"
-                minLength={3}
-                maxLength={30}
-                required
-              />
+      <div className="px-4 sm:px-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8">
+            <FormField
+              control={form.control}
+              name="displayName"
+              render={({ field }: { field: any }) => (
+                <FormItem className="mb-6 group">
+                  <FormLabel className="block text-xs font-medium text-white/70 mb-1">Display Name</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        className="w-full bg-transparent border-0 outline-none text-white text-lg placeholder-white/50 py-1 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      />
+                      <div className="h-px bg-gradient-to-r from-accent-2/45 via-accent-1/35 to-accent-2/45 transition-all group-focus-within:h-[2px]" />
+                       <div className="pointer-events-none absolute inset-x-0 -top-2 opacity-0 group-focus-within:opacity-60">
+                        <div className="h-4 w-full blur-md bg-[radial-gradient(ellipse_at_center,_rgba(27,176,242,0.28)_0%,_transparent_60%)]" />
+                      </div>
             </div>
-            <div className="mb-4">
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                value={phoneInput}
-                onChange={handlePhoneInputChange}
-                className="w-full p-2.5 bg-white border border-gray-400 rounded-md focus:ring-2 focus:ring-accent-1 focus:border-accent-1 outline-none transition-colors duration-150 text-gray-800"
+                  </FormControl>
+                  <FormMessage className="text-red-400 text-xs mt-1" />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }: { field: any }) => (
+                <FormItem className="mb-6 group">
+                  <FormLabel className="block text-xs font-medium text-white/70 mb-1">Phone Number</FormLabel>
+                  <FormControl>
+                     <div className="relative">
+                       <Input
+                        {...field}
                 placeholder="(123) 456-7890"
-              />
+                        className="w-full bg-transparent border-0 outline-none text-white text-lg placeholder-white/50 py-1 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                       />
+                       <div className="h-px bg-gradient-to-r from-accent-2/45 via-accent-1/35 to-accent-2/45 transition-all group-focus-within:h-[2px]" />
+                       <div className="pointer-events-none absolute inset-x-0 -top-2 opacity-0 group-focus-within:opacity-60">
+                        <div className="h-4 w-full blur-md bg-[radial-gradient(ellipse_at_center,_rgba(27,176,242,0.28)_0%,_transparent_60%)]" />
+                      </div>
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-red-400 text-xs mt-1" />
+                </FormItem>
+              )}
+            />
+
+            <div className="mb-6 group">
+              <label className="block text-xs font-medium text-white/70 mb-1">Email Address (read‑only)</label>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-white/90 text-lg truncate">{profileData?.email || 'Loading...'}</span>
+                <span className="ml-3 text-[11px] text-white/60">🔒</span>
             </div>
-            <div className="mb-6">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
-              </label>
-              <div className="w-full p-2.5 bg-gray-200 border border-gray-400 rounded-md text-gray-600 flex items-center">
-                <Mail size={16} className="mr-2 text-gray-500" />
-                {profileData?.email || 'Loading...'}
+              <div className="relative">
+                <div className="h-px bg-gradient-to-r from-accent-2/45 via-accent-1/35 to-accent-2/45" />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Email address cannot be changed here.</p>
+              <p className="text-xs text-white/50 mt-1">Email changes are handled separately for security.</p>
             </div>
-            <button 
+
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <Button
               type="submit"
-              disabled={isSaving || ((displayNameInput.trim() === (profileData?.displayName || '')) && (phoneInput.trim() === (profileData?.phone || ''))) || (displayNameInput.trim().length > 0 && displayNameInput.trim().length < 3) }
-              className="w-full sm:w-auto flex items-center justify-center px-6 py-2.5 bg-accent-1 text-white font-medium rounded-md hover:bg-accent-1/90 focus:ring-2 focus:ring-accent-1 focus:ring-offset-2 focus:ring-offset-[#eeeeee] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+                disabled={isSaving || isFormUnchanged || !form.formState.isValid}
+                className="w-full sm:w-auto flex items-center justify-center px-6 py-2.5 text-white font-medium rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-95 focus:ring-2 focus:ring-white/10 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
             >
               {isSaving ? <><Loader2 size={18} className="animate-spin mr-2" /> Saving...</> : <><Save size={18} className="mr-2"/> Save Changes</>}
-            </button>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => { setShowChangeEmailModal(true); setChangeEmailError(null); setChangeEmailSuccess(null); }}
+                className="w-full sm:w-auto flex items-center justify-center px-6 py-2.5 bg-white/10 text-white font-medium rounded-md hover:bg-white/15 focus:ring-2 focus:ring-accent-1 focus:ring-offset-2 focus:ring-offset-background active:scale-95 focus:scale-105 transition-all duration-150 border border-white/20 backdrop-blur-sm"
+              >
+                Change Email
+              </Button>
+            </div>
           </form>
-
-          <div className="mt-6">
-            <button
-              onClick={() => {
-                setShowChangeEmailModal(true);
-                setChangeEmailError(null);
-                setChangeEmailSuccess(null);
-              }}
-              className="w-full sm:w-auto flex items-center justify-center px-6 py-2.5 bg-gray-200 border border-gray-400 text-gray-800 font-medium rounded-md hover:bg-gray-300 focus:ring-2 focus:ring-accent-1 focus:ring-offset-2 focus:ring-offset-[#eeeeee] active:scale-95 focus:scale-105 transition-all duration-150"
-            >
-              Change Email Address
-            </button>
-          </div>
+        </Form>
         </div>
 
-        {/* Security Section */}
-        <div className="bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% p-6 rounded-lg">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+      <div className="mt-8 relative overflow-hidden rounded-t-3xl border-x border-t border-accent-1/30 flex flex-col flex-1">
+        <div className="absolute inset-0 bg-background-primary/40" />
+        <div className="absolute inset-0 opacity-20 bg-gradient-to-tr from-accent-2 via-accent-1/60 to-accent-2" />
+        <div className="relative z-10 p-6 pb-0 flex flex-col h-full">
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
             <Shield size={20} className="mr-2 text-accent-1" /> Security
           </h2>
           <Link
             href="/profile/settings/change-password"
-            className="flex items-center justify-between w-full p-3 bg-white hover:bg-gray-50 rounded-md border border-gray-400 transition-colors duration-150 text-gray-800 active:scale-95 focus:scale-105 transition-all outline-none"
+            className="flex items-center justify-between w-full p-3 rounded-md border border-white/15 bg-white/5 hover:bg-white/10 text-white transition-colors duration-150 backdrop-blur-sm active:scale-95 focus:scale-105 outline-none"
           >
             <div className="flex items-center">
-                <KeyRound size={18} className="mr-3 text-gray-500"/>
-                Change Password
+              <KeyRound size={18} className="mr-3 text-white/70"/>
+              <span className="text-white/90">Change Password</span>
             </div>
-            <ArrowRight size={16} className="text-gray-500" />
+            <ArrowRight size={16} className="text-white/60" />
           </Link>
           <Link
-            href="/profile/settings/personal-details"
-            className="mt-4 flex items-center justify-between w-full p-3 bg-white hover:bg-gray-50 rounded-md border border-gray-400 transition-colors duration-150 text-gray-800 active:scale-95 focus:scale-105 transition-all outline-none"
+            href="/wallet-setup/personal-info"
+            className="mt-4 flex items-center justify-between w-full p-3 rounded-md border border-white/15 bg-white/5 hover:bg-white/10 text-white transition-colors duration-150 backdrop-blur-sm active:scale-95 focus:scale-105 outline-none"
           >
             <div className="flex items-center">
-                <User size={18} className="mr-3 text-gray-500"/>
-                Edit Personal Details
+              <User size={18} className="mr-3 text-white/70"/>
+              <span className="text-white/90">Edit Personal Details</span>
             </div>
-            <ArrowRight size={16} className="text-gray-500" />
+            <ArrowRight size={16} className="text-white/60" />
           </Link>
+          <div className="mt-4 text-xs text-white/50">
+            For security reasons, email and password changes have their own dedicated pages.
+          </div>
+          <div className="mt-auto text-center text-xs text-white/70 border-t border-white/10 py-6">
+            <Link href="/terms" className="underline hover:text-white">Terms of Service</Link>
+            <span className="mx-2">•</span>
+            <Link href="/privacy" className="underline hover:text-white">Privacy Policy</Link>
+          </div>
         </div>
-
       </div>
-      {/* Change Email Modal */}
+
       {showChangeEmailModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-gradient-to-b from-background-primary to-[#eeeeee] to-5% p-6 sm:p-8 rounded-lg w-full max-w-md">
+          <div className="bg-background-primary border border-accent-1/20 p-6 sm:p-8 rounded-lg w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-gray-900">Change Email Address</h3>
-              {/* <button onClick={() => {
-                setShowChangeEmailModal(false);
-                setNewEmail('');
-                setCurrentPassword('');
-                setChangeEmailError(null);
-                setChangeEmailSuccess(null);
-                }} className="text-gray-500 hover:text-gray-700">
+              <h3 className="text-xl font-semibold text-white">Change Email Address</h3>
+              <button onClick={() => setShowChangeEmailModal(false)} className="text-white/70 hover:text-white">
                 <X size={24} />
-              </button> */}
+              </button>
             </div>
 
             {changeEmailError && (
-              <div className="bg-red-100 border border-red-400 text-red-700 text-sm rounded-lg p-3 mb-4 flex items-center">
-                <AlertCircle size={18} className="mr-2 text-red-500" />
+              <div className="bg-red-500/10 border border-red-500/30 text-red-300 text-sm rounded-lg p-3 mb-4 flex items-center">
+                <AlertCircle size={18} className="mr-2 text-red-400" />
                 {changeEmailError}
               </div>
             )}
             {changeEmailSuccess && (
-              <div className="bg-green-100 border border-green-400 text-green-700 text-sm rounded-lg p-3 mb-4">
+              <div className="bg-green-500/10 border border-green-500/30 text-green-300 text-sm rounded-lg p-3 mb-4">
                 {changeEmailSuccess}
               </div>
             )}
 
             <form onSubmit={handleChangeEmail}>
               <div className="mb-4">
-                <label htmlFor="newEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="newEmail" className="block text-sm font-medium text-white/80 mb-1">
                   New Email Address
                 </label>
-                <input
+                <Input
                   type="email"
                   id="newEmail"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-gray-400 rounded-md focus:ring-2 focus:ring-accent-1 focus:border-accent-1 outline-none transition-colors duration-150 text-gray-800"
+                  className="w-full"
                   required
                 />
               </div>
               <div className="mb-6">
-                <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="currentPassword" className="block text-sm font-medium text-white/80 mb-1">
                   Current Password (for verification)
                 </label>
-                <input
+                <Input
                   type="password"
                   id="currentPassword"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-gray-400 rounded-md focus:ring-2 focus:ring-accent-1 focus:border-accent-1 outline-none transition-colors duration-150 text-gray-800"
+                  className="w-full"
                   required
                 />
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                <button 
+                <Button 
                   type="submit"
                   disabled={isChangingEmail || !newEmail || !currentPassword}
-                  className="w-full flex items-center justify-center px-6 py-2.5 bg-accent-1 text-white font-medium rounded-md hover:bg-accent-1/90 focus:ring-2 focus:ring-accent-1 focus:ring-offset-2 focus:ring-offset-[#eeeeee] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+                  className="w-full"
                 >
                   {isChangingEmail ? <><Loader2 size={18} className="animate-spin mr-2" /> Updating Email...</> : 'Update Email'}
-                </button>
-                <button 
+                </Button>
+                <Button 
                   type="button"
-                  onClick={() => {
-                    setShowChangeEmailModal(false);
-                    setNewEmail('');
-                    setCurrentPassword('');
-                    setChangeEmailError(null);
-                    setChangeEmailSuccess(null);
-                  }}
-                  className="w-full flex items-center justify-center px-6 py-2.5 bg-gray-200 border border-gray-400 text-gray-800 font-medium rounded-md hover:bg-gray-300 focus:ring-2 focus:ring-accent-1 focus:ring-offset-2 focus:ring-offset-[#eeeeee] transition-all duration-150"
+                  variant="outline"
+                  onClick={() => setShowChangeEmailModal(false)}
+                  className="w-full"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </form>
           </div>

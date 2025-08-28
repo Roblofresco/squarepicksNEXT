@@ -50,6 +50,12 @@ function PersonalInfoContent() {
 
   // Check auth and retrieve state from URL param
   useEffect(() => {
+    if (!auth || !db) {
+      console.error('Firebase not initialized');
+      setError('Firebase not initialized');
+      return;
+    }
+
     const passedState = searchParams.get('state');
 
     if (!passedState || passedState.length !== 2) {
@@ -63,6 +69,11 @@ function PersonalInfoContent() {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
         router.push('/login');
+        return;
+      }
+      if (currentUser.emailVerified === false) {
+        // Require verified email for wallet setup writes to Firestore
+        router.push('/verify-email');
         return;
       }
       setUser(currentUser);
@@ -156,11 +167,43 @@ function PersonalInfoContent() {
 
     setIsSubmitting(true);
     try {
-      // Simulate form submission
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log('Form submitted successfully:', formData);
+      // Write to top-level user document (fields allowed by rules)
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(
+        userDocRef,
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          state: verifiedState,
+          hasWallet: true,
+          updated_at: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      // Write address subdocument (owner has full access in rules)
+      const addressDocRef = doc(db, 'users', user.uid, 'address', 'primary');
+      await setDoc(
+        addressDocRef,
+        {
+          street: formData.street,
+          city: formData.city,
+          postalCode: formData.postalCode,
+          state: verifiedState,
+          phone: formData.phone,
+          updated_at: serverTimestamp(),
+        },
+        { merge: true }
+      );
+ 
+      console.log('Personal info saved. Redirecting to /wallet');
+      router.push('/wallet');
     } catch (error) {
       console.error('Form submission error:', error);
+      const err = error as any;
+      const message = err?.message || err?.code || 'Failed to save your information. Please try again.';
+      setError(message);
     } finally {
       setIsSubmitting(false);
       console.log('Form submission ended');

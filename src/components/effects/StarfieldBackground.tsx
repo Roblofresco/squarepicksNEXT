@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useEffect, memo } from 'react';
+import React, { useRef, useEffect, memo, useState } from 'react';
 import { cn } from '@/lib/utils'; // Assuming cn utility exists
 
 interface StarfieldBackgroundProps {
@@ -19,9 +19,14 @@ const StarfieldBackgroundComponent: React.FC<StarfieldBackgroundProps> = ({
     resetAreaSize = 100,
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
-        if (!canvasRef.current) return;
+        setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!canvasRef.current || !isMounted || typeof window === 'undefined') return;
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -117,7 +122,12 @@ const StarfieldBackgroundComponent: React.FC<StarfieldBackgroundProps> = ({
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener('resize', handleResize);
         };
-    }, [numStars, starColor, speedFactor, resetAreaSize]); // Add props to dependency array
+    }, [numStars, starColor, speedFactor, resetAreaSize, isMounted]); // Add props to dependency array
+
+    // Don't render canvas during SSR
+    if (!isMounted) {
+        return null;
+    }
 
     return (
         <canvas

@@ -1,6 +1,6 @@
 'use client'
 
-export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';

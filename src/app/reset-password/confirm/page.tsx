@@ -1,6 +1,6 @@
 'use client'
 
-export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 import React, { Suspense, useEffect, useRef, useState } from 'react'
 import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth'

@@ -1,6 +1,6 @@
 'use client'
 
-export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 import React, { Suspense } from 'react'
 import AuthBackground from '@/components/layout/AuthBackground'

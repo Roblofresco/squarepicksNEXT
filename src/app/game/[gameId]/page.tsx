@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';

@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';

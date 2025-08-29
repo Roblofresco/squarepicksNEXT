@@ -160,7 +160,7 @@ export default function Home() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2
+        staggerChildren: 0.05
       }
     }
   };
@@ -238,9 +238,7 @@ export default function Home() {
       )}
       <main className="container mx-auto px-4 relative z-10">
         {/* Navigation */}
-        <nav className="py-6 flex justify-between items-center">
-          <LogoIcon size="md" />
-          
+        <nav className="py-2 flex justify-end items-center">
           <div className="flex space-x-2">
             <motion.button 
               whileHover={{ scale: navigatingTo === '/login' ? 1 : 1.05 }}
@@ -270,36 +268,36 @@ export default function Home() {
           </div>
         </nav>
         
-        {/* Hero Section - Reduce top padding */}
-        <section className="pt-10 pb-20 md:pt-16 md:pb-32 flex flex-col items-center text-center">
+        {/* Hero Section - Minimal top padding */}
+        <section className="pt-0 pb-16 md:pt-1 md:pb-20 flex flex-col items-center text-center">
           <motion.div
             initial="hidden"
             animate="visible"
             variants={staggerChildren}
             className="max-w-4xl mx-auto"
           >
-            <motion.div variants={fadeIn} className="mb-1 flex justify-center">
+            <motion.div variants={fadeIn} className="mb-0 -mt-12 flex justify-center">
               <LogoWithText size="xl" />
             </motion.div>
             
             <motion.h1 
               variants={fadeIn}
-              className="text-4xl md:text-6xl font-bold mb-6"
+              className="text-4xl md:text-6xl font-bold mb-0 -mt-8"
             >
-              <span className="bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent">
-                The Future of 
+              <span className="text-white">
+                Modern
               </span>
               {' '}
-              <span className="bg-gradient-accent2-accent3 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#5855e4] to-[#d43dae] bg-clip-text text-transparent">
                 Sports Squares
               </span>
             </motion.h1>
             
             <motion.p 
               variants={fadeIn}
-              className="text-xl text-gray-300 mb-10 max-w-3xl mx-auto"
+              className="text-xl text-gray-300 mb-2 max-w-3xl mx-auto"
             >
-              Join the next generation of sports entertainment. Select squares on game boards, win when your numbers match the score, and earn real prizes in our futuristic sports squares platform.
+              Where Every Square Has a Chance. Select squares on game boards, win when your numbers match the score, and earn real prizes in our modern sports squares platform.
             </motion.p>
             
             <motion.div 
@@ -338,7 +336,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="mt-16 relative w-full max-w-2xl mx-auto"
+            className="mt-4 relative w-full max-w-2xl mx-auto"
           >
             <div className="aspect-square max-w-md mx-auto relative">
               <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-accent-1/30 to-accent-3/30 p-1 animate-pulse-glow">
@@ -381,7 +379,7 @@ export default function Home() {
         </section>
         
         {/* How to Play Section */}
-        <section id="how-to-play" className="py-5">
+        <section id="how-to-play" className="py-2 -mt-8">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -459,10 +457,10 @@ export default function Home() {
                 className="text-3xl md:text-4xl font-bold mb-6"
               >
                 <span className="bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent">
-                  Ready to Join the
+                  Ready to Join in on our
                 </span>
                 <span className="bg-gradient-accent1-accent4 bg-clip-text text-transparent">
-                  {' '}Future of Sports Entertainment?
+                  {' '}Sports Entertainment?
                 </span>
               </motion.h2>
               

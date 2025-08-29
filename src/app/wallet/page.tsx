@@ -1,6 +1,6 @@
 'use client'; // Add use client directive
 
-export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';

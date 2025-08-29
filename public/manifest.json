@@ -1,27 +1,87 @@
 {
-  "name": "Squarepicks",
-  "short_name": "Squarepicks",
-  "description": "Your description here",
+  "name": "SquarePicks - Modern Sports Squares",
+  "short_name": "SquarePicks",
+  "description": "Where Every Square Has a Chance. Select squares on game boards, win when your numbers match the score, and earn real prizes in our modern sports squares platform.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#1a202c",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0e1b",
   "theme_color": "#1a202c",
+  "categories": ["entertainment", "sports", "games"],
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/brandkit/logos/maskable-icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/brandkit/logos/maskable-icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/brandkit/logos/maskable-icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
+    },
+    {
+      "src": "/brandkit/logos/maskable-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Lobby",
+      "short_name": "Lobby",
+      "description": "Browse available game boards",
+      "url": "/lobby",
+      "icons": [
+        {
+          "src": "/brandkit/logos/maskable-icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "My Boards",
+      "short_name": "My Boards",
+      "description": "View your active and historical boards",
+      "url": "/my-boards",
+      "icons": [
+        {
+          "src": "/brandkit/logos/maskable-icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "short_name": "Wallet",
+      "description": "Manage your balance and transactions",
+      "url": "/wallet",
+      "icons": [
+        {
+          "src": "/brandkit/logos/maskable-icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/brandkit/logos/sp-logo-app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "SquarePicks Home Screen"
     }
   ]
 } 

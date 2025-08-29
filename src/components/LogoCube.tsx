@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useMemo } from 'react'
 import styles from './LogoCube.module.css'
 
 // Props for the main exported component
@@ -10,28 +10,58 @@ interface LogoCubeProps {
   rotationY?: number;
 }
 
-// Main exported component using CSS 3D transforms
+// Main exported component using CSS 3D transforms with smooth interpolation
 export default function LogoCube({ 
   className = '', 
   rotationX = 0, 
   rotationY = 0, 
 }: LogoCubeProps) {
   const cubeRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const currentRotationRef = useRef({ x: 0, y: 0 });
+  const targetRotationRef = useRef({ x: 0, y: 0 });
 
-  // Apply smoothed rotation using inline styles
+  // Memoize rotation calculations to prevent unnecessary recalculations
+  const targetRotations = useMemo(() => ({
+    x: -rotationX * 45,
+    y: rotationY * 45
+  }), [rotationX, rotationY]);
+
+  // Smooth animation loop using requestAnimationFrame
   useEffect(() => {
-    if (cubeRef.current) {
-      // Adjust multiplier as needed for desired sensitivity
-      // Invert rotationX for more natural vertical mouse movement
-      const targetRotateX = -rotationX * 45; 
-      const targetRotateY = rotationY * 45; // Rotate up to 45 degrees
+    const animate = () => {
+      if (!cubeRef.current) return;
+
+      // Smooth interpolation factor (lower = smoother but slower)
+      const smoothingFactor = 0.08;
       
-      // Get current transform values (more complex, needs parsing or storing state)
-      // For simplicity, directly apply target rotation with CSS transition
+      // Interpolate current rotation towards target rotation
+      currentRotationRef.current.x += (targetRotations.x - currentRotationRef.current.x) * smoothingFactor;
+      currentRotationRef.current.y += (targetRotations.y - currentRotationRef.current.y) * smoothingFactor;
+
+      // Apply the smoothed rotation
       cubeRef.current.style.transform = 
-        `rotateX(${targetRotateX}deg) rotateY(${targetRotateY}deg)`;
-    }
-  }, [rotationX, rotationY]);
+        `rotateX(${currentRotationRef.current.x}deg) rotateY(${currentRotationRef.current.y}deg)`;
+
+      // Continue animation loop
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    // Start animation loop
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    // Cleanup
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [targetRotations.x, targetRotations.y]);
+
+  // Update target rotation when props change
+  useEffect(() => {
+    targetRotationRef.current = targetRotations;
+  }, [targetRotations]);
 
   return (
     // Container div - Needs perspective

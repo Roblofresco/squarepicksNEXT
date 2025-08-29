@@ -19,8 +19,9 @@
   transform-style: preserve-3d;
   /* Define --half-cube-size here, calculated based on current --cube-size */
   --half-cube-size: calc(var(--cube-size) / 2);
-  /* Add a transition for smoother rotation */
-  transition: transform 0.1s linear;
+  /* Remove CSS transition - animation handled by JavaScript for smoother performance */
+  will-change: transform; /* Optimize for transform animations */
+  backface-visibility: hidden; /* Ensure backfaces are hidden for performance */
 }
 
 .face {
@@ -34,6 +35,8 @@
   background-size: contain; /* Scale logo to fit */
   background-position: center;
   background-repeat: no-repeat;
+  /* Optimize for transform animations */
+  will-change: transform;
 }
 
 /* Position each face using the locally calculated --half-cube-size */

@@ -59,15 +59,32 @@ export default function LoadingPage() {
 
   // Effect for pointer tracking (updates isInteracting)
   useEffect(() => {
+    let lastUpdateTime = 0;
+    const throttleDelay = 16; // ~60fps max update rate
+    
     const handlePointerMove = (event: PointerEvent) => {
+      const now = Date.now();
+      
+      // Throttle updates to prevent excessive state changes
+      if (now - lastUpdateTime < throttleDelay) {
+        return;
+      }
+      lastUpdateTime = now;
+      
       setIsInteracting(true); // Interaction started
 
-      // Calculate rotation based on pointer
+      // Calculate rotation based on pointer with reduced sensitivity
       const windowHalfX = window.innerWidth / 2;
       const windowHalfY = window.innerHeight / 2;
       const targetX = (event.clientX - windowHalfX) / windowHalfX;
       const targetY = (event.clientY - windowHalfY) / windowHalfY;
-      setRotation({ x: targetY, y: targetX });
+      
+      // Reduce sensitivity and apply smoothing
+      const sensitivity = 0.7; // Reduce from 1.0 to 0.7 for smoother movement
+      setRotation({ 
+        x: targetY * sensitivity, 
+        y: targetX * sensitivity 
+      });
 
       // Debounce interaction end
       if (interactionTimeoutRef.current) {
@@ -135,17 +152,20 @@ export default function LoadingPage() {
         return;
       }
 
-      // TEMP: Use constant speed for debugging
-      const speedX = 0.010; // Slowed down
-      const speedY = 0.015; // Slowed down
+      // Slower, smoother idle rotation
+      const speedX = 0.005; // Reduced from 0.010 for smoother movement
+      const speedY = 0.007; // Reduced from 0.015 for smoother movement
 
       idleRotationRef.current.x += speedX;
       idleRotationRef.current.y += speedY;
 
-      console.log('[animateIdle] Running. New Rotation:', idleRotationRef.current);
-      setRotation({ x: idleRotationRef.current.x, y: idleRotationRef.current.y });
+      // Only update rotation state every few frames to reduce gittery updates
+      if (Math.abs(idleRotationRef.current.x - rotation.x) > 0.01 || 
+          Math.abs(idleRotationRef.current.y - rotation.y) > 0.01) {
+        setRotation({ x: idleRotationRef.current.x, y: idleRotationRef.current.y });
+      }
 
-      // Request next frame
+      // Request next frame with reduced frequency for smoother idle animation
       animationFrameRef.current = requestAnimationFrame(animateIdle);
     };
 
@@ -175,7 +195,7 @@ export default function LoadingPage() {
             animationFrameRef.current = null; // Ensure ref is cleared
         }
     };
-}, [isInteracting, isMounted]);
+}, [isInteracting, isMounted, rotation.x, rotation.y]);
 
   // Canvas Animation for Forward Movement Starfield
   useEffect(() => {

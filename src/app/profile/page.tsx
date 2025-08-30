@@ -14,7 +14,8 @@ import { useWallet } from '@/hooks/useWallet';
 import { motion, AnimatePresence } from 'framer-motion'
 import { HeroText } from '@/components/ui/hero-text'
 
-// Import BottomNav
+// Import AuthGuard and BottomNav
+import AuthGuard from '@/components/auth/AuthGuard';
 import BottomNav from '@/components/lobby/BottomNav';
 
 // Import Shadcn Dialog components
@@ -198,6 +199,7 @@ const ProfilePage = () => {
   }
 
   return (
+    <AuthGuard requireEmailVerification={true}>
     <div className="bg-background text-foreground p-4 sm:p-6 lg:p-8 pb-20 flex flex-col min-h-screen">
       <div className="max-w-2xl mx-auto w-full flex-grow">
 

@@ -18,8 +18,6 @@ export default function LoadingPage() {
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isInteracting, setIsInteracting] = useState(false);
   const [showHint, setShowHint] = useState(false); // State for hint visibility after delay
-  const [loadingText, setLoadingText] = useState("Initializing ..."); // State for loading text
-  const [canNavigate, setCanNavigate] = useState(false); // State to enable navigation
 
   const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hintTimerRef = useRef<NodeJS.Timeout | null>(null); // Ref for hint delay timer
@@ -33,15 +31,14 @@ export default function LoadingPage() {
   useEffect(() => {
     setIsMounted(true);
 
-    // 5-second timer for text change and navigation enable
-    const navigationTimer = setTimeout(() => {
-      setLoadingText("Tap to continue ...");
-      setCanNavigate(true);
-    }, 5000); // 5 seconds
+    // 3.5-second timer for auto-navigation to lobby
+    const autoNavigationTimer = setTimeout(() => {
+      router.push('/lobby');
+    }, 3500); // 3.5 seconds
 
-    // Cleanup function for navigation timer
-    return () => clearTimeout(navigationTimer);
-  }, []); // Runs only once on mount
+    // Cleanup function for auto-navigation timer
+    return () => clearTimeout(autoNavigationTimer);
+  }, [router]); // Added router dependency
 
   // Force disable body scroll specifically for this page via inline styles
   useEffect(() => {
@@ -313,11 +310,9 @@ export default function LoadingPage() {
 
   }, [isMounted]);
 
-  // Click handler for navigation
+  // Click handler for navigation (kept for immediate navigation if user wants to skip)
   const handleNavigationClick = () => {
-      if (canNavigate) {
-          router.push('/lobby');
-      }
+      router.push('/lobby');
   };
 
   return (
@@ -376,8 +371,8 @@ export default function LoadingPage() {
         )}
       </div>
       {/* Display dynamic loading text */}
-      <p className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-gray-400 text-base animate-pulse z-10 pointer-events-none"> {/* Added pointer-events-none */}
-        {loadingText}
+      <p className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-gray-400 text-base animate-pulse z-10 pointer-events-none">
+        Redirecting to lobby...
       </p>
     </main>
   );

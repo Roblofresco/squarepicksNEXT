@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Breadcrumbs from "@/components/navigation/Breadcrumbs";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 const accountFormSchema = z.object({
   displayName: z.string()
@@ -171,11 +172,12 @@ const AccountSettingsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background-primary text-text-primary p-0 flex flex-col">
-      <Breadcrumbs className="mb-3 pl-4 sm:pl-6 mt-2 sm:mt-3" ellipsisOnly backHref="/profile" />
-      <div className="mb-4 pl-4 sm:pl-6">
-        <h1 className="text-2xl font-semibold">Account Settings</h1>
-        </div>
+    <AuthGuard requireEmailVerification={true}>
+      <div className="min-h-screen bg-background-primary text-text-primary p-0 flex flex-col">
+        <Breadcrumbs className="mb-3 pl-4 sm:pl-6 mt-2 sm:mt-3" ellipsisOnly backHref="/profile" />
+        <div className="mb-4 pl-4 sm:pl-6">
+          <h1 className="text-2xl font-semibold">Account Settings</h1>
+          </div>
 
         {error && (
         <div className="mx-4 sm:mx-6 bg-red-100 border border-red-400 text-red-700 text-sm rounded-lg p-3 mb-4 flex items-center">
@@ -380,7 +382,8 @@ const AccountSettingsPage = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AuthGuard>
   );
 };
 

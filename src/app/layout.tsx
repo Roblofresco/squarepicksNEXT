@@ -1,8 +1,5 @@
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/providers'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'SquarePicks - Modern Sports Squares',
@@ -35,7 +32,7 @@ export const metadata = {
     images: ['/brandkit/logos/sp-logo-app-icon.png'],
   },
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover',
-  themeColor: '#1a202c',
+  themeColor: '#0a0e1b',
   colorScheme: 'dark',
   manifest: '/manifest.json',
   appleWebApp: {
@@ -80,7 +77,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SquarePicks" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#1a202c" />
+        <meta name="msapplication-TileColor" content="#0a0e1b" />
         <meta name="msapplication-TileImage" content="/brandkit/logos/maskable-icon-192x192.png" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
         
@@ -93,7 +90,7 @@ export default function RootLayout({
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
       </head>
-      <body className={inter.className}>
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>

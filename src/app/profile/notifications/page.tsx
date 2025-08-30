@@ -13,6 +13,8 @@ import Breadcrumbs from '@/components/navigation/Breadcrumbs'
 import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { BellRing, Loader2 } from 'lucide-react'
+import AuthGuard from '@/components/auth/AuthGuard'
+import { useAuthGuard } from '@/hooks/useAuthGuard'
 
 type NotificationPrefs = {
   pushNotifications: boolean
@@ -24,8 +26,6 @@ const defaultPrefs: NotificationPrefs = {
 
 export default function ProfileNotificationsPage() {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [prefs, setPrefs] = useState<NotificationPrefs>(defaultPrefs)
   const headingRef = useRef<HTMLHeadingElement>(null)
@@ -33,6 +33,9 @@ export default function ProfileNotificationsPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [devicePermission, setDevicePermission] = useState<NotificationPermission>('default')
   const [isEnabling, setIsEnabling] = useState(false)
+  
+  // Use the new auth guard hook
+  const { user, loading, isAuthenticated, isEmailVerified } = useAuthGuard(true)
 
   // Check device notification permission
   useEffect(() => {
@@ -41,30 +44,31 @@ export default function ProfileNotificationsPage() {
     }
   }, [])
 
+  // Load notification preferences when user is authenticated
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      if (!u) {
-        router.push('/login')
-        return
-      }
-      setUser(u)
-      try {
-        const prefsRef = doc(db, 'users', u.uid, 'preferences', 'notifications')
-        const snap = await getDoc(prefsRef)
-        if (snap.exists()) {
-          const data = snap.data() as Partial<NotificationPrefs>
-          setPrefs({ ...defaultPrefs, ...data })
+    if (user && isAuthenticated) {
+      const loadPreferences = async () => {
+        try {
+          // Now try to get notification preferences
+          const prefsRef = doc(db, 'users', user.uid, 'preferences', 'notifications')
+          const snap = await getDoc(prefsRef)
+          if (snap.exists()) {
+            const data = snap.data() as Partial<NotificationPrefs>
+            setPrefs({ ...defaultPrefs, ...data })
+          } else {
+            // Create default preferences if they don't exist
+            await setDoc(prefsRef, defaultPrefs, { merge: true })
+            setPrefs(defaultPrefs)
+          }
+        } catch (e) {
+          console.error('load prefs error', e)
+          setError('Unable to load your preferences. Please try refreshing the page.')
         }
-      } catch (e) {
-        console.error('load prefs error', e)
-        setError('Unable to load your preferences')
-      } finally {
-        setLoading(false)
-        headingRef.current?.focus()
       }
-    })
-    return () => unsub()
-  }, [router])
+      
+      loadPreferences()
+    }
+  }, [user, isAuthenticated])
 
   const handleChange = (key: keyof NotificationPrefs) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setPrefs((prev) => ({ ...prev, [key]: e.target.checked }))
@@ -92,19 +96,21 @@ export default function ProfileNotificationsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-gray-300">Loading…</div>
+      <div className="flex justify-center items-center min-h-screen bg-background-primary">
+        <Loader2 className="h-12 w-12 animate-spin text-accent-1 mb-4" />
+        <p className="text-text-primary">Loading notifications...</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-background-primary text-text-primary">
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className="w-full flex flex-col">
+    <AuthGuard requireEmailVerification={true}>
+      <div className="bg-background-primary text-text-primary">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="w-full flex flex-col">
         {/* Breadcrumbs */}
         <Breadcrumbs 
           className="mb-3 pl-4 sm:pl-6 mt-2 sm:mt-3"
@@ -219,6 +225,7 @@ export default function ProfileNotificationsPage() {
       </div>
         </div>
       </motion.div>
-    </div>
+      </div>
+    </AuthGuard>
   )
 } 

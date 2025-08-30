@@ -190,8 +190,19 @@ export default function Home() {
   ];
 
   const handleNavClick = (href: string) => {
-    setNavigatingTo(href);
-    router.push(href);
+    try {
+      setNavigatingTo(href);
+      // Use window.location for better cross-browser compatibility
+      if (typeof window !== 'undefined') {
+        window.location.href = href;
+      } else {
+        router.push(href);
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback to router.push
+      router.push(href);
+    }
   };
 
   // Simple inline SVG Spinner component
@@ -250,6 +261,7 @@ export default function Home() {
                 }`}
               onClick={() => handleNavClick('/login')}
               disabled={navigatingTo === '/login'}
+              type="button"
             >
               Log In
             </motion.button>
@@ -262,6 +274,7 @@ export default function Home() {
                   : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
               onClick={() => handleNavClick('/signup/email')}
               disabled={navigatingTo === '/signup/email'}
+              type="button"
             >
               Sign Up
             </motion.button>
@@ -288,7 +301,7 @@ export default function Home() {
                 Modern
               </span>
               {' '}
-              <span className="bg-gradient-to-r from-[#5855e4] to-[#d43dae] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-accent-2 to-accent-3 bg-clip-text text-transparent">
                 Sports Squares
               </span>
             </motion.h1>
@@ -304,26 +317,48 @@ export default function Home() {
               variants={fadeIn}
               className="flex flex-row gap-4 justify-center items-center"
             >
-              <motion.button
-                whileHover={{ boxShadow: navigatingTo === '/signup/email' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
-                whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
-                className={`px-8 py-4 rounded-md text-white text-xl font-semibold transition-all duration-300 relative flex items-center justify-center 
-                  ${navigatingTo === '/signup/email' 
-                    ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' 
-                    : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
-                onClick={() => handleNavClick('/signup/email')}
-                disabled={navigatingTo === '/signup/email'}
-              >
-                Get Started
-              </motion.button>
+                          <motion.button
+              whileHover={{ boxShadow: navigatingTo === '/signup/email' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
+              whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
+              className={`px-8 py-4 rounded-md text-white text-xl font-semibold transition-all duration-300 relative flex items-center justify-center 
+                ${navigatingTo === '/signup/email' 
+                  ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' 
+                  : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
+              onClick={() => handleNavClick('/signup/email')}
+              disabled={navigatingTo === '/signup/email'}
+              type="button"
+            >
+              Get Started
+            </motion.button>
               
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-4 rounded-md border border-gray-500 text-white hover:bg-white/5 transition-all duration-300 text-xl"
                 onClick={() => {
-                  const element = document.getElementById('how-to-play');
-                  element?.scrollIntoView({ behavior: 'smooth' });
+                  try {
+                    const element = document.getElementById('how-to-play');
+                    if (element) {
+                      // Use smooth scroll with fallback for Edge
+                      if ('scrollBehavior' in document.documentElement.style) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                      } else {
+                        // Fallback for Edge
+                        element.scrollIntoView();
+                        window.scrollTo({
+                          top: element.offsetTop - 100,
+                          behavior: 'auto'
+                        });
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Scroll error:', error);
+                    // Fallback scroll
+                    const element = document.getElementById('how-to-play');
+                    if (element) {
+                      element.scrollIntoView();
+                    }
+                  }
                 }}
               >
                 How It Works
@@ -484,6 +519,7 @@ export default function Home() {
                       : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
                   onClick={() => handleNavClick('/signup/email')}
                   disabled={navigatingTo === '/signup/email'}
+                  type="button"
                 >
                   Sign Up Now
                 </motion.button>

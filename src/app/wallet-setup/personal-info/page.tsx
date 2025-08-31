@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import ProgressBar from '@/components/ui/ProgressBar';
 import PersonalInfoForm from '@/components/ui/PersonalInfoForm';
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 
 interface FormData {
   firstName: string;
@@ -26,9 +27,11 @@ interface FormData {
 
 export default function PersonalInfoSetupPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary-blue" /></div>}>
-      <PersonalInfoContent />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary-blue" /></div>}>
+        <PersonalInfoContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
@@ -216,32 +219,34 @@ function PersonalInfoContent() {
   }
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-background-primary to-background-secondary p-4 pt-10">
-      {/* Progress Indicator */}
-      <div className="w-full max-w-md mb-6">
-        <p className="text-sm text-primary-blue text-center font-semibold">Step 2 of 2: Personal Information</p>
-        <ProgressBar step={2} totalSteps={2} />
+    <ErrorBoundary>
+      <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-background-primary to-background-secondary p-4 pt-10">
+        {/* Progress Indicator */}
+        <div className="w-full max-w-md mb-6">
+          <p className="text-sm text-primary-blue text-center font-semibold">Step 2 of 2: Personal Information</p>
+          <ProgressBar step={2} totalSteps={2} />
+        </div>
+
+        <div className="w-full max-w-md bg-gradient-to-b from-gray-800/30 to-gray-900/50 rounded-lg shadow-xl p-6 md:p-8 border border-gray-700">
+          <h1 className="text-2xl font-bold text-center text-white mb-2">Personal Information</h1>
+          <p className="text-center text-gray-300 text-sm mb-6">
+            Please provide the following information for verification and account setup purposes.
+          </p>
+
+          <PersonalInfoForm
+            formData={formData}
+            onChange={handleChange}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            error={error}
+            verifiedState={verifiedState}
+          />
+
+          <p className="mt-6 text-xs text-center text-gray-500">
+            By submitting this information, you agree to our <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-blue">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-blue">Privacy Policy</a>.
+          </p>
+        </div>
       </div>
-
-      <div className="w-full max-w-md bg-gradient-to-b from-gray-800/30 to-gray-900/50 rounded-lg shadow-xl p-6 md:p-8 border border-gray-700">
-        <h1 className="text-2xl font-bold text-center text-white mb-2">Personal Information</h1>
-        <p className="text-center text-gray-300 text-sm mb-6">
-          Please provide the following information for verification and account setup purposes.
-        </p>
-
-        <PersonalInfoForm
-          formData={formData}
-          onChange={handleChange}
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          error={error}
-          verifiedState={verifiedState}
-        />
-
-        <p className="mt-6 text-xs text-center text-gray-500">
-          By submitting this information, you agree to our <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-blue">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-blue">Privacy Policy</a>.
-        </p>
-      </div>
-    </div>
+    </ErrorBoundary>
   );
 } 

@@ -13,6 +13,12 @@
     --color-background-secondary: 31 41 55; /* Updated Hex: #1f2937 */
     --color-text-primary: 238 238 238; /* Updated Hex: #eeeeee */
     --color-text-secondary: 100 116 139; /* Updated Hex: #64748b */
+    --color-primary: 29 78 216; /* Blue for primary buttons */
+    --color-primary-foreground: 255 255 255; /* White text on primary buttons */
+    --color-secondary: 100 116 139; /* Gray for secondary buttons */
+    --color-secondary-foreground: 255 255 255; /* White text on secondary buttons */
+    --color-destructive: 239 68 68; /* Red for destructive actions */
+    --color-ring: 59 130 246; /* Blue for focus rings */
   }
 
   .dark {
@@ -21,6 +27,12 @@
     --color-background-secondary: 31 41 55; /* Updated Hex: #1f2937 */
     --color-text-primary: 238 238 238; /* Updated Hex: #eeeeee */
     --color-text-secondary: 100 116 139; /* Updated Hex: #64748b */
+    --color-primary: 29 78 216; /* Blue for primary buttons */
+    --color-primary-foreground: 255 255 255; /* White text on primary buttons */
+    --color-secondary: 100 116 139; /* Gray for secondary buttons */
+    --color-secondary-foreground: 255 255 255; /* White text on secondary buttons */
+    --color-destructive: 239 68 68; /* Red for destructive actions */
+    --color-ring: 59 130 246; /* Blue for focus rings */
   }
 
   /* Apply base body styles */

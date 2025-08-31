@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Font fallbacks for Edge compatibility */
-@import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Text:wght@100;200;300;400;500;600;700;800;900&display=swap');
+/* Font fallbacks for Edge compatibility - Fonts now loaded in HTML head */
 
 /* Reset complete */
 
@@ -29,7 +27,9 @@
   body {
     background-color: rgb(var(--color-background-primary));
     color: rgb(var(--color-text-primary));
-    font-family: 'Epilogue', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-epilogue), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -59,6 +59,10 @@ body.no-scroll {
 }
 
 @layer utilities {
+  .font-stencil {
+    font-family: 'Big Shoulders Stencil Text', Arial, sans-serif;
+  }
+  
   .text-shadow-glow {
     /* Reduced opacity for a subtler glow */
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.5), 0 0 12px rgba(0, 178, 255, 0.2);

@@ -1,5 +1,17 @@
 import './globals.css'
 import { Providers } from '@/components/providers'
+import { Epilogue } from 'next/font/google'
+
+// Configure Epilogue font with better Edge compatibility
+const epilogue = Epilogue({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  display: 'swap',
+  fallback: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+  adjustFontFallback: true,
+  preload: true,
+  variable: '--font-epilogue',
+})
 
 export const metadata = {
   title: 'SquarePicks - Modern Sports Squares',
@@ -31,9 +43,6 @@ export const metadata = {
     description: 'Where Every Square Has a Chance. Select squares on game boards, win when your numbers match the score, and earn real prizes in our modern sports squares platform.',
     images: ['/brandkit/logos/sp-logo-app-icon.png'],
   },
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover',
-  themeColor: '#0a0e1b',
-  colorScheme: 'dark',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -48,13 +57,23 @@ export const metadata = {
   },
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#0a0e1b',
+  colorScheme: 'dark',
+}
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={epilogue.variable}>
       <head>
         {/* Favicon and App Icons */}
         <link rel="icon" href="/brandkit/logos/sp-logo-icon-default.png" />
@@ -85,6 +104,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+        
+        {/* Stencil Font - Load with better Edge compatibility */}
+        <link rel="preload" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Text:wght@100;200;300;400;500;600;700;800;900&display=swap" as="style" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Text:wght@100;200;300;400;500;600;700;800;900&display=swap" />
+        
+
         
         {/* Security Headers */}
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />

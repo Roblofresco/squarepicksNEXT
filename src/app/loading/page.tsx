@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { motion } from "framer-motion"; // Import framer-motion
-import { FaHandPointRight } from "react-icons/fa"; // Use right-pointing finger
-import { FiRefreshCcw } from "react-icons/fi";   // Curved arrow
+
 import { useRouter } from 'next/navigation'; // Import useRouter
 
 // Removed StarfieldBackground import
@@ -17,10 +16,9 @@ export default function LoadingPage() {
   const router = useRouter(); // Instantiate router
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isInteracting, setIsInteracting] = useState(false);
-  const [showHint, setShowHint] = useState(false); // State for hint visibility after delay
+
 
   const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hintTimerRef = useRef<NodeJS.Timeout | null>(null); // Ref for hint delay timer
   const animationFrameRef = useRef<number | null>(null);
   const idleRotationRef = useRef({ x: 0, y: 0 });
   const idleSpeedRef = useRef({ x: 0.025, y: 0.035 });
@@ -106,37 +104,7 @@ export default function LoadingPage() {
     };
   }, []); // Empty dependency array
 
-  // Effect for showing/hiding hint based on interaction delay
-  useEffect(() => {
-    if (isInteracting) {
-      // If interaction starts, clear any pending hint timer and hide hint
-      if (hintTimerRef.current) {
-        clearTimeout(hintTimerRef.current);
-        hintTimerRef.current = null;
-      }
-      setShowHint(false);
-    } else {
-      // If interaction stops, start timer to show hint after 3 seconds
-      // Clear previous timer just in case
-       if (hintTimerRef.current) {
-        clearTimeout(hintTimerRef.current);
-      }
-      hintTimerRef.current = setTimeout(() => {
-        // Only show hint if still not interacting after 3 seconds
-        // We also check isMounted to avoid state update on unmounted component
-        if (!isInteracting && isMounted) {
-            setShowHint(true);
-        }
-      }, 3000); // 3 seconds delay
-    }
 
-    // Cleanup: clear timer if component unmounts or isInteracting changes again
-    return () => {
-      if (hintTimerRef.current) {
-        clearTimeout(hintTimerRef.current);
-      }
-    };
-  }, [isInteracting, isMounted]); // Add isMounted dependency
 
   // Effect for idle animation loop and cancellation
   useEffect(() => {
@@ -342,33 +310,7 @@ export default function LoadingPage() {
           rotationY={rotation.y} 
         />
 
-        {/* Render hint only when showHint is true (and still not interacting) */}
-        {!isInteracting && showHint && (
-          <motion.div
-            // Positioned vertically centered, to the left of the parent cube container
-            // Added md:hidden to hide on medium screens and up
-            className="absolute top-1/2 -translate-y-1/2 right-full mr-4 flex md:hidden flex-row items-center space-x-2 text-white/70 pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            {/* Finger Icon */}
-            <motion.div
-              animate={{ x: [0, 3, 0] }} 
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <FaHandPointRight size={26} />
-            </motion.div>
-            {/* Arrow Icon */}
-            <motion.div
-              animate={{ opacity: [0.4, 1, 0.4] }} 
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              className="mt-1"
-            >
-              <FiRefreshCcw size={24} />
-            </motion.div>
-          </motion.div>
-        )}
+
       </div>
       {/* Display dynamic loading text */}
       <p className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-gray-400 text-base animate-pulse z-10 pointer-events-none">

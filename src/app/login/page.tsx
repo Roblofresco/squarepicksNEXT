@@ -261,7 +261,7 @@ export default function LoginPage() {
               disabled={navigatingTo === '/'}
              >
               <FiArrowLeft className="mr-1.5" size={16} />
-              Back
+              Home
             </button>
           {/* Add onClick, disabled, and conditional classes */}
              <button

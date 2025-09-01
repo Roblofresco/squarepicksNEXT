@@ -120,7 +120,8 @@ export default function LoginPage() {
   // Add handleNavClick function (similar to page.tsx)
   const handleNavClick = (href: string) => {
     setNavigatingTo(href);
-    // Actual navigation happens via Link component
+    // Perform actual navigation
+    router.push(href);
   };
 
   const handleLogin = async (e?: React.FormEvent<HTMLFormElement>) => {

@@ -252,8 +252,8 @@ export default function Home() {
         <nav className="py-2 flex justify-end items-center">
           <div className="flex space-x-2">
             <motion.button 
-              whileHover={{ scale: navigatingTo === '/login' ? 1 : 1.05 }}
-              whileTap={{ scale: navigatingTo === '/login' ? 1 : 0.95 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className={`px-6 py-2 rounded-md transition duration-300 flex items-center justify-center 
                 ${navigatingTo === '/login'
                   ? 'bg-accent-1 text-background-primary animate-pulse cursor-not-allowed'

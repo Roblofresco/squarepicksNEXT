@@ -109,7 +109,7 @@ export default function DepositPage() {
           {/* Content */}
           <div className="flex justify-center mt-16">
             <div className="w-full max-w-lg">
-              <WalletMoneyContainer variant="blue" className="animate-fadeIn">
+              <WalletMoneyContainer title="Deposit Funds" variant="blue" className="animate-fadeIn">
                 <div className="p-6">
                   <Skeleton className="h-32 w-full mb-4" />
                   <Skeleton className="h-10 w-full" />
@@ -210,7 +210,7 @@ export default function DepositPage() {
           {/* Content */}
           <div className="flex justify-center mt-16">
             <div className="w-full max-w-lg">
-              <WalletMoneyContainer variant="blue" className="animate-fadeIn">
+              <WalletMoneyContainer title="Complete Payment" variant="blue" className="animate-fadeIn">
                 <div className="p-6 space-y-4">
                   <div className="text-center">
                     <h2 className="text-xl font-semibold text-white mb-2">Complete Your Deposit</h2>
@@ -260,7 +260,7 @@ export default function DepositPage() {
         {/* Content */}
         <div className="flex justify-center mt-16">
           <div className="w-full max-w-lg">
-            <WalletMoneyContainer variant="blue" className="animate-fadeIn">
+            <WalletMoneyContainer title="Enter Amount" variant="blue" className="animate-fadeIn">
               <Card className="border-0 bg-transparent shadow-none">
                 <CardHeader className="text-center pb-4">
                   <CardTitle className="text-xl text-white">Enter Deposit Amount</CardTitle>

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import ProgressBar from '@/components/ui/ProgressBar';
 import PersonalInfoForm from '@/components/ui/PersonalInfoForm';
-import { ErrorBoundary } from "@/components/ErrorBoundary"
+// import { ErrorBoundary } from "@/components/ErrorBoundary"
 
 interface FormData {
   firstName: string;
@@ -27,11 +27,9 @@ interface FormData {
 
 export default function PersonalInfoSetupPage() {
   return (
-    <ErrorBoundary>
-      <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary-blue" /></div>}>
-        <PersonalInfoContent />
-      </Suspense>
-    </ErrorBoundary>
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary-blue" /></div>}>
+      <PersonalInfoContent />
+    </Suspense>
   );
 }
 
@@ -219,8 +217,7 @@ function PersonalInfoContent() {
   }
 
   return (
-    <ErrorBoundary>
-      <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-background-primary to-background-secondary p-4 pt-10">
+    <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-background-primary to-background-secondary p-4 pt-10">
         {/* Progress Indicator */}
         <div className="w-full max-w-md mb-6">
           <p className="text-sm text-primary-blue text-center font-semibold">Step 2 of 2: Personal Information</p>
@@ -247,6 +244,5 @@ function PersonalInfoContent() {
           </p>
         </div>
       </div>
-    </ErrorBoundary>
   );
 } 

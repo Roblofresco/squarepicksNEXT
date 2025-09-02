@@ -197,18 +197,18 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
   }
 
   return (
-    <Card className="border-gray-600/20 bg-gray-800/30">
+    <Card className="border-gray-200/20 bg-white shadow-lg">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-lg text-white flex items-center justify-center space-x-2">
-          <Shield className="h-5 w-5 text-blue-400" />
+        <CardTitle className="text-lg text-gray-800 flex items-center justify-center space-x-2">
+          <Shield className="h-5 w-5 text-blue-500" />
           <span>Secure Payment</span>
         </CardTitle>
-        <CardDescription className="text-gray-400">
+        <CardDescription className="text-gray-600">
           Powered by PayPal • Protected by SSL encryption
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="bg-white/5 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-lg p-4">
           <PayPalButtons
             createOrder={createOrder}
             onApprove={onApprove}
@@ -227,9 +227,9 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
         </div>
         
         {isProcessing && (
-          <Alert className="border-blue-500/20 bg-blue-500/5">
-            <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-            <AlertDescription className="text-blue-400">
+          <Alert className="border-blue-200 bg-blue-50">
+            <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+            <AlertDescription className="text-blue-700">
               {status === 'approving' ? 'Approving payment...' : 
                status === 'capturing' ? 'Processing payment...' : 'Processing...'}
             </AlertDescription>

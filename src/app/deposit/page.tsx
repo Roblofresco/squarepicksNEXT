@@ -17,9 +17,9 @@ import { WalletMoneyContainer } from '@/components/ui/WalletMoneyContainer';
 import { PayPalDepositButton } from '@/components/ui/PayPalDepositButton';
 import { StripeDepositButton } from '@/components/ui/StripeDepositButton';
 import { useWallet } from '@/hooks/useWallet';
-import { DollarSign, CheckCircle, AlertCircle, CreditCard, Shield } from 'lucide-react';
-import Breadcrumbs from '@/components/navigation/Breadcrumbs';
+import { ArrowLeft, DollarSign, CheckCircle, AlertCircle, CreditCard, Shield } from 'lucide-react';
 import Link from 'next/link';
+import Breadcrumbs from '@/components/navigation/Breadcrumbs';
 
 const depositSchema = z.object({
   amount: z.string().refine((val) => {
@@ -234,26 +234,23 @@ export default function DepositPage() {
                     </Card>
 
                     {/* Stripe/Credit Card Option - Hidden until API key is configured */}
-                    {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY && 
-                     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY !== 'pk_test_placeholder' && (
-                      <Card 
-                        className="cursor-pointer border-2 border-transparent hover:border-purple-500/50 transition-all duration-200 bg-gray-800/50"
-                        onClick={() => handlePaymentMethodSelect('stripe')}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
-                              <CreditCard className="h-6 w-6 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="text-white font-semibold">Credit/Debit Card</h3>
-                              <p className="text-gray-400 text-sm">Visa • Mastercard • Amex • Discover</p>
-                            </div>
-                            <Shield className="h-5 w-5 text-green-400" />
+                    {/* <Card 
+                      className="cursor-pointer border-2 border-transparent hover:border-purple-500/50 transition-all duration-200 bg-gray-800/50"
+                      onClick={() => handlePaymentMethodSelect('stripe')}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                            <CreditCard className="h-6 w-6 text-white" />
                           </div>
-                        </CardContent>
-                      </Card>
-                    )}
+                          <div className="flex-1">
+                            <h3 className="text-white font-semibold">Credit/Debit Card</h3>
+                            <p className="text-gray-400 text-sm">Visa • Mastercard • Amex • Discover</p>
+                          </div>
+                          <Shield className="h-5 w-5 text-green-400" />
+                        </div>
+                      </CardContent>
+                    </Card> */}
                   </div>
 
                   {/* Security Notice */}

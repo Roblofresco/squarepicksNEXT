@@ -184,11 +184,15 @@ const WalletPage = () => {
             {/* Action Buttons (circular, outlined accent-1, gradient subtle fill) */}
             <div className="flex items-center justify-center gap-6 mb-8">
               <Link href="/deposit" className="group inline-flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-1/60 rounded-full">
-                <div className="h-16 w-16 rounded-full border-2 border-accent-1 bg-gradient-to-b from-background-primary to-accent-1/10 grid place-items-center transition-transform group-active:scale-95">
+                <div className="h-16 w-16 rounded-full border-2 border-accent-1 bg-gradient-to-b from-background-primary to-accent-1/10 grid place-items-center transition-transform group-active:scale-95 relative">
                   <ArrowDownCircle className="w-7 h-7 text-accent-1" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">P</span>
+                  </div>
                 </div>
                 <div className="relative mt-2">
                   <HeroText id="deposit" className="text-sm text-text-primary">Deposit</HeroText>
+                  <p className="text-xs text-gray-500 mt-1">via PayPal</p>
                 </div>
                 </Link>
               <Link href="/withdraw" className="group inline-flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-1/60 rounded-full">

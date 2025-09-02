@@ -8,13 +8,15 @@ const paypalOptions = {
   clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb', // Default to sandbox for development
   currency: 'USD',
   intent: 'capture',
-  'enable-funding': 'paylater,venmo,card',
-  'disable-funding': 'paypalcredit',
-  'data-client-token': 'abc123xyz==',
-  'data-page-type': 'checkout',
-  'data-order-id': '',
-  'data-amount': '',
-  'data-currency': 'USD',
+  components: 'buttons',
+  enableFunding: 'paylater,venmo,card',
+  disableFunding: 'paypalcredit',
+  dataPageType: 'checkout',
+  dataClientToken: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_TOKEN || '',
+  // Additional security and UX options
+  vault: false,
+  buyNow: false,
+  commit: true,
 }
 
 interface PayPalProviderProps {
@@ -29,7 +31,10 @@ export function PayPalProvider({ children }: PayPalProviderProps) {
   }
 
   return (
-    <PayPalScriptProvider options={paypalOptions}>
+    <PayPalScriptProvider 
+      options={paypalOptions}
+      deferLoading={false}
+    >
       {children}
     </PayPalScriptProvider>
   )

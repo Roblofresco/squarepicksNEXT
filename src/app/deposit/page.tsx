@@ -200,28 +200,25 @@ export default function DepositPage() {
           <div className="flex justify-center mt-16">
             <div className="w-full max-w-lg">
               <WalletMoneyContainer variant="blue" className="animate-fadeIn">
-                <Card className="border-0 bg-transparent shadow-none">
-                  <CardHeader className="text-center pb-4">
-                    <CardTitle className="text-xl text-white">PayPal Payment</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Amount: ${selectedAmount.toFixed(2)}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <PayPalDepositButton
-                      amount={selectedAmount}
-                      onSuccess={handlePayPalSuccess}
-                      onError={handlePayPalError}
-                    />
-                    
-                    {error && (
-                      <div className="flex items-center space-x-2 p-3 bg-red-500/10 border border-red-500/20 rounded-md">
-                        <AlertCircle className="h-4 w-4 text-red-400" />
-                        <p className="text-red-400 text-sm">{error}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <div className="p-6 space-y-4">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold text-white mb-2">Complete Your Deposit</h2>
+                    <p className="text-gray-400">Amount: <span className="font-semibold text-white">${selectedAmount.toFixed(2)}</span></p>
+                  </div>
+                  
+                  <PayPalDepositButton
+                    amount={selectedAmount}
+                    onSuccess={handlePayPalSuccess}
+                    onError={handlePayPalError}
+                  />
+                  
+                  {error && (
+                    <div className="flex items-center space-x-2 p-3 bg-red-500/10 border border-red-500/20 rounded-md">
+                      <AlertCircle className="h-4 w-4 text-red-400" />
+                      <p className="text-red-400 text-sm">{error}</p>
+                    </div>
+                  )}
+                </div>
               </WalletMoneyContainer>
             </div>
           </div>

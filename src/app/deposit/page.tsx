@@ -15,9 +15,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { WalletMoneyContainer } from '@/components/ui/WalletMoneyContainer';
 import { PayPalDepositButton } from '@/components/ui/PayPalDepositButton';
-import { StripeDepositButton } from '@/components/ui/StripeDepositButton';
+
 import { useWallet } from '@/hooks/useWallet';
-import { ArrowLeft, DollarSign, CheckCircle, AlertCircle, CreditCard, Shield } from 'lucide-react';
+import { ArrowLeft, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Breadcrumbs from '@/components/navigation/Breadcrumbs';
 
@@ -37,7 +37,7 @@ export default function DepositPage() {
   const router = useRouter();
   const { hasWallet, isLoading: walletLoading, userId } = useWallet();
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'paypal' | 'stripe' | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'paypal' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [successAmount, setSuccessAmount] = useState<string>('');
@@ -65,6 +65,7 @@ export default function DepositPage() {
     const amount = parseFloat(data.amount);
     if (amount >= MIN_DEPOSIT && amount <= MAX_DEPOSIT) {
       setSelectedAmount(amount);
+      setSelectedPaymentMethod('paypal'); // Auto-select PayPal since it's the only option
       setError(null);
     }
   };
@@ -86,7 +87,7 @@ export default function DepositPage() {
     form.reset();
   };
 
-  const handlePaymentMethodSelect = (method: 'paypal' | 'stripe') => {
+  const handlePaymentMethodSelect = (method: 'paypal') => {
     setSelectedPaymentMethod(method);
   };
 
@@ -137,7 +138,7 @@ export default function DepositPage() {
           {/* Title */}
           <div className="mb-4 pl-4 sm:pl-6">
             <h1 className="text-3xl font-bold text-text-primary">Deposit Funds</h1>
-            <p className="mt-3 text-sm text-gray-300">Add funds to your wallet using PayPal or credit/debit card.</p>
+            <p className="mt-3 text-sm text-gray-300">Add funds to your wallet using PayPal.</p>
           </div>
 
           {/* Content */}
@@ -183,90 +184,7 @@ export default function DepositPage() {
     );
   }
 
-  if (selectedAmount && !selectedPaymentMethod) {
-    return (
-      <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
-          {/* Breadcrumbs */}
-          <Breadcrumbs 
-            className="mb-3 pl-4 sm:pl-6 mt-3 sm:mt-4" 
-            items={[
-              { label: 'Profile', href: '/profile' }
-            ]}
-            appendEllipsisHref="/wallet"
-          />
 
-          {/* Title */}
-          <div className="mb-4 pl-4 sm:pl-6">
-            <h1 className="text-3xl font-bold text-text-primary">Choose Payment Method</h1>
-            <p className="mt-3 text-sm text-gray-300">Select how you'd like to pay ${selectedAmount.toFixed(2)}.</p>
-          </div>
-
-          {/* Content */}
-          <div className="flex justify-center mt-16">
-            <div className="w-full max-w-lg">
-              <WalletMoneyContainer variant="blue" className="animate-fadeIn">
-                <div className="p-6 space-y-6">
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold text-white mb-2">Select Payment Method</h2>
-                    <p className="text-gray-400">Amount: <span className="font-semibold text-white">${selectedAmount.toFixed(2)}</span></p>
-                  </div>
-                  
-                  {/* Payment Method Selection */}
-                  <div className="grid grid-cols-1 gap-4">
-                    {/* PayPal Option */}
-                    <Card 
-                      className="cursor-pointer border-2 border-transparent hover:border-blue-500/50 transition-all duration-200 bg-gray-800/50"
-                      onClick={() => handlePaymentMethodSelect('paypal')}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">P</span>
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-white font-semibold">PayPal</h3>
-                            <p className="text-gray-400 text-sm">Fast & Secure • Buyer Protection</p>
-                          </div>
-                          <Shield className="h-5 w-5 text-green-400" />
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Stripe/Credit Card Option - Hidden until API key is configured */}
-                    {/* <Card 
-                      className="cursor-pointer border-2 border-transparent hover:border-purple-500/50 transition-all duration-200 bg-gray-800/50"
-                      onClick={() => handlePaymentMethodSelect('stripe')}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
-                            <CreditCard className="h-6 w-6 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-white font-semibold">Credit/Debit Card</h3>
-                            <p className="text-gray-400 text-sm">Visa • Mastercard • Amex • Discover</p>
-                          </div>
-                          <Shield className="h-5 w-5 text-green-400" />
-                        </div>
-                      </CardContent>
-                    </Card> */}
-                  </div>
-
-                  {/* Security Notice */}
-                  <div className="text-center">
-                    <p className="text-gray-400 text-xs">
-                      🔒 All payments are secured with SSL encryption and PCI compliance
-                    </p>
-                  </div>
-                </div>
-              </WalletMoneyContainer>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   if (selectedAmount && selectedPaymentMethod) {
     return (
@@ -285,7 +203,7 @@ export default function DepositPage() {
           <div className="mb-4 pl-4 sm:pl-6">
             <h1 className="text-3xl font-bold text-text-primary">Complete Payment</h1>
             <p className="mt-3 text-sm text-gray-300">
-              Complete your ${selectedAmount.toFixed(2)} deposit using {selectedPaymentMethod === 'paypal' ? 'PayPal' : 'Credit/Debit Card'}.
+              Complete your ${selectedAmount.toFixed(2)} deposit using PayPal.
             </p>
           </div>
 
@@ -297,22 +215,14 @@ export default function DepositPage() {
                   <div className="text-center">
                     <h2 className="text-xl font-semibold text-white mb-2">Complete Your Deposit</h2>
                     <p className="text-gray-400">Amount: <span className="font-semibold text-white">${selectedAmount.toFixed(2)}</span></p>
-                    <p className="text-gray-400 text-sm">Method: {selectedPaymentMethod === 'paypal' ? 'PayPal' : 'Credit/Debit Card'}</p>
+                    <p className="text-gray-400 text-sm">Method: PayPal</p>
                   </div>
                   
-                  {selectedPaymentMethod === 'paypal' ? (
-                    <PayPalDepositButton
-                      amount={selectedAmount}
-                      onSuccess={handlePayPalSuccess}
-                      onError={handlePayPalError}
-                    />
-                  ) : (
-                    <StripeDepositButton
-                      amount={selectedAmount}
-                      onSuccess={handlePayPalSuccess}
-                      onError={handlePayPalError}
-                    />
-                  )}
+                  <PayPalDepositButton
+                    amount={selectedAmount}
+                    onSuccess={handlePayPalSuccess}
+                    onError={handlePayPalError}
+                  />
                   
                   {error && (
                     <div className="flex items-center space-x-2 p-3 bg-red-500/10 border border-red-500/20 rounded-md">
@@ -344,7 +254,7 @@ export default function DepositPage() {
         {/* Title */}
         <div className="mb-4 pl-4 sm:pl-6">
           <h1 className="text-3xl font-bold text-text-primary">Deposit Funds</h1>
-          <p className="mt-3 text-sm text-gray-300">Add funds to your wallet using PayPal or credit/debit card.</p>
+          <p className="mt-3 text-sm text-gray-300">Add funds to your wallet using PayPal.</p>
         </div>
 
         {/* Content */}

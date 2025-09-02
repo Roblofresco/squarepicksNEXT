@@ -86,7 +86,7 @@ This document outlines the development roadmap for SquarePicks. This version has
 
 -   **User Stories:**
     -   `[x]` As a system, I can detect quarter boundaries and final state from `games/{gameId}` updates and trigger winner assignment idempotently.
-    -   `[x]` As a system, I assign a quarter winner for each board tied to a game at the end of Q1/Q2/Q3 and at FINAL, using last-score digits and the board’s `home_numbers`/`away_numbers` mapping.
+    -   `[x]` As a system, I assign a quarter winner for each board tied to a game at the end of Q1/Q2/Q3 and at FINAL, using last-score digits and the board's `home_numbers`/`away_numbers` mapping.
     -   `[x]` As a user, I can see a public, non-identifying summary of winners for each quarter on a board (index and square), without exposing player IDs.
     -   `[x]` As a winner, I receive a private record of my win at `users/{uid}/wins/{boardId_period}` that I can view later.
     -   `[x]` As a winner, I only receive a payout after the game is FINAL; my wallet balance is credited and a `winnings` transaction is created.
@@ -100,3 +100,66 @@ This document outlines the development roadmap for SquarePicks. This version has
     -   `[x]` Security rules: boards public read; `boards/*/squares/*` no read; `boards/*/winners/*` public read; `users/{uid}/wins/*` private to uid; transactions readable by owner (userID match).
     -   `[x]` Indexes: `transactions(userID asc, timestamp desc)`, `boards(gameID asc, status asc)`, `boards/{boardId}/squares(index asc)`.
     -   `[x]` UI: show quarter winners on board pages; ensure Transactions tabs include DEPOSIT, WITHDRAW, ENTRY, SWEEPSTAKES, WINNINGS; Wallet recent activity reflects normalized types.
+
+---
+
+## Epic 9: Enhanced Payment System (Rivaling Gambling Apps)
+
+-   **User Stories:**
+    -   `[ ]` As a user, I can deposit funds using multiple payment processors (Stripe + PayPal) for better reliability.
+    -   `[ ]` As a user, I can use quick deposit buttons for common amounts ($10, $25, $50, $100, $250, $500).
+    -   `[ ]` As a user, I can save multiple payment methods for faster future transactions.
+    -   `[ ]` As a user, I can withdraw funds with faster processing times (1-2 business days vs. current 3+ days).
+    -   `[ ]` As a user, I can enjoy a mobile-optimized payment experience with touch-friendly interfaces.
+    -   `[ ]` As a user, I can see real-time payment status updates and notifications.
+    -   `[ ]` As a user, I can benefit from advanced fraud protection that keeps my account secure.
+
+-   **Technical Tasks:**
+    -   `[ ]` Install and configure Stripe dependencies (`@stripe/stripe-js`, `@stripe/react-stripe-js`, `stripe`).
+    -   `[ ]` Create Stripe payment service with latest API version (2025-03-31.basil).
+    -   `[ ]` Implement smart payment router that chooses optimal processor based on success rates, payment method, and amount.
+    -   `[ ]` Create enhanced payment components with mobile-first design (Payment Elements, quick deposit panels).
+    -   `[ ]` Integrate Stripe Radar for advanced fraud detection and risk assessment.
+    -   `[ ]` Implement dual-processor fallback system for automatic failover between Stripe and PayPal.
+    -   `[ ]` Add payment method management system for saving and managing multiple payment options.
+    -   `[ ]` Create enhanced withdrawal system with faster processing via Stripe payouts.
+    -   `[ ]` Implement comprehensive compliance tracking for sweepstakes requirements (free entry monitoring).
+    -   `[ ]` Add payment analytics dashboard for monitoring success rates and user behavior.
+
+-   **Success Metrics:**
+    -   **Deposit Success Rate**: Target >98% (vs. DraftKings ~95%)
+    -   **Withdrawal Speed**: Target <24 hours (vs. industry ~2-3 days)
+    -   **Mobile Conversion**: Target >75% (vs. industry ~65%)
+    -   **Transaction Volume**: 25% increase
+    -   **User Retention**: 20% improvement
+    -   **Support Tickets**: 40% reduction
+
+-   **Implementation Phases:**
+    -   **Phase 1: Foundation (Weeks 1-2)**: Stripe integration, basic dual-processor setup
+    -   **Phase 2: Enhanced UX (Weeks 3-4)**: Payment Elements, quick deposit panels, mobile optimization
+    -   **Phase 3: Advanced Features (Weeks 5-6)**: Fraud detection, smart routing, compliance automation
+    -   **Phase 4: Optimization (Weeks 7-8)**: Performance tuning, A/B testing, final deployment
+
+---
+
+## Epic 10: Future Enhancements & Scalability
+
+-   **User Stories:**
+    -   `[ ]` As a user, I can use cryptocurrency payments (Bitcoin, Ethereum) for deposits.
+    -   `[ ]` As a user, I can participate in international sweepstakes with multi-currency support.
+    -   `[ ]` As a user, I can use voice-activated payment commands for hands-free transactions.
+    -   `[ ]` As a user, I can benefit from AI-powered fraud detection that learns from transaction patterns.
+
+-   **Technical Tasks:**
+    -   `[ ]` Research and implement cryptocurrency payment integration.
+    -   `[ ]` Design multi-currency and international expansion architecture.
+    -   `[ ]` Develop voice payment interface with speech recognition.
+    -   `[ ]` Implement machine learning models for fraud detection and risk assessment.
+
+---
+
+## Conclusion
+
+This roadmap represents the comprehensive development plan for SquarePicks, from core functionality through advanced payment systems and future enhancements. Each epic builds upon the previous ones, ensuring a solid foundation while progressively enhancing the user experience to rival industry-leading platforms.
+
+The enhanced payment system (Epic 9) represents a significant milestone that will position SquarePicks as a market leader in sweepstakes platforms, providing users with a professional payment experience that matches or exceeds industry standards while maintaining full compliance with sweepstakes regulations.

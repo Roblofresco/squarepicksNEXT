@@ -247,13 +247,12 @@ export default function LoginPage() {
           }}
         />
       )}
-      {/* Header container - Adjust padding slightly */}
+      {/* Header container - Match home page styling */}
       <div className="w-full px-6 pt-6 z-10 flex items-center justify-between">
-          {/* Add onClick, disabled, and conditional classes */}
+          {/* Home button - matches home page login button size */}
             <button 
               onClick={() => handleNavClick('/')}
-              // Apply motion if needed, or just basic button
-              className={`flex items-center px-4 py-1.5 rounded-md transition duration-300 text-sm 
+              className={`px-6 py-2 rounded-md transition duration-300 flex items-center justify-center 
                 ${navigatingTo === '/'
                   ? 'bg-accent-1 text-background-primary animate-pulse cursor-not-allowed' // Loading state
                   : 'border border-accent-1 text-accent-1 hover:bg-accent-1/10' // Normal state
@@ -261,19 +260,19 @@ export default function LoginPage() {
               disabled={navigatingTo === '/'}
              >
               <FiArrowLeft className="mr-1.5" size={16} />
-              Back
+              Home
             </button>
-          {/* Add onClick, disabled, and conditional classes */}
+          {/* View Lobby button - matches home page login button size */}
              <button
                onClick={() => handleNavClick('/lobby')}
-               className={`px-4 py-1.5 rounded-md transition duration-300 text-sm 
+               className={`px-6 py-2 rounded-md transition duration-300 flex items-center justify-center 
                 ${navigatingTo === '/lobby'
                   ? 'bg-accent-1 text-background-primary animate-pulse cursor-not-allowed' // Loading state
                   : 'border border-accent-1 text-accent-1 hover:bg-accent-1/10' // Normal state
                 }`}
                disabled={navigatingTo === '/lobby'}
              >
-              View Lobby (Guest)
+              View Lobby
             </button>
       </div>
       {/* Main content wrapper - Centered */}

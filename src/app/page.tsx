@@ -266,17 +266,17 @@ export default function Home() {
               Log In
             </motion.button>
             <motion.button
-              whileHover={{ scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
-              whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
+              whileHover={{ scale: navigatingTo === '/lobby' ? 1 : 1.05 }}
+              whileTap={{ scale: navigatingTo === '/lobby' ? 1 : 0.95 }}
               className={`px-6 py-2 rounded-md text-white transition duration-300 flex items-center justify-center min-h-10 
-                ${navigatingTo === '/signup/email' 
+                ${navigatingTo === '/lobby' 
                   ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' 
                   : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
-              onClick={() => handleNavClick('/signup/email')}
-              disabled={navigatingTo === '/signup/email'}
+              onClick={() => handleNavClick('/lobby')}
+              disabled={navigatingTo === '/lobby'}
               type="button"
             >
-              Sign Up
+              View Lobby
             </motion.button>
           </div>
         </nav>

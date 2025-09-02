@@ -28,6 +28,7 @@
 - [faq.md](./pages/faq.md)
 - [email-verified.md](./pages/email-verified.md)
 - [deposit.md](./pages/deposit.md)
+- [enhanced-payment-system-spec.md](./pages/enhanced-payment-system-spec.md)
 - [contact-support.md](./pages/contact-support.md)
 - [account-guide.md](./pages/account-guide.md)
 - [password-reset.md](./pages/password-reset.md)

@@ -1,0 +1,10 @@
+[33m4a8aad4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix: standardize login page header button sizes to match home page
+[33mfa2c235[m fix: implement actual navigation in login page handleNavClick function
+[33mb35ac53[m feat: change login page back button text from 'Back' to 'Home'
+[33m5d43789[m fix: resolve syntax error in wallet-setup personal-info page
+[33m460226f[m fix: add missing CSS variables for Button component to fix login button visibility
+[33mda8f03c[m fix: improve Edge browser compatibility with Next.js font optimization
+[33maaf32d9[m fix: resolve profile page syntax error causing build failure
+[33m58c5855[m Update loading page
+[33m2c05219[m feat: auto-navigate loading page to lobby after 3.5 seconds
+[33m6baa509[m fix: optimize LogoCube animation to eliminate gittery movement with smooth interpolation and throttling

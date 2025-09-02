@@ -274,7 +274,11 @@ export default function DepositPage() {
           appendEllipsisHref="/wallet"
         />
 
-
+        {/* Title */}
+        <div className="mb-4 pl-4 sm:pl-6">
+          <h1 className="text-3xl font-bold text-text-primary">Deposit Funds</h1>
+          <p className="mt-3 text-sm text-gray-300">Add funds to your wallet using PayPal.</p>
+        </div>
 
         {/* Content */}
         <div className="flex justify-center mt-16">

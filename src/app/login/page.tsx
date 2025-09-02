@@ -254,7 +254,7 @@ export default function LoginPage() {
             <button 
               onClick={() => handleNavClick('/')}
               // Apply motion if needed, or just basic button
-              className={`flex items-center px-4 py-1.5 rounded-md transition duration-300 text-sm 
+              className={`flex items-center px-6 py-2 rounded-md transition duration-300 text-sm 
                 ${navigatingTo === '/'
                   ? 'bg-accent-1 text-background-primary animate-pulse cursor-not-allowed' // Loading state
                   : 'border border-accent-1 text-accent-1 hover:bg-accent-1/10' // Normal state
@@ -267,7 +267,7 @@ export default function LoginPage() {
           {/* Add onClick, disabled, and conditional classes */}
              <button
                onClick={() => handleNavClick('/lobby')}
-               className={`px-4 py-1.5 rounded-md transition duration-300 text-sm 
+               className={`px-6 py-2 rounded-md transition duration-300 text-sm 
                 ${navigatingTo === '/lobby'
                   ? 'bg-accent-1 text-background-primary animate-pulse cursor-not-allowed' // Loading state
                   : 'border border-accent-1 text-accent-1 hover:bg-accent-1/10' // Normal state

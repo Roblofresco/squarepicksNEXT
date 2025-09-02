@@ -20,6 +20,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { ArrowLeft, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Breadcrumbs from '@/components/navigation/Breadcrumbs';
+import Head from 'next/head';
 
 const depositSchema = z.object({
   amount: z.string().refine((val) => {
@@ -93,8 +94,12 @@ export default function DepositPage() {
 
   if (walletLoading) {
     return (
-      <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
+      <>
+        <Head>
+          <title>Deposit Funds - SquarePicks</title>
+        </Head>
+        <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
           {/* Breadcrumbs */}
           <div className="mb-3 pl-4 sm:pl-6 mt-3 sm:mt-4">
             <Skeleton className="h-6 w-48" />
@@ -118,14 +123,19 @@ export default function DepositPage() {
             </div>
           </div>
         </motion.div>
-      </div>
+        </div>
+      </>
     );
   }
 
   if (success) {
     return (
-      <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
+      <>
+        <Head>
+          <title>Deposit Funds - SquarePicks</title>
+        </Head>
+        <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
           {/* Breadcrumbs */}
           <Breadcrumbs 
             className="mb-3 pl-4 sm:pl-6 mt-3 sm:mt-4" 
@@ -176,7 +186,8 @@ export default function DepositPage() {
             </div>
           </div>
         </motion.div>
-      </div>
+        </div>
+      </>
     );
   }
 
@@ -184,8 +195,12 @@ export default function DepositPage() {
 
   if (selectedAmount && selectedPaymentMethod) {
     return (
-      <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
+      <>
+        <Head>
+          <title>Deposit Funds - SquarePicks</title>
+        </Head>
+        <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
           {/* Breadcrumbs */}
           <Breadcrumbs 
             className="mb-3 pl-4 sm:pl-6 mt-3 sm:mt-4" 
@@ -238,13 +253,18 @@ export default function DepositPage() {
             </div>
           </div>
         </motion.div>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
+    <>
+      <Head>
+        <title>Deposit Funds - SquarePicks</title>
+      </Head>
+      <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
         {/* Breadcrumbs */}
         <Breadcrumbs 
           className="mb-3 pl-4 sm:pl-6 mt-3 sm:mt-4" 
@@ -302,6 +322,7 @@ export default function DepositPage() {
           </div>
         </div>
       </motion.div>
-    </div>
+      </div>
+    </>
   );
 } 

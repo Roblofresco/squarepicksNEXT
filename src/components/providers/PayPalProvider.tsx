@@ -24,9 +24,10 @@ interface PayPalProviderProps {
 }
 
 export function PayPalProvider({ children }: PayPalProviderProps) {
-  // Only render PayPal provider if client ID is configured
-  if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID) {
-    console.warn('PayPal client ID not configured. PayPal functionality will be disabled.')
+  // Only render PayPal provider if client ID is configured and not a placeholder
+  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+  if (!clientId || clientId === 'your_paypal_client_id' || clientId === 'sb') {
+    console.warn('PayPal client ID not properly configured. PayPal functionality will be disabled.')
     return <>{children}</>
   }
 

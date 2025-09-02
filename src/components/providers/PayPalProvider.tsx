@@ -27,18 +27,16 @@ export function PayPalProvider({ children }: PayPalProviderProps) {
   // Only render PayPal provider if client ID is configured and not a placeholder
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
   
-  // For demonstration, use sandbox client ID if no real client ID is configured
-  const effectiveClientId = clientId && clientId !== 'your_paypal_client_id' ? clientId : 'sb'
-  
   if (!clientId || clientId === 'your_paypal_client_id') {
-    console.warn('PayPal client ID not properly configured. Using sandbox mode for demonstration.')
+    console.warn('PayPal client ID not properly configured. PayPal functionality will be disabled.')
+    return <>{children}</>
   }
 
   return (
     <PayPalScriptProvider 
       options={{
         ...paypalOptions,
-        clientId: effectiveClientId
+        clientId: clientId
       }}
       deferLoading={false}
     >

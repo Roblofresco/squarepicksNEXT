@@ -120,7 +120,8 @@ export default function LoginPage() {
   // Add handleNavClick function (similar to page.tsx)
   const handleNavClick = (href: string) => {
     setNavigatingTo(href);
-    // Actual navigation happens via Link component
+    // Perform actual navigation
+    router.push(href);
   };
 
   const handleLogin = async (e?: React.FormEvent<HTMLFormElement>) => {
@@ -252,7 +253,12 @@ export default function LoginPage() {
           {/* Home button - matches home page login button size */}
             <button 
               onClick={() => handleNavClick('/')}
+<<<<<<< HEAD
               className={`px-6 py-2 rounded-md transition duration-300 flex items-center justify-center 
+=======
+              // Apply motion if needed, or just basic button
+              className={`flex items-center px-6 py-2 rounded-md transition duration-300 text-sm 
+>>>>>>> 4a8aad4ea86f54713057080988edf9d2b31c0af6
                 ${navigatingTo === '/'
                   ? 'bg-accent-1 text-background-primary animate-pulse cursor-not-allowed' // Loading state
                   : 'border border-accent-1 text-accent-1 hover:bg-accent-1/10' // Normal state

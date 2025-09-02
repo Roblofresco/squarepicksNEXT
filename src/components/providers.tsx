@@ -4,6 +4,7 @@ import { LazyMotion, domAnimation } from 'framer-motion'
 import { AuthProvider } from '@/context/AuthContext'
 import { NotificationProvider } from '@/context/NotificationContext'
 import { PayPalProvider } from './providers/PayPalProvider'
+import { StripeProvider } from './providers/StripeProvider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -11,7 +12,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AuthProvider>
         <NotificationProvider>
           <PayPalProvider>
-            {children}
+            <StripeProvider>
+              {children}
+            </StripeProvider>
           </PayPalProvider>
         </NotificationProvider>
       </AuthProvider>

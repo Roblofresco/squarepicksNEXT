@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { WalletMoneyContainer } from '@/components/ui/WalletMoneyContainer';
 import { PayPalDepositButton } from '@/components/ui/PayPalDepositButton';
+import { StripeDepositButton } from '@/components/ui/StripeDepositButton';
 import { useWallet } from '@/hooks/useWallet';
 import { ArrowLeft, DollarSign, CheckCircle, AlertCircle, CreditCard, Shield } from 'lucide-react';
 import Link from 'next/link';
@@ -86,16 +87,6 @@ export default function DepositPage() {
 
   const handlePaymentMethodSelect = (method: 'paypal' | 'stripe') => {
     setSelectedPaymentMethod(method);
-  };
-
-  const handlePayPalRedirect = () => {
-    // Redirect to PayPal SDK
-    window.location.href = `https://www.paypal.com/checkoutnow?token=${selectedAmount}`;
-  };
-
-  const handleStripeRedirect = () => {
-    // Redirect to Stripe Checkout
-    window.location.href = `/api/stripe/create-checkout-session?amount=${selectedAmount}`;
   };
 
   if (walletLoading) {
@@ -314,34 +305,17 @@ export default function DepositPage() {
                   </div>
                   
                   {selectedPaymentMethod === 'paypal' ? (
-                    <div className="space-y-4">
-                      <PayPalDepositButton
-                        amount={selectedAmount}
-                        onSuccess={handlePayPalSuccess}
-                        onError={handlePayPalError}
-                      />
-                      <div className="text-center">
-                        <p className="text-gray-400 text-xs mb-3">Or redirect to PayPal directly:</p>
-                        <Button
-                          onClick={handlePayPalRedirect}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          Continue to PayPal
-                        </Button>
-                      </div>
-                    </div>
+                    <PayPalDepositButton
+                      amount={selectedAmount}
+                      onSuccess={handlePayPalSuccess}
+                      onError={handlePayPalError}
+                    />
                   ) : (
-                    <div className="space-y-4">
-                      <div className="text-center">
-                        <p className="text-gray-400 text-sm mb-4">Redirect to secure Stripe checkout:</p>
-                        <Button
-                          onClick={handleStripeRedirect}
-                          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                        >
-                          Continue to Stripe Checkout
-                        </Button>
-                      </div>
-                    </div>
+                    <StripeDepositButton
+                      amount={selectedAmount}
+                      onSuccess={handlePayPalSuccess}
+                      onError={handlePayPalError}
+                    />
                   )}
                   
                   {error && (

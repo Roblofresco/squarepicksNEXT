@@ -104,13 +104,52 @@ export async function POST(request: NextRequest) {
 
     console.log(`Successfully captured ${amountCaptured} ${currencyCaptured} for order ${orderID}`)
 
-    // Now call Firebase function to update wallet balance
-    // This leverages the existing secure wallet update logic
+    // Update wallet balance using secure API route
+    // This uses Firestore transactions for atomic operations
     try {
-      const functions = getFunctions(app, 'us-east1')
-      const capturePayPalOrderCallable = httpsCallable(functions, 'capturePayPalOrder')
+      // Get user ID from request headers or auth context
+      // For now, we'll need to pass it from the client
+      const userId = request.headers.get('x-user-id')
       
-      const result = await capturePayPalOrderCallable({ orderID })
+      if (!userId) {
+        console.error('User ID not provided in request headers')
+        return NextResponse.json({
+          success: true,
+          message: 'PayPal order captured successfully, but wallet update failed. Please contact support.',
+          orderId: orderID,
+          amountDeposited: amountCaptured,
+          currency: currencyCaptured,
+          warning: 'User ID not provided - contact support'
+        })
+      }
+
+      const walletUpdateResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.squarepicks.com'}/api/wallet/update-balance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          amount: amountCaptured,
+          orderId: orderID,
+          currency: currencyCaptured,
+        }),
+      })
+
+      if (!walletUpdateResponse.ok) {
+        const errorData = await walletUpdateResponse.json()
+        console.error('Wallet update failed:', errorData)
+        return NextResponse.json({
+          success: true,
+          message: 'PayPal order captured successfully, but wallet update failed. Please contact support.',
+          orderId: orderID,
+          amountDeposited: amountCaptured,
+          currency: currencyCaptured,
+          warning: 'Wallet update failed - contact support'
+        })
+      }
+
+      const walletResult = await walletUpdateResponse.json()
       
       return NextResponse.json({
         success: true,
@@ -118,12 +157,11 @@ export async function POST(request: NextRequest) {
         orderId: orderID,
         amountDeposited: amountCaptured,
         currency: currencyCaptured,
-        ...result.data
+        ...walletResult
       })
-    } catch (firebaseError: any) {
-      console.error('Firebase function error:', firebaseError)
-      // Even if Firebase function fails, the PayPal capture was successful
-      // Return success but note the wallet update issue
+    } catch (walletError: any) {
+      console.error('Wallet update error:', walletError)
+      // Even if wallet update fails, the PayPal capture was successful
       return NextResponse.json({
         success: true,
         message: 'PayPal order captured successfully, but wallet update failed. Please contact support.',

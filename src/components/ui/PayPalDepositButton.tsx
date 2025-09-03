@@ -9,11 +9,12 @@ import { Alert, AlertDescription } from './alert'
 
 interface PayPalDepositButtonProps {
   amount: number
+  userId: string
   onSuccess: (amount: number) => void
   onError: (error: string) => void
 }
 
-export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDepositButtonProps) {
+export function PayPalDepositButton({ amount, userId, onSuccess, onError }: PayPalDepositButtonProps) {
   const [{ isPending, isInitial, isRejected }] = usePayPalScriptReducer()
   const [isProcessing, setIsProcessing] = useState(false)
   const [status, setStatus] = useState<'idle' | 'creating' | 'approving' | 'success' | 'error'>('idle')
@@ -64,12 +65,15 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
     setIsProcessing(true)
     
     try {
+      // Use the userId prop passed from parent component
+      
       // Following PayPal's official recommendation for server-side order capture
       // This ensures proper validation and wallet updates
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': userId, // Pass user ID for wallet updates
         },
         body: JSON.stringify({ orderID: data.orderID })
       })

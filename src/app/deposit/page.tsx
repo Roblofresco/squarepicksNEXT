@@ -190,6 +190,7 @@ export default function DepositPage() {
             
             <PayPalDepositButton
               amount={selectedAmount}
+              userId={userId || ''}
               onSuccess={handlePayPalSuccess}
               onError={handlePayPalError}
             />

@@ -533,9 +533,16 @@ export default function Home() {
           </div>
           
           {/* Footer */}
-          <footer className="py-8 relative">
+          <footer className="py-8">
             <div className="flex flex-col items-center justify-center text-center">
-              <LogoWithText size="md" className="mb-4" />
+              {/* Footer links and logo in same row on mobile, stacked on larger screens */}
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-4">
+                <LogoWithText size="md" />
+                <div className="flex items-center gap-4 text-sm text-gray-400">
+                  <a href="/faq" className="hover:text-white hover:underline">FAQ</a>
+                  <a href="/terms" className="hover:text-white hover:underline">Terms</a>
+                </div>
+              </div>
               <div className="text-gray-400 text-sm">
                 &copy; {new Date().getFullYear()} SquarePicks. All rights reserved.
                 {easterEggActivated && (
@@ -549,11 +556,6 @@ export default function Home() {
                     <p>You've discovered the hidden secret! Click on the grid cells to reveal their final form.</p>
                   </motion.div>
                 )}
-              </div>
-              {/* Footer links bottom-right */}
-              <div className="absolute right-4 bottom-4 flex items-center gap-4 text-sm text-gray-400">
-                <a href="/faq" className="hover:text-white hover:underline">FAQ</a>
-                <a href="/terms" className="hover:text-white hover:underline">Terms</a>
               </div>
             </div>
           </footer>

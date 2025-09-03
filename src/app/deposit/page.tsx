@@ -4,7 +4,7 @@ export const runtime = 'edge';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -74,12 +74,6 @@ export default function DepositPage() {
   const handlePayPalSuccess = (amount: number) => {
     setSuccessAmount(amount.toFixed(2));
     setSuccess(true);
-    
-    // Show success notification
-    setTimeout(() => {
-      // You can add a toast notification here if you have a notification system
-      console.log(`Deposit successful: $${amount.toFixed(2)}`);
-    }, 100);
   };
 
   const handlePayPalError = (errorMessage: string) => {
@@ -105,7 +99,7 @@ export default function DepositPage() {
           <title>Deposit Funds - SquarePicks</title>
         </Head>
         <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
+          <div className="w-full min-h-screen flex flex-col">
           {/* Breadcrumbs */}
           <div className="mb-3 pl-4 sm:pl-6 mt-3 sm:mt-4">
             <Skeleton className="h-6 w-48" />
@@ -128,7 +122,7 @@ export default function DepositPage() {
               </WalletMoneyContainer>
             </div>
           </div>
-        </motion.div>
+        </div>
         </div>
       </>
     );
@@ -148,12 +142,7 @@ export default function DepositPage() {
           className="animate-fadeIn border-green-400/30 shadow-[0_0_20px_rgba(34,197,94,0.1)]"
         >
           <div className="flex flex-col items-center justify-center text-center space-y-4 py-8 px-4 sm:px-6">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col items-center space-y-4"
-            >
+            <div className="flex flex-col items-center space-y-4">
               <CheckCircle className="h-16 w-16 text-green-400" />
               <p className="text-white/80">Your deposit has been processed successfully!</p>
               <p className="text-white/60 text-sm">The funds have been added to your wallet balance.</p>
@@ -172,7 +161,7 @@ export default function DepositPage() {
                   Make Another Deposit
                 </Button>
               </div>
-            </motion.div>
+            </div>
           </div>
         </WalletMoneyContainer>
       );
@@ -267,7 +256,7 @@ export default function DepositPage() {
         <title>Deposit Funds - SquarePicks</title>
       </Head>
       <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
+        <div className="w-full min-h-screen flex flex-col">
         {/* Breadcrumbs */}
         <Breadcrumbs 
           className="mb-3 pl-4 sm:pl-6 mt-3 sm:mt-4" 
@@ -289,7 +278,7 @@ export default function DepositPage() {
             {renderWalletContent()}
           </div>
         </div>
-      </motion.div>
+      </div>
       </div>
     </>
   );

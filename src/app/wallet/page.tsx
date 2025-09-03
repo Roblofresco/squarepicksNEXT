@@ -13,8 +13,7 @@ import { db } from '@/lib/firebase'; // Assuming Firebase initialized here
 import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Transaction } from '@/types'; // Assuming Transaction type exists
 import { format } from 'date-fns'; // For formatting timestamps
-import { motion } from 'framer-motion';
-import { HeroText } from '@/components/ui/hero-text';
+
 import WalletMoneyContainer from '@/components/ui/WalletMoneyContainer';
 import Breadcrumbs from '@/components/navigation/Breadcrumbs';
 import { useSearchParams } from 'next/navigation';
@@ -132,7 +131,7 @@ const WalletPage = () => {
 
   return (
     <div className="bg-background-primary text-text-primary h-full">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full flex flex-col h-full">
+      <div className="w-full flex flex-col h-full">
         {/* Breadcrumbs */}
         {(() => {
           const prevHref = searchParams.get('prevHref') || undefined;
@@ -187,9 +186,7 @@ const WalletPage = () => {
                 <div className="h-16 w-16 rounded-full border-2 border-accent-1 bg-gradient-to-b from-background-primary to-accent-1/10 grid place-items-center transition-transform group-active:scale-95">
                   <ArrowDownCircle className="w-7 h-7 text-accent-1" />
                 </div>
-                <div className="relative mt-2">
-                  <HeroText id="deposit" className="text-sm text-text-primary">Deposit</HeroText>
-                </div>
+                <span className="mt-2 text-sm text-text-primary">Deposit</span>
                 </Link>
               <Link href="/withdraw" className="group inline-flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-1/60 rounded-full">
                 <div className="h-16 w-16 rounded-full border-2 border-accent-1 bg-gradient-to-b from-background-primary to-accent-1/10 grid place-items-center transition-transform group-active:scale-95">
@@ -269,12 +266,12 @@ const WalletPage = () => {
 
                 {/* View All inside container */}
                 <div className="mt-auto text-center">
-              <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} className="inline-block">
-                <Link href="/transactions" className="inline-flex items-center justify-center px-4 py-2 rounded-md border-accent-4 text-accent-4 hover:bg-accent-4/10 hover:text-accent-4 active:scale-95 focus:scale-105 transition-all duration-150">
+              <div className="inline-block">
+                <Link href="/transactions" className="inline-flex items-center justify-center px-4 py-2 rounded-md border-accent-4 text-accent-4 hover:bg-accent-4/10 hover:text-accent-4 transition-all duration-150">
                   <History className="w-4 h-4 mr-2" />
                   View All Transactions
                 </Link>
-              </motion.div>
+              </div>
             </div>
               </div>
             </WalletMoneyContainer>
@@ -289,7 +286,7 @@ const WalletPage = () => {
 
         {/* Footer removed here — moved inside WalletMoneyContainer */}
 
-      </motion.div>
+      </div>
     </div>
   );
 };

@@ -17,16 +17,23 @@ import Breadcrumbs from '@/components/navigation/Breadcrumbs';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getApp } from 'firebase/app';
 import { toast } from 'react-hot-toast';
-import { motion } from 'framer-motion'
+
 
 const withdrawalSchema = z.object({
   amount: z.coerce
     .number({ invalid_type_error: 'Please enter a valid number.' })
     .positive({ message: 'Amount must be positive.' })
-    .min(5, { message: 'Minimum withdrawal amount is $5.00.' }),
+    .min(5, { message: 'Minimum withdrawal amount is $5.00.' })
+    .max(10000, { message: 'Maximum withdrawal amount is $10,000.00.' }),
   paypalEmail: z.string()
     .email({ message: 'Please enter a valid PayPal email address.' })
-    .min(1, { message: 'PayPal email is required.' }),
+    .min(1, { message: 'PayPal email is required.' })
+    .refine((email) => {
+      // Basic PayPal email validation
+      const validDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'paypal.com'];
+      const domain = email.split('@')[1]?.toLowerCase();
+      return validDomains.includes(domain) || domain?.includes('.');
+    }, { message: 'Please enter a valid email address.' }),
 });
 
 type WithdrawalFormValues = z.infer<typeof withdrawalSchema>;
@@ -111,7 +118,7 @@ export default function WithdrawPage() {
 
   return (
     <div className="min-h-screen bg-background-primary text-text-primary p-0 sm:p-0 lg:p-0">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full min-h-screen flex flex-col">
+      <div className="w-full min-h-screen flex flex-col">
         {/* Breadcrumbs */}
         <Breadcrumbs 
           className="mb-3 pl-4 sm:pl-6 mt-3 sm:mt-4" 
@@ -124,7 +131,7 @@ export default function WithdrawPage() {
         {/* Title */}
         <div className="mb-8 pl-4 sm:pl-6">
           <h1 className="text-3xl font-bold text-text-primary">Request Withdrawal</h1>
-          <p className="mt-3 text-sm text-gray-300">Withdraw your funds to your PayPal account. Minimum withdrawal is $5.00.</p>
+          <p className="mt-3 text-sm text-gray-300">Withdraw your funds to your PayPal account. Minimum withdrawal is $5.00, maximum is $10,000.00.</p>
         </div>
 
         {/* Content */}
@@ -140,7 +147,7 @@ export default function WithdrawPage() {
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div>
                       <Label className="text-sm font-medium text-white/90">
-                        Amount (USD) <span className="text-xs text-white/50">(Min $5.00)</span>
+                        Amount (USD) <span className="text-xs text-white/50">(Min $5.00, Max $10,000.00)</span>
                       </Label>
                       <div className="relative mt-1 rounded-md">
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -150,6 +157,8 @@ export default function WithdrawPage() {
                           type="number"
                           inputMode="decimal"
                           step="0.01"
+                          min="5"
+                          max="10000"
                           placeholder="0.00"
                           {...register('amount')}
                           className="block w-full rounded-md bg-white/5 text-white placeholder-white/30 pl-7 pr-4 py-2 border-white/10 focus:border-accent-1 focus:ring-accent-1 sm:text-sm text-lg"
@@ -197,16 +206,22 @@ export default function WithdrawPage() {
                     </Button>
                   </form>
                 </div>
-                <div className="mt-auto border-t border-white/10 p-4">
-                  <p className="text-xs text-white/70 text-center">
-                    Withdrawal requests are reviewed and processed within 3-5 business days.
-                  </p>
+                <div className="mt-auto border-t border-white/10 p-4 space-y-2">
+                  <div className="text-xs text-white/70 text-center space-y-1">
+                    <p>• Withdrawal requests are reviewed and processed within 3-5 business days</p>
+                    <p>• Processing time may vary during holidays and weekends</p>
+                    <p>• You will receive an email confirmation once processed</p>
+                    <p>• Funds will be sent to your PayPal account</p>
+                  </div>
+                  <div className="text-xs text-yellow-400/80 text-center mt-2">
+                    <p>⚠️ Please ensure your PayPal email is correct - incorrect emails may delay processing</p>
+                  </div>
                 </div>
               </div>
             </WalletMoneyContainer>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

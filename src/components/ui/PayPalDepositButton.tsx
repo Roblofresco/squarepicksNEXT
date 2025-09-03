@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js'
 import { Button } from './button'
-import { AlertCircle, CheckCircle, Loader2, CreditCard, Shield, Lock } from 'lucide-react'
+import { AlertCircle, CheckCircle, Loader2, Shield, Lock } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card'
 import { Alert, AlertDescription } from './alert'
 
@@ -16,7 +16,7 @@ interface PayPalDepositButtonProps {
 export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDepositButtonProps) {
   const [{ isPending, isInitial, isRejected }] = usePayPalScriptReducer()
   const [isProcessing, setIsProcessing] = useState(false)
-  const [status, setStatus] = useState<'idle' | 'creating' | 'approving' | 'capturing' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'creating' | 'approving' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState<string>('')
 
   const createOrder = async () => {
@@ -64,7 +64,6 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
     setIsProcessing(true)
     
     try {
-      // Call the capture API route
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: {
@@ -107,8 +106,6 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
     setStatus('idle')
     setErrorMessage('')
   }
-
-
 
   // Handle PayPal script loading states
   if (isInitial) {
@@ -228,8 +225,7 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
           <Alert className="border-blue-200 bg-blue-50">
             <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
             <AlertDescription className="text-blue-700">
-              {status === 'approving' ? 'Approving payment...' : 
-               status === 'capturing' ? 'Processing payment...' : 'Processing...'}
+              {status === 'approving' ? 'Processing payment...' : 'Processing...'}
             </AlertDescription>
           </Alert>
         )}

@@ -74,6 +74,12 @@ export default function DepositPage() {
   const handlePayPalSuccess = (amount: number) => {
     setSuccessAmount(amount.toFixed(2));
     setSuccess(true);
+    
+    // Show success notification
+    setTimeout(() => {
+      // You can add a toast notification here if you have a notification system
+      console.log(`Deposit successful: $${amount.toFixed(2)}`);
+    }, 100);
   };
 
   const handlePayPalError = (errorMessage: string) => {

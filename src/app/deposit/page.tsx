@@ -187,9 +187,8 @@ export default function DepositPage() {
         >
           <div className="space-y-2">
             <div className="text-center">
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-3 mx-4">
-                <p className="text-gray-300 text-sm">Amount</p>
-                <p className="text-white text-lg font-semibold">${selectedAmount.toFixed(2)}</p>
+              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 mx-4 inline-block">
+                <p className="text-gray-300 text-sm">Amount: ${selectedAmount.toFixed(2)}</p>
               </div>
             </div>
             

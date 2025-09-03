@@ -98,7 +98,7 @@ export const WalletMoneyContainer: React.FC<WalletMoneyContainerProps> = ({
             <div className="flex-1 flex justify-start">
               {headerActions}
             </div>
-            <h2 className="text-xl font-semibold text-white text-center flex-1">{title}</h2>
+            <h2 className="text-xl font-semibold text-white text-center flex-1 whitespace-nowrap">{title}</h2>
             <div className="flex-1"></div>
           </div>
         </div>

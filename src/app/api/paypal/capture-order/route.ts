@@ -12,9 +12,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get PayPal credentials from environment
-    const clientId = process.env.PAYPAL_CLIENT_ID
+    const clientId = process.env.PAYPAL_CLIENT_ID || process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
     const clientSecret = process.env.PAYPAL_CLIENT_SECRET
-    const baseUrl = process.env.PAYPAL_API_BASE_URL || 'https://api-m.sandbox.paypal.com'
+    const baseUrl = process.env.PAYPAL_API_BASE_URL || 'https://api-m.paypal.com'
 
     if (!clientId || !clientSecret) {
       return NextResponse.json(

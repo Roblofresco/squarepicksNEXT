@@ -10,15 +10,26 @@ if (!getApps().length) {
     privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
   }
 
-  initializeApp({
-    credential: cert(serviceAccount),
-  })
+  // Only initialize if all required environment variables are present
+  if (serviceAccount.projectId && serviceAccount.clientEmail && serviceAccount.privateKey) {
+    initializeApp({
+      credential: cert(serviceAccount),
+    })
+  }
 }
-
-const db = getFirestore()
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Firebase is properly initialized
+    if (!getApps().length) {
+      return NextResponse.json(
+        { error: 'Firebase not configured. Please contact support.' },
+        { status: 500 }
+      )
+    }
+
+    const db = getFirestore()
+
     const { userId, amount, orderId, currency = 'USD' } = await request.json()
 
     // Validate input
@@ -116,7 +127,6 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({
-      success: true,
       message: 'Wallet balance updated successfully',
       ...result,
     })

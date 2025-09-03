@@ -20,12 +20,12 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
   const [errorMessage, setErrorMessage] = useState<string>('')
 
   const createOrder = async () => {
-    if (status === 'creating') return null
-    
-    setStatus('creating')
-    setErrorMessage('')
-    
     try {
+      setStatus('creating')
+      setIsProcessing(true)
+      
+      // Following PayPal's official recommendation for server-side order creation
+      // This ensures proper validation and security
       const response = await fetch('/api/paypal/create-order', {
         method: 'POST',
         headers: {
@@ -64,6 +64,8 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
     setIsProcessing(true)
     
     try {
+      // Following PayPal's official recommendation for server-side order capture
+      // This ensures proper validation and wallet updates
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: {
@@ -96,96 +98,43 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
   }
 
   const handlePayPalError = (err: any) => {
-    console.error("PayPal error:", err)
+    console.error('PayPal error:', err)
     setStatus('error')
-    setErrorMessage("PayPal payment failed. Please try again.")
-    onError("PayPal payment failed. Please try again.")
+    setErrorMessage('Payment failed. Please try again.')
+    onError('Payment failed')
   }
 
   const onCancel = () => {
+    console.log('PayPal payment cancelled')
     setStatus('idle')
-    setErrorMessage('')
+    setIsProcessing(false)
   }
 
-  // Handle PayPal script loading states
-  if (isInitial) {
+  // Loading state
+  if (isPending || isInitial) {
     return (
-      <Card className="border-blue-500/20 bg-blue-500/5">
+      <Card className="border-gray-200/20 bg-white shadow-lg">
         <CardContent className="p-6">
-          <div className="flex items-center justify-center space-x-3">
-            <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
-            <span className="text-blue-400 font-medium">Initializing PayPal...</span>
+          <div className="flex items-center justify-center space-x-2">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+            <span className="text-gray-600">Loading PayPal...</span>
           </div>
         </CardContent>
       </Card>
     )
   }
 
-  if (isPending) {
-    return (
-      <Card className="border-blue-500/20 bg-blue-500/5">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center space-x-3">
-            <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
-            <span className="text-blue-400 font-medium">Loading PayPal...</span>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
+  // Error state
   if (isRejected) {
     return (
-      <Card className="border-red-500/20 bg-red-500/5">
-        <CardContent className="p-6 space-y-4">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              PayPal failed to load. Please refresh the page and try again.
-            </AlertDescription>
-          </Alert>
-          <Button 
-            onClick={() => window.location.reload()} 
-            variant="destructive"
-            className="w-full"
-          >
-            Refresh Page
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (status === 'success') {
-    return (
-      <Card className="border-green-500/20 bg-green-500/5">
+      <Card className="border-red-200/20 bg-white shadow-lg">
         <CardContent className="p-6">
-          <div className="flex items-center justify-center space-x-3">
-            <CheckCircle className="h-5 w-5 text-green-400" />
-            <span className="text-green-400 font-medium">Payment successful!</span>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (status === 'error') {
-    return (
-      <Card className="border-red-500/20 bg-red-500/5">
-        <CardContent className="p-6 space-y-4">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {errorMessage}
+          <Alert className="border-red-200 bg-red-50">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-700">
+              Failed to load PayPal. Please refresh the page and try again.
             </AlertDescription>
           </Alert>
-          <Button 
-            onClick={() => setStatus('idle')} 
-            variant="destructive"
-            className="w-full"
-          >
-            Try Again
-          </Button>
         </CardContent>
       </Card>
     )
@@ -220,12 +169,21 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
             disabled={isProcessing || status === 'creating'}
           />
         </div>
-        
+
         {isProcessing && (
           <Alert className="border-blue-200 bg-blue-50">
             <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
             <AlertDescription className="text-blue-700">
               {status === 'approving' ? 'Processing payment...' : 'Processing...'}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {status === 'error' && errorMessage && (
+          <Alert className="border-red-200 bg-red-50">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-700">
+              {errorMessage}
             </AlertDescription>
           </Alert>
         )}

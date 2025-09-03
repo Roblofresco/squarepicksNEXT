@@ -30,9 +30,23 @@ export async function POST(request: NextRequest) {
     const clientSecret = process.env.PAYPAL_CLIENT_SECRET
     const baseUrl = process.env.PAYPAL_API_BASE_URL || 'https://api-m.sandbox.paypal.com'
 
+    // Debug: Log what we're getting from environment
+    console.log('Environment check:', {
+      clientId: clientId ? 'SET' : 'NOT SET',
+      clientSecret: clientSecret ? 'SET' : 'NOT SET',
+      baseUrl: baseUrl
+    })
+
     if (!clientId || !clientSecret) {
       return NextResponse.json(
-        { error: 'PayPal credentials not configured' },
+        { 
+          error: 'PayPal credentials not configured',
+          debug: {
+            clientId: clientId ? 'SET' : 'NOT SET',
+            clientSecret: clientSecret ? 'SET' : 'NOT SET',
+            baseUrl: baseUrl
+          }
+        },
         { status: 500 }
       )
     }

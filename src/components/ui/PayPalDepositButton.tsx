@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react'
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js'
-import { getFunctions, httpsCallable } from 'firebase/functions'
-import { app } from '@/lib/firebase'
 import { Button } from './button'
 import { AlertCircle, CheckCircle, Loader2, CreditCard, Shield, Lock } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card'
@@ -28,16 +26,24 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
     setErrorMessage('')
     
     try {
-      const functions = getFunctions(app, 'us-east1')
-      const createPayPalOrderCallable = httpsCallable(functions, 'createPayPalOrder')
-      
-      const result = await createPayPalOrderCallable({ 
-        amount: amount.toFixed(2), 
-        currency: 'USD', 
-        intent: 'CAPTURE' 
+      const response = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: amount.toFixed(2),
+          currency: 'USD',
+          intent: 'CAPTURE'
+        })
       })
       
-      const order = result.data as any
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP ${response.status}`)
+      }
+      
+      const order = await response.json()
       if (!order?.id) {
         throw new Error(order.error || "Failed to create order")
       }
@@ -63,7 +69,6 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await getAuthToken()}`
         },
         body: JSON.stringify({ orderID: data.orderID })
       })
@@ -103,14 +108,7 @@ export function PayPalDepositButton({ amount, onSuccess, onError }: PayPalDeposi
     setErrorMessage('')
   }
 
-  // Helper function to get Firebase auth token
-  const getAuthToken = async () => {
-    const { getAuth } = await import('firebase/auth')
-    const auth = getAuth(app)
-    const user = auth.currentUser
-    if (!user) throw new Error('User not authenticated')
-    return await user.getIdToken()
-  }
+
 
   // Handle PayPal script loading states
   if (isInitial) {

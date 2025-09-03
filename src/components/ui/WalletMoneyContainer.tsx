@@ -92,7 +92,7 @@ export const WalletMoneyContainer: React.FC<WalletMoneyContainerProps> = ({
       {/* Stacked content with pinned footer */}
       <div className="relative z-40 flex min-h-[30vh] flex-col">
         <div className="px-4 pt-2 sm:px-6">
-          <h2 className="mb-2 text-2xl font-semibold text-white">{title}</h2>
+          <h2 className="mb-1 text-2xl font-semibold text-white text-center">{title}</h2>
         </div>
         <div className="px-4 pt-2 sm:px-6 flex-1">
           {children}

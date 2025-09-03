@@ -221,6 +221,26 @@ export default function WithdrawPage() {
             </WalletMoneyContainer>
           </div>
         </div>
+
+        {/* Footer */}
+        <footer className="mt-auto py-8 px-4 sm:px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="h-px bg-gray-800/80 mb-6" />
+            <div className="flex flex-col items-center justify-center text-center">
+              <div className="text-gray-400 text-sm">
+                &copy; {new Date().getFullYear()} SquarePicks. All rights reserved.
+              </div>
+              {/* Footer links */}
+              <div className="flex items-center gap-4 text-sm text-gray-400 mt-2">
+                <a href="/terms" className="hover:text-white hover:underline">Terms</a>
+                <span>•</span>
+                <a href="/privacy" className="hover:text-white hover:underline">Privacy</a>
+                <span>•</span>
+                <a href="/support" className="hover:text-white hover:underline">Support</a>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );

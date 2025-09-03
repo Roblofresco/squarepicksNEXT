@@ -171,22 +171,21 @@ export default function DepositPage() {
       return (
         <WalletMoneyContainer title="Complete Payment" variant="blue" className="animate-fadeIn">
           <div className="p-6 space-y-4">
-            <div className="text-center">
-              <p className="text-gray-400">Amount: <span className="font-semibold text-white">${selectedAmount.toFixed(2)}</span></p>
-              <p className="text-gray-400 text-sm">Method: PayPal</p>
-            </div>
-            
-            {/* Back Button */}
-            <div className="flex justify-center">
+            {/* Back Button - Top Left */}
+            <div className="flex justify-start">
               <Button
                 onClick={handleBackToForm}
                 variant="outline"
                 size="sm"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800 flex items-center space-x-2"
+                className="border-gray-600 text-gray-300 hover:bg-gray-800 p-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                <span>Change Amount</span>
               </Button>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-gray-400">Amount: <span className="font-semibold text-white">${selectedAmount.toFixed(2)}</span></p>
+              <p className="text-gray-400 text-sm">Method: PayPal</p>
             </div>
             
             <PayPalDepositButton
@@ -210,7 +209,7 @@ export default function DepositPage() {
     return (
       <WalletMoneyContainer title="Enter Amount" variant="blue" className="animate-fadeIn">
         <Card className="border-0 bg-transparent shadow-none">
-          <CardHeader className="text-center pb-2">
+          <CardHeader className="text-center pb-1">
             <CardDescription className="text-gray-400">
               Choose an amount between ${MIN_DEPOSIT} and ${MAX_DEPOSIT}
             </CardDescription>
@@ -278,6 +277,26 @@ export default function DepositPage() {
             {renderWalletContent()}
           </div>
         </div>
+
+        {/* Footer */}
+        <footer className="mt-auto py-8 px-4 sm:px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="h-px bg-gray-800/80 mb-6" />
+            <div className="flex flex-col items-center justify-center text-center">
+              <div className="text-gray-400 text-sm">
+                &copy; {new Date().getFullYear()} SquarePicks. All rights reserved.
+              </div>
+              {/* Footer links */}
+              <div className="flex items-center gap-4 text-sm text-gray-400 mt-2">
+                <a href="/terms" className="hover:text-white hover:underline">Terms</a>
+                <span>•</span>
+                <a href="/privacy" className="hover:text-white hover:underline">Privacy</a>
+                <span>•</span>
+                <a href="/support" className="hover:text-white hover:underline">Support</a>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
       </div>
     </>

@@ -146,7 +146,7 @@ export function PayPalDepositButton({ amount, userId, onSuccess, onError }: PayP
 
   return (
     <Card className="border-gray-200/20 bg-white shadow-lg">
-      <CardHeader className="text-center pb-4">
+      <CardHeader className="text-center pb-2">
         <CardTitle className="text-lg text-gray-800 flex items-center justify-center space-x-2">
           <Shield className="h-5 w-5 text-blue-500" />
           <span>Secure Payment</span>
@@ -155,7 +155,7 @@ export function PayPalDepositButton({ amount, userId, onSuccess, onError }: PayP
           Powered by PayPal • Protected by SSL encryption
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         <div className="bg-gray-50 rounded-lg p-4">
           <PayPalButtons
             createOrder={createOrder}

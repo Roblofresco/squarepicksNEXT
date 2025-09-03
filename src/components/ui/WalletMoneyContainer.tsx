@@ -95,11 +95,11 @@ export const WalletMoneyContainer: React.FC<WalletMoneyContainerProps> = ({
       <div className="relative z-40 flex min-h-[30vh] flex-col">
         <div className="px-4 pt-1 sm:px-6">
           <div className="flex items-center justify-between">
-            <div className="flex-1"></div>
-            <h2 className="text-xl font-semibold text-white text-center flex-1">{title}</h2>
-            <div className="flex-1 flex justify-end">
+            <div className="flex-1 flex justify-start">
               {headerActions}
             </div>
+            <h2 className="text-xl font-semibold text-white text-center flex-1">{title}</h2>
+            <div className="flex-1"></div>
           </div>
         </div>
         <div className="px-4 pt-1 sm:px-6 flex-1">

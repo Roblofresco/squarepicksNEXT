@@ -177,7 +177,6 @@ export default function DepositPage() {
         <WalletMoneyContainer title="Complete Payment" variant="blue" className="animate-fadeIn">
           <div className="p-6 space-y-4">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-white mb-2">Complete Your Deposit</h2>
               <p className="text-gray-400">Amount: <span className="font-semibold text-white">${selectedAmount.toFixed(2)}</span></p>
               <p className="text-gray-400 text-sm">Method: PayPal</p>
             </div>
@@ -216,8 +215,7 @@ export default function DepositPage() {
     return (
       <WalletMoneyContainer title="Enter Amount" variant="blue" className="animate-fadeIn">
         <Card className="border-0 bg-transparent shadow-none">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl text-white">Enter Deposit Amount</CardTitle>
+          <CardHeader className="text-center pb-2">
             <CardDescription className="text-gray-400">
               Choose an amount between ${MIN_DEPOSIT} and ${MAX_DEPOSIT}
             </CardDescription>

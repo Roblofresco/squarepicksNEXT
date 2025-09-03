@@ -7,6 +7,7 @@ export type WalletMoneyContainerProps = {
   className?: string;
   bottomless?: boolean;
   footer?: React.ReactNode;
+  headerActions?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -49,6 +50,7 @@ export const WalletMoneyContainer: React.FC<WalletMoneyContainerProps> = ({
   className,
   bottomless = false,
   footer,
+  headerActions,
   children,
 }) => {
   const c = getVariantColors(variant);
@@ -91,10 +93,16 @@ export const WalletMoneyContainer: React.FC<WalletMoneyContainerProps> = ({
 
       {/* Stacked content with pinned footer */}
       <div className="relative z-40 flex min-h-[30vh] flex-col">
-        <div className="px-4 pt-2 sm:px-6">
-          <h2 className="mb-1 text-2xl font-semibold text-white text-center">{title}</h2>
+        <div className="px-4 pt-1 sm:px-6">
+          <div className="flex items-center justify-between">
+            <div className="flex-1"></div>
+            <h2 className="text-xl font-semibold text-white text-center flex-1">{title}</h2>
+            <div className="flex-1 flex justify-end">
+              {headerActions}
+            </div>
+          </div>
         </div>
-        <div className="px-4 pt-2 sm:px-6 flex-1">
+        <div className="px-4 pt-1 sm:px-6 flex-1">
           {children}
         </div>
         {footer ? (

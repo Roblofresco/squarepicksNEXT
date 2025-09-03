@@ -169,20 +169,23 @@ export default function DepositPage() {
 
     if (selectedAmount && selectedPaymentMethod) {
       return (
-        <WalletMoneyContainer title="Complete Payment" variant="blue" className="animate-fadeIn">
-          <div className="p-6 space-y-4">
-            {/* Back Button - Top Left */}
-            <div className="flex justify-start">
-              <Button
-                onClick={handleBackToForm}
-                variant="outline"
-                size="sm"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800 p-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </div>
-            
+        <WalletMoneyContainer 
+          title="Complete Payment" 
+          variant="blue" 
+          className="animate-fadeIn"
+          headerActions={
+            <Button
+              onClick={handleBackToForm}
+              variant="ghost"
+              size="icon"
+              className="text-gray-400 hover:bg-gray-800 hover:text-white"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Change Amount</span>
+            </Button>
+          }
+        >
+          <div className="space-y-3">
             <div className="text-center">
               <p className="text-gray-400">Amount: <span className="font-semibold text-white">${selectedAmount.toFixed(2)}</span></p>
               <p className="text-gray-400 text-sm">Method: PayPal</p>
@@ -215,8 +218,8 @@ export default function DepositPage() {
               Choose an amount between ${MIN_DEPOSIT} and ${MAX_DEPOSIT}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={form.handleSubmit(handleAmountSubmit)} className="space-y-4">
+          <CardContent className="space-y-3">
+            <form onSubmit={form.handleSubmit(handleAmountSubmit)} className="space-y-3">
               <div className="space-y-2">
                 <Label htmlFor="amount" className="text-white">Amount (USD)</Label>
                 <div className="relative">

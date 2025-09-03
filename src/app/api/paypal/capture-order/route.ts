@@ -124,9 +124,9 @@ export async function POST(request: NextRequest) {
       }
 
       const walletUpdateResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.squarepicks.com'}/api/wallet/update-balance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           userId,

@@ -28,7 +28,10 @@ export async function POST(request: NextRequest) {
     // Get PayPal credentials from environment variables
     const clientId = process.env.PAYPAL_CLIENT_ID
     const clientSecret = process.env.PAYPAL_CLIENT_SECRET
-    const baseUrl = process.env.PAYPAL_API_BASE_URL || 'https://api-m.sandbox.paypal.com'
+    // Decide API base URL: explicit override -> PAYPAL_ENV/NEXT_PUBLIC_PAYPAL_ENV -> NODE_ENV
+    const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production'
+    const paypalEnv = (process.env.PAYPAL_ENV || process.env.NEXT_PUBLIC_PAYPAL_ENV || (isProd ? 'live' : 'sandbox')).toLowerCase()
+    const baseUrl = process.env.PAYPAL_API_BASE_URL || (paypalEnv === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com')
 
     if (!clientId || !clientSecret) {
       console.error('PayPal credentials not configured')
@@ -50,7 +53,14 @@ export async function POST(request: NextRequest) {
     })
 
     if (!tokenResponse.ok) {
-      console.error('Failed to get PayPal access token:', await tokenResponse.text())
+      const errText = await tokenResponse.text()
+      console.error('Failed to get PayPal access token', {
+        status: tokenResponse.status,
+        baseUrl,
+        paypalEnv,
+        isProd,
+        body: errText
+      })
       return NextResponse.json(
         { error: 'Failed to authenticate with PayPal' },
         { status: 500 }

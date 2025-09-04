@@ -10,9 +10,12 @@ interface PayPalProviderProps {
 export function PayPalProvider({ children }: PayPalProviderProps) {
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
 
-  // Always render children - let PayPal components handle their own error states
+  // Check if PayPal client ID is properly configured
   if (!clientId || clientId === 'your_paypal_client_id' || clientId.trim() === '') {
-    console.warn('PayPal client ID not configured. PayPal buttons will show error state.')
+    console.error('PayPal client ID not configured. Please set NEXT_PUBLIC_PAYPAL_CLIENT_ID in your environment variables.')
+    console.error('For development, you can get sandbox credentials from: https://developer.paypal.com/developer/applications/')
+    
+    // Still render children but PayPal components will show error states
     return <>{children}</>
   }
 
@@ -22,7 +25,10 @@ export function PayPalProvider({ children }: PayPalProviderProps) {
         clientId: clientId,
         currency: 'USD',
         intent: 'capture',
-        components: 'buttons'
+        components: 'buttons',
+        enableFunding: 'paypal,venmo,card',
+        disableFunding: '',
+        dataSdkIntegrationSource: 'integrationbuilder_ac'
       }}
     >
       {children}

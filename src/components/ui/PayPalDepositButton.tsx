@@ -56,7 +56,8 @@ export function PayPalDepositButton({ amount, userId, onSuccess, onError }: PayP
       setStatus('error')
       setErrorMessage(err.message || "Failed to create PayPal order")
       onError(err.message || "Failed to create PayPal order")
-      return null
+      // Reject so the PayPal SDK halts and surfaces the error instead of proceeding without an order id
+      throw err
     }
   }
 
@@ -136,7 +137,18 @@ export function PayPalDepositButton({ amount, userId, onSuccess, onError }: PayP
           <Alert className="border-red-200 bg-red-50">
             <AlertCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-700">
-              Failed to load PayPal. Please refresh the page and try again.
+              <div className="space-y-2">
+                <p className="font-medium">PayPal is not available</p>
+                <p className="text-sm">
+                  PayPal integration is not properly configured. Please contact support or try again later.
+                </p>
+                <details className="text-xs text-red-600">
+                  <summary className="cursor-pointer">Technical Details</summary>
+                  <p className="mt-1">
+                    PayPal client ID is missing or invalid. Check environment configuration.
+                  </p>
+                </details>
+              </div>
             </AlertDescription>
           </Alert>
         </CardContent>

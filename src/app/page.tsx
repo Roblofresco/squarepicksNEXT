@@ -22,6 +22,8 @@ export default function Home() {
   const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const pointerDownRef = useRef(false);
   const rafUpdatingPointerRef = useRef(false);
+  const lastSizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
+  const resizeTimerRef = useRef<any>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -180,6 +182,7 @@ export default function Home() {
         stars[i].baseX = stars[i].x;
         stars[i].baseY = stars[i].y;
       }
+      lastSizeRef.current = { w: canvas.width, h: canvas.height };
     };
 
     // Animation loop
@@ -235,7 +238,24 @@ export default function Home() {
 
     // Handle resize
     const handleResize = () => {
-      setup(); // Re-initialize canvas and stars on resize
+      // Debounce rapid resize events (mobile address bar)
+      const doResize = () => {
+        const newW = window.innerWidth;
+        const newH = window.innerHeight;
+        const { w: oldW, h: oldH } = lastSizeRef.current;
+        const widthChanged = Math.abs(newW - oldW) > 16;
+        const heightChanged = Math.abs(newH - oldH) > 160; // ignore small URL-bar shifts
+        canvas.width = newW;
+        canvas.height = newH;
+        if (widthChanged || heightChanged) {
+          setup();
+        } else {
+          // Keep stars as-is for tiny viewport shifts to avoid flicker
+          lastSizeRef.current = { w: newW, h: newH };
+        }
+      };
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = setTimeout(doResize, 200);
     };
     window.addEventListener('resize', handleResize);
 

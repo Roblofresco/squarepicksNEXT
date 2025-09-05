@@ -17,6 +17,8 @@ const cspDirectives = {
   "connect-src": [
     "'self'",
     "https://*.paypal.com",       // Allow connections to PayPal API
+    "https://*.cloudfunctions.net",
+    "https://*.run.app",
     "https://capturepaypalorder-kjetjvm2ja-uc.a.run.app", // Allow connection to your Cloud Function
     // Add other API endpoints here
   ],

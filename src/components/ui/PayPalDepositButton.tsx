@@ -6,6 +6,8 @@ import { Button } from './button'
 import { AlertCircle, CheckCircle, Loader2, Shield, Lock } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card'
 import { Alert, AlertDescription } from './alert'
+import { getFunctions, httpsCallable } from 'firebase/functions'
+import { app } from '@/lib/firebase'
 
 interface PayPalDepositButtonProps {
   amount: number
@@ -64,39 +66,22 @@ export function PayPalDepositButton({ amount, userId, onSuccess, onError }: PayP
   const onApprove = async (data: { orderID: string }) => {
     setStatus('approving')
     setIsProcessing(true)
-    
     try {
-      // Use the userId prop passed from parent component
-      
-      // Following PayPal's official recommendation for server-side order capture
-      // This ensures proper validation and wallet updates
-      const response = await fetch('/api/paypal/capture-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': userId, // Pass user ID for wallet updates
-        },
-        body: JSON.stringify({ orderID: data.orderID })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to capture payment')
-      }
-
-      const result = await response.json()
-      
-      if (result.success) {
+      const functions = getFunctions(app, 'us-east1')
+      const capturePayPalOrder = httpsCallable(functions, 'capturePayPalOrder')
+      const callableResp: any = await capturePayPalOrder({ orderID: data.orderID })
+      const result = callableResp?.data ?? callableResp
+      if (result?.success) {
         setStatus('success')
         onSuccess(amount)
       } else {
-        throw new Error(result.message || 'Payment capture failed')
+        throw new Error(result?.message || 'Payment capture failed')
       }
     } catch (err: any) {
-      console.error("Error capturing PayPal order:", err)
+      console.error('Error capturing PayPal order:', err)
       setStatus('error')
-      setErrorMessage(err.message || "Failed to capture payment")
-      onError(err.message || "Failed to capture payment")
+      setErrorMessage(err?.message || 'Failed to capture payment')
+      onError(err?.message || 'Failed to capture payment')
     } finally {
       setIsProcessing(false)
     }
@@ -182,7 +167,7 @@ export function PayPalDepositButton({ amount, userId, onSuccess, onError }: PayP
               height: 45,
               tagline: false
             }}
-            disabled={isProcessing || status === 'creating'}
+            disabled={isProcessing || status === 'creating' || !userId}
           />
         </div>
 

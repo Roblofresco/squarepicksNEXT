@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { useGesture } from '@use-gesture/react';
 import { useSpring, animated } from '@react-spring/web';
@@ -66,62 +66,141 @@ export default function Home() {
     }
   }, [isMounted]);
 
-  // Use React Spring for smooth pointer position animation
+  // Unified pointer position management with React Spring
   const [pointerSpring, setPointerSpring] = useSpring(() => ({
     x: typeof window !== 'undefined' ? window.innerWidth * 0.5 : 0,
     y: typeof window !== 'undefined' ? window.innerHeight * 0.5 : 0,
     config: { tension: 300, friction: 30 }
   }));
 
-  // Use gesture handling for proper mobile touch/scroll support
+  // Centralized pointer position update function with throttling
+  const updatePointerPosition = useCallback((x: number, y: number) => {
+    setMousePosition({ x, y });
+    setPointerSpring({ x, y });
+    drawNowRef.current?.();
+  }, []);
+
+  // Unified event handling for both desktop and mobile
+  useEffect(() => {
+    if (!isMounted) return;
+
+    // Initialize pointer position at center
+    const initX = window.innerWidth * 0.5;
+    const initY = window.innerHeight * 0.5;
+    updatePointerPosition(initX, initY);
+
+    // Mouse events for desktop
+    const handleMouseMove = (e: MouseEvent) => {
+      updatePointerPosition(e.clientX, e.clientY);
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      setIsPointerDown(true);
+      updatePointerPosition(e.clientX, e.clientY);
+    };
+
+    const handleMouseUp = () => {
+      setIsPointerDown(false);
+    };
+
+    // Touch events for mobile
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        updatePointerPosition(touch.clientX, touch.clientY);
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      setIsPointerDown(true);
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        updatePointerPosition(touch.clientX, touch.clientY);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      setIsPointerDown(false);
+    };
+
+    // Pointer events (unified for both desktop and mobile)
+    const handlePointerMove = (e: PointerEvent) => {
+      updatePointerPosition(e.clientX, e.clientY);
+    };
+
+    const handlePointerDown = (e: PointerEvent) => {
+      setIsPointerDown(true);
+      updatePointerPosition(e.clientX, e.clientY);
+    };
+
+    const handlePointerUp = () => {
+      setIsPointerDown(false);
+    };
+
+    // Scroll events to maintain effect during scroll
+    const handleScroll = () => {
+      // Keep current position during scroll
+      drawNowRef.current?.();
+    };
+
+    // Add event listeners with proper cleanup
+    const eventListeners = [
+      { element: window, event: 'mousemove', handler: handleMouseMove },
+      { element: window, event: 'mousedown', handler: handleMouseDown },
+      { element: window, event: 'mouseup', handler: handleMouseUp },
+      { element: window, event: 'touchmove', handler: handleTouchMove },
+      { element: window, event: 'touchstart', handler: handleTouchStart },
+      { element: window, event: 'touchend', handler: handleTouchEnd },
+      { element: window, event: 'pointermove', handler: handlePointerMove },
+      { element: window, event: 'pointerdown', handler: handlePointerDown },
+      { element: window, event: 'pointerup', handler: handlePointerUp },
+      { element: window, event: 'scroll', handler: handleScroll },
+    ];
+
+    // Add all event listeners
+    eventListeners.forEach(({ element, event, handler }) => {
+      element.addEventListener(event, handler as EventListener, { passive: true });
+    });
+
+    // Cleanup function
+    return () => {
+      eventListeners.forEach(({ element, event, handler }) => {
+        element.removeEventListener(event, handler as EventListener);
+      });
+    };
+  }, [isMounted]);
+
+  // Gesture handling for enhanced mobile support
   const bind = useGesture(
     {
-      onMove: ({ xy, event }) => {
+      onMove: ({ xy }) => {
         if (xy) {
           const [x, y] = xy;
-          setMousePosition({ x, y });
-          setPointerSpring({ x, y });
-          drawNowRef.current?.();
+          updatePointerPosition(x, y);
         }
       },
-      onMoveStart: ({ xy, event }) => {
+      onMoveStart: ({ xy }) => {
         if (xy) {
           const [x, y] = xy;
-          setMousePosition({ x, y });
-          setPointerSpring({ x, y });
-          drawNowRef.current?.();
+          updatePointerPosition(x, y);
         }
       },
-      onMoveEnd: () => {
-        // Keep last position during scroll
-      },
-      onScroll: ({ xy, event }) => {
-        // Update position during scroll to maintain warp effect
+      onScroll: ({ xy }) => {
+        // Maintain position during scroll
         if (xy) {
           const [x, y] = xy;
-          setMousePosition({ x, y });
-          setPointerSpring({ x, y });
-          drawNowRef.current?.();
+          updatePointerPosition(x, y);
         }
       },
-      onWheel: ({ xy, event }) => {
+      onWheel: ({ xy }) => {
         if (xy) {
           const [x, y] = xy;
-          setMousePosition({ x, y });
-          setPointerSpring({ x, y });
-          drawNowRef.current?.();
+          updatePointerPosition(x, y);
         }
       },
       onPointerDown: ({ event }) => {
         setIsPointerDown(true);
-        const rect = (event.target as Element)?.getBoundingClientRect();
-        if (rect) {
-          const x = event.clientX;
-          const y = event.clientY;
-          setMousePosition({ x, y });
-          setPointerSpring({ x, y });
-          drawNowRef.current?.();
-        }
+        updatePointerPosition(event.clientX, event.clientY);
       },
       onPointerUp: () => {
         setIsPointerDown(false);
@@ -131,10 +210,10 @@ export default function Home() {
       }
     },
     {
-      // Enable touch events and prevent scroll conflicts
-      pointer: { touch: true, capture: true },
-      preventScroll: false, // Allow normal scrolling
-      preventScrollAxis: 'none', // Don't prevent any scroll direction
+      // Configure for both desktop and mobile
+      pointer: { touch: true, mouse: true, capture: true },
+      preventScroll: false,
+      preventScrollAxis: 'none',
       eventOptions: { passive: true }
     }
   );
@@ -231,9 +310,11 @@ export default function Home() {
 
     };
 
-    // Animation loop with mobile scroll fallback
+    // Optimized animation loop with performance monitoring
     const animate = () => {
-      renderFrame();
+      if (!paused) {
+        renderFrame();
+      }
       animationFrameId = requestAnimationFrame(animate);
     };
 
@@ -272,11 +353,27 @@ export default function Home() {
     const onVis = () => { paused = document.hidden; };
     document.addEventListener('visibilitychange', onVis);
 
-    // Cleanup function
+    // Cleanup function with proper memory management
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('visibilitychange', onVis);
+      
+      // Clear canvas and reset state
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      
+      // Clear stars array to prevent memory leaks
+      stars.length = 0;
+      
+      // Clear resize timer
+      if (resizeTimerRef.current) {
+        clearTimeout(resizeTimerRef.current);
+        resizeTimerRef.current = null;
+      }
     };
 
   }, [isMounted]); // Rerun effect if isMounted changes

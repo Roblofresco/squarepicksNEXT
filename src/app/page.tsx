@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, useAnimation } from "framer-motion";
+import { useGesture } from '@use-gesture/react';
+import { useSpring, animated } from '@react-spring/web';
 import { FiSearch, FiGrid, FiShoppingCart, FiAward } from 'react-icons/fi'
 import { LogoIcon } from "@/components/LogoIcon";
 import { LogoWithText } from "@/components/LogoWithText";
@@ -19,9 +21,7 @@ export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
-  const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const pointerDownRef = useRef(false);
-  const rafUpdatingPointerRef = useRef(false);
+  const [isPointerDown, setIsPointerDown] = useState(false);
   const lastSizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
   const resizeTimerRef = useRef<any>(null);
   const drawNowRef = useRef<() => void>(() => {});
@@ -66,85 +66,78 @@ export default function Home() {
     }
   }, [isMounted]);
 
-  // Track pointer position (mobile + desktop) with RAF-coalesced state updates
-  useEffect(() => {
-    // Initialize pointer at center so the glow is visible on first paint
-    try {
-      const cx = window.innerWidth * 0.5;
-      const cy = window.innerHeight * 0.5;
-      pointerRef.current.x = cx; pointerRef.current.y = cy;
-      setMousePosition({ x: cx, y: cy });
-    } catch {}
-    const updatePointer = (clientX: number, clientY: number) => {
-      pointerRef.current.x = clientX;
-      pointerRef.current.y = clientY;
-      if (!rafUpdatingPointerRef.current) {
-        rafUpdatingPointerRef.current = true;
-        requestAnimationFrame(() => {
-          rafUpdatingPointerRef.current = false;
-          setMousePosition({ x: pointerRef.current.x, y: pointerRef.current.y });
-        });
+  // Use React Spring for smooth pointer position animation
+  const [pointerSpring, setPointerSpring] = useSpring(() => ({
+    x: typeof window !== 'undefined' ? window.innerWidth * 0.5 : 0,
+    y: typeof window !== 'undefined' ? window.innerHeight * 0.5 : 0,
+    config: { tension: 300, friction: 30 }
+  }));
+
+  // Use gesture handling for proper mobile touch/scroll support
+  const bind = useGesture(
+    {
+      onMove: ({ xy, event }) => {
+        if (xy) {
+          const [x, y] = xy;
+          setMousePosition({ x, y });
+          setPointerSpring({ x, y });
+          drawNowRef.current?.();
+        }
+      },
+      onMoveStart: ({ xy, event }) => {
+        if (xy) {
+          const [x, y] = xy;
+          setMousePosition({ x, y });
+          setPointerSpring({ x, y });
+          drawNowRef.current?.();
+        }
+      },
+      onMoveEnd: () => {
+        // Keep last position during scroll
+      },
+      onScroll: ({ xy, event }) => {
+        // Update position during scroll to maintain warp effect
+        if (xy) {
+          const [x, y] = xy;
+          setMousePosition({ x, y });
+          setPointerSpring({ x, y });
+          drawNowRef.current?.();
+        }
+      },
+      onWheel: ({ xy, event }) => {
+        if (xy) {
+          const [x, y] = xy;
+          setMousePosition({ x, y });
+          setPointerSpring({ x, y });
+          drawNowRef.current?.();
+        }
+      },
+      onPointerDown: ({ event }) => {
+        setIsPointerDown(true);
+        const rect = (event.target as Element)?.getBoundingClientRect();
+        if (rect) {
+          const x = event.clientX;
+          const y = event.clientY;
+          setMousePosition({ x, y });
+          setPointerSpring({ x, y });
+          drawNowRef.current?.();
+        }
+      },
+      onPointerUp: () => {
+        setIsPointerDown(false);
+      },
+      onPointerCancel: () => {
+        setIsPointerDown(false);
       }
-    };
-
-    const supportsPointer = typeof window !== 'undefined' && 'PointerEvent' in window;
-
-    // Pointer events (desktop + modern mobile)
-    const onPointerMove = (e: PointerEvent) => updatePointer(e.clientX, e.clientY);
-    const onPointerDown = (e: PointerEvent) => { pointerDownRef.current = true; updatePointer(e.clientX, e.clientY); };
-    const onPointerUp = () => { pointerDownRef.current = false; };
-    const onPointerCancel = () => { pointerDownRef.current = false; };
-
-    // Touch fallback (older Safari)
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches && e.touches.length > 0) {
-        const t = e.touches[0];
-        updatePointer(t.clientX, t.clientY);
-      }
-    };
-    const onTouchStart = (e: TouchEvent) => {
-      pointerDownRef.current = true;
-      if (e.touches && e.touches.length > 0) {
-        const t = e.touches[0];
-        updatePointer(t.clientX, t.clientY);
-      }
-    };
-    const onTouchEnd = () => { pointerDownRef.current = false; };
-
-    if (supportsPointer) {
-      window.addEventListener('pointermove', onPointerMove, { passive: true } as any);
-      window.addEventListener('pointerdown', onPointerDown, { passive: true } as any);
-      window.addEventListener('pointerup', onPointerUp, { passive: true } as any);
-      window.addEventListener('pointercancel', onPointerCancel, { passive: true } as any);
-    } else {
-      window.addEventListener('touchmove', onTouchMove, { passive: true } as any);
-      window.addEventListener('touchstart', onTouchStart, { passive: true } as any);
-      window.addEventListener('touchend', onTouchEnd, { passive: true } as any);
-      window.addEventListener('touchcancel', onTouchEnd, { passive: true } as any);
+    },
+    {
+      // Enable touch events and prevent scroll conflicts
+      pointer: { touch: true, capture: true },
+      preventScroll: false, // Allow normal scrolling
+      preventScrollAxis: 'none', // Don't prevent any scroll direction
+      eventOptions: { passive: true }
     }
-
-    // During scroll, some browsers pause rAF; force-sync overlay + canvas
-    const onScroll = () => {
-      setMousePosition({ x: pointerRef.current.x, y: pointerRef.current.y });
-      try { drawNowRef.current && drawNowRef.current(); } catch {}
-    };
-    window.addEventListener('scroll', onScroll, { passive: true } as any);
-
-    return () => {
-      if (supportsPointer) {
-        window.removeEventListener('pointermove', onPointerMove as any);
-        window.removeEventListener('pointerdown', onPointerDown as any);
-        window.removeEventListener('pointerup', onPointerUp as any);
-        window.removeEventListener('pointercancel', onPointerCancel as any);
-      } else {
-        window.removeEventListener('touchmove', onTouchMove as any);
-        window.removeEventListener('touchstart', onTouchStart as any);
-        window.removeEventListener('touchend', onTouchEnd as any);
-        window.removeEventListener('touchcancel', onTouchEnd as any);
-      }
-      window.removeEventListener('scroll', onScroll as any);
-    };
-  }, []);
+  );
 
   // Canvas Animation for Twinkling Stars with pointer-driven illumination/warp
   useEffect(() => {
@@ -201,13 +194,13 @@ export default function Home() {
 
       const cx = canvas.width * 0.5;
       const cy = canvas.height * 0.5;
-      const px = (pointerRef.current.x || cx);
-      const py = (pointerRef.current.y || cy);
+      const px = mousePosition.x || cx;
+      const py = mousePosition.y || cy;
       const radius = Math.min(canvas.width, canvas.height) * 0.5; // larger influence radius
 
-      // ease warp toward target
-      warpTarget = pointerDownRef.current ? baseWarpOnPress : baseWarpOnHover;
-      warpStrength += (warpTarget - warpStrength) * 0.08;
+      // ease warp toward target - faster response for mobile
+      warpTarget = isPointerDown ? baseWarpOnPress : baseWarpOnHover;
+      warpStrength += (warpTarget - warpStrength) * 0.12; // Increased from 0.08 for faster response
 
       stars.forEach(star => {
         // Update opacity
@@ -238,11 +231,12 @@ export default function Home() {
 
     };
 
-    // Animation loop
+    // Animation loop with mobile scroll fallback
     const animate = () => {
       renderFrame();
       animationFrameId = requestAnimationFrame(animate);
     };
+
 
     // Initial setup
     setup();
@@ -369,7 +363,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background-primary text-white overflow-x-hidden relative">
+    <div {...bind()} className="min-h-screen bg-background-primary text-white overflow-x-hidden relative">
       {/* Canvas for Twinkling Stars */}
       <canvas
         ref={canvasRef}

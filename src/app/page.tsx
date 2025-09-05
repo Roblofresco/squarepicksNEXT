@@ -219,7 +219,7 @@ export default function Home() {
       const cy = canvas.height * 0.5;
       const px = pointerRef.current.x || cx;
       const py = pointerRef.current.y || cy;
-      const radius = Math.min(canvas.width, canvas.height) * 0.5; // larger influence radius
+      const radius = Math.min(canvas.width, canvas.height) * 0.35; // reduced influence radius
 
       // ease warp toward target - faster response for mobile
       warpTarget = pointerDownRef.current ? baseWarpOnPress : baseWarpOnHover;
@@ -414,7 +414,7 @@ export default function Home() {
         <div
           className="pointer-events-none fixed inset-0 z-0 transition duration-300"
           style={{
-            background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
+            background: `radial-gradient(220px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
           }}
         />
       )}

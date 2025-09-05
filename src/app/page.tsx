@@ -24,6 +24,7 @@ export default function Home() {
   const rafUpdatingPointerRef = useRef(false);
   const lastSizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
   const resizeTimerRef = useRef<any>(null);
+  const drawNowRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     setIsMounted(true);
@@ -122,6 +123,13 @@ export default function Home() {
       window.addEventListener('touchcancel', onTouchEnd, { passive: true } as any);
     }
 
+    // During scroll, some browsers pause rAF; force-sync overlay + canvas
+    const onScroll = () => {
+      setMousePosition({ x: pointerRef.current.x, y: pointerRef.current.y });
+      try { drawNowRef.current && drawNowRef.current(); } catch {}
+    };
+    window.addEventListener('scroll', onScroll, { passive: true } as any);
+
     return () => {
       if (supportsPointer) {
         window.removeEventListener('pointermove', onPointerMove as any);
@@ -134,6 +142,7 @@ export default function Home() {
         window.removeEventListener('touchend', onTouchEnd as any);
         window.removeEventListener('touchcancel', onTouchEnd as any);
       }
+      window.removeEventListener('scroll', onScroll as any);
     };
   }, []);
 
@@ -185,8 +194,8 @@ export default function Home() {
       lastSizeRef.current = { w: canvas.width, h: canvas.height };
     };
 
-    // Animation loop
-    const animate = () => {
+    // Single-frame renderer used by rAF and scroll fallback
+    const renderFrame = () => {
       if (paused) { animationFrameId = requestAnimationFrame(animate); return; }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -227,6 +236,11 @@ export default function Home() {
         ctx.fillRect(drawX, drawY, star.size, star.size);
       });
 
+    };
+
+    // Animation loop
+    const animate = () => {
+      renderFrame();
       animationFrameId = requestAnimationFrame(animate);
     };
 
@@ -235,6 +249,7 @@ export default function Home() {
 
     // Start animation
     animate();
+    drawNowRef.current = renderFrame;
 
     // Handle resize
     const handleResize = () => {

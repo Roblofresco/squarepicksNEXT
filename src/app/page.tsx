@@ -65,6 +65,13 @@ export default function Home() {
 
   // Track pointer position (mobile + desktop) with RAF-coalesced state updates
   useEffect(() => {
+    // Initialize pointer at center so the glow is visible on first paint
+    try {
+      const cx = window.innerWidth * 0.5;
+      const cy = window.innerHeight * 0.5;
+      pointerRef.current.x = cx; pointerRef.current.y = cy;
+      setMousePosition({ x: cx, y: cy });
+    } catch {}
     const updatePointer = (clientX: number, clientY: number) => {
       pointerRef.current.x = clientX;
       pointerRef.current.y = clientY;
@@ -77,18 +84,54 @@ export default function Home() {
       }
     };
 
+    const supportsPointer = typeof window !== 'undefined' && 'PointerEvent' in window;
+
+    // Pointer events (desktop + modern mobile)
     const onPointerMove = (e: PointerEvent) => updatePointer(e.clientX, e.clientY);
     const onPointerDown = (e: PointerEvent) => { pointerDownRef.current = true; updatePointer(e.clientX, e.clientY); };
     const onPointerUp = () => { pointerDownRef.current = false; };
+    const onPointerCancel = () => { pointerDownRef.current = false; };
 
-    window.addEventListener('pointermove', onPointerMove, { passive: true } as any);
-    window.addEventListener('pointerdown', onPointerDown, { passive: true } as any);
-    window.addEventListener('pointerup', onPointerUp, { passive: true } as any);
+    // Touch fallback (older Safari)
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches && e.touches.length > 0) {
+        const t = e.touches[0];
+        updatePointer(t.clientX, t.clientY);
+      }
+    };
+    const onTouchStart = (e: TouchEvent) => {
+      pointerDownRef.current = true;
+      if (e.touches && e.touches.length > 0) {
+        const t = e.touches[0];
+        updatePointer(t.clientX, t.clientY);
+      }
+    };
+    const onTouchEnd = () => { pointerDownRef.current = false; };
+
+    if (supportsPointer) {
+      window.addEventListener('pointermove', onPointerMove, { passive: true } as any);
+      window.addEventListener('pointerdown', onPointerDown, { passive: true } as any);
+      window.addEventListener('pointerup', onPointerUp, { passive: true } as any);
+      window.addEventListener('pointercancel', onPointerCancel, { passive: true } as any);
+    } else {
+      window.addEventListener('touchmove', onTouchMove, { passive: true } as any);
+      window.addEventListener('touchstart', onTouchStart, { passive: true } as any);
+      window.addEventListener('touchend', onTouchEnd, { passive: true } as any);
+      window.addEventListener('touchcancel', onTouchEnd, { passive: true } as any);
+    }
 
     return () => {
-      window.removeEventListener('pointermove', onPointerMove as any);
-      window.removeEventListener('pointerdown', onPointerDown as any);
-      window.removeEventListener('pointerup', onPointerUp as any);
+      if (supportsPointer) {
+        window.removeEventListener('pointermove', onPointerMove as any);
+        window.removeEventListener('pointerdown', onPointerDown as any);
+        window.removeEventListener('pointerup', onPointerUp as any);
+        window.removeEventListener('pointercancel', onPointerCancel as any);
+      } else {
+        window.removeEventListener('touchmove', onTouchMove as any);
+        window.removeEventListener('touchstart', onTouchStart as any);
+        window.removeEventListener('touchend', onTouchEnd as any);
+        window.removeEventListener('touchcancel', onTouchEnd as any);
+      }
     };
   }, []);
 
@@ -109,8 +152,8 @@ export default function Home() {
     const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let warpStrength = 0; // animated toward target
     let warpTarget = 0;
-    const baseWarpOnHover = prefersReduced ? 0 : 0.25; // gentle by default
-    const baseWarpOnPress = prefersReduced ? 0 : 0.45; // slightly stronger on press
+    const baseWarpOnHover = prefersReduced ? 0 : 0.5; // stronger by default
+    const baseWarpOnPress = prefersReduced ? 0 : 0.85; // strong on press
     let paused = false;
 
     // Function to initialize or resize canvas and stars
@@ -146,9 +189,9 @@ export default function Home() {
 
       const cx = canvas.width * 0.5;
       const cy = canvas.height * 0.5;
-      const px = pointerRef.current.x || cx;
-      const py = pointerRef.current.y || cy;
-      const radius = Math.min(canvas.width, canvas.height) * 0.35; // influence radius
+      const px = (pointerRef.current.x || cx);
+      const py = (pointerRef.current.y || cy);
+      const radius = Math.min(canvas.width, canvas.height) * 0.5; // larger influence radius
 
       // ease warp toward target
       warpTarget = pointerDownRef.current ? baseWarpOnPress : baseWarpOnHover;
@@ -171,9 +214,10 @@ export default function Home() {
         const dist = Math.hypot(dx, dy);
         const intensity = Math.max(0, 1 - Math.min(dist / radius, 1)); // 0..1
         const warpFactor = warpStrength * (0.5 * intensity + 0.5 * intensity * intensity);
-        const drawX = star.baseX + (cx - star.baseX) * warpFactor;
-        const drawY = star.baseY + (cy - star.baseY) * warpFactor;
-        const glowOpacity = Math.min(maxOpacity, star.opacity + intensity * 0.5);
+        // Pull toward pointer center, not screen center
+        const drawX = star.baseX + (px - star.baseX) * warpFactor;
+        const drawY = star.baseY + (py - star.baseY) * warpFactor;
+        const glowOpacity = Math.min(1, star.opacity + intensity * 0.8);
 
         // Draw the star (square)
         ctx.fillStyle = `rgba(27, 176, 242, ${glowOpacity})`;

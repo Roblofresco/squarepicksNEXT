@@ -19,6 +19,9 @@ export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const pointerDownRef = useRef(false);
+  const rafUpdatingPointerRef = useRef(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -60,20 +63,36 @@ export default function Home() {
     }
   }, [isMounted]);
 
-  // Track mouse position
+  // Track pointer position (mobile + desktop) with RAF-coalesced state updates
   useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      setMousePosition({ x: event.clientX, y: event.clientY });
+    const updatePointer = (clientX: number, clientY: number) => {
+      pointerRef.current.x = clientX;
+      pointerRef.current.y = clientY;
+      if (!rafUpdatingPointerRef.current) {
+        rafUpdatingPointerRef.current = true;
+        requestAnimationFrame(() => {
+          rafUpdatingPointerRef.current = false;
+          setMousePosition({ x: pointerRef.current.x, y: pointerRef.current.y });
+        });
+      }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    const onPointerMove = (e: PointerEvent) => updatePointer(e.clientX, e.clientY);
+    const onPointerDown = (e: PointerEvent) => { pointerDownRef.current = true; updatePointer(e.clientX, e.clientY); };
+    const onPointerUp = () => { pointerDownRef.current = false; };
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true } as any);
+    window.addEventListener('pointerdown', onPointerDown, { passive: true } as any);
+    window.addEventListener('pointerup', onPointerUp, { passive: true } as any);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('pointermove', onPointerMove as any);
+      window.removeEventListener('pointerdown', onPointerDown as any);
+      window.removeEventListener('pointerup', onPointerUp as any);
     };
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
-  // Canvas Animation for Twinkling Stars
+  // Canvas Animation for Twinkling Stars with pointer-driven illumination/warp
   useEffect(() => {
     if (!isMounted || !canvasRef.current) return;
 
@@ -87,6 +106,12 @@ export default function Home() {
     const starColor = "rgba(27, 176, 242, 1)"; // Base color (accent-1)
     const minOpacity = 0.1;
     const maxOpacity = 0.7;
+    const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let warpStrength = 0; // animated toward target
+    let warpTarget = 0;
+    const baseWarpOnHover = prefersReduced ? 0 : 0.25; // gentle by default
+    const baseWarpOnPress = prefersReduced ? 0 : 0.45; // slightly stronger on press
+    let paused = false;
 
     // Function to initialize or resize canvas and stars
     const setup = () => {
@@ -98,17 +123,36 @@ export default function Home() {
         stars.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
+          baseX: 0, // set below
+          baseY: 0,
           size: Math.random() * 2 + 1,
           opacity: Math.random() * (maxOpacity - minOpacity) + minOpacity,
           twinkleSpeed: Math.random() * 0.015 + 0.005, // Random speed
           twinkleDirection: Math.random() < 0.5 ? 1 : -1, // Start increasing or decreasing
         });
       }
+
+      // Cache base coordinates after creation so they remain stable on resize setup
+      for (let i = 0; i < stars.length; i++) {
+        stars[i].baseX = stars[i].x;
+        stars[i].baseY = stars[i].y;
+      }
     };
 
     // Animation loop
     const animate = () => {
+      if (paused) { animationFrameId = requestAnimationFrame(animate); return; }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const cx = canvas.width * 0.5;
+      const cy = canvas.height * 0.5;
+      const px = pointerRef.current.x || cx;
+      const py = pointerRef.current.y || cy;
+      const radius = Math.min(canvas.width, canvas.height) * 0.35; // influence radius
+
+      // ease warp toward target
+      warpTarget = pointerDownRef.current ? baseWarpOnPress : baseWarpOnHover;
+      warpStrength += (warpTarget - warpStrength) * 0.08;
 
       stars.forEach(star => {
         // Update opacity
@@ -121,9 +165,19 @@ export default function Home() {
           star.opacity = Math.max(minOpacity, Math.min(maxOpacity, star.opacity));
         }
 
+        // Illumination + warp
+        const dx = star.baseX - px;
+        const dy = star.baseY - py;
+        const dist = Math.hypot(dx, dy);
+        const intensity = Math.max(0, 1 - Math.min(dist / radius, 1)); // 0..1
+        const warpFactor = warpStrength * (0.5 * intensity + 0.5 * intensity * intensity);
+        const drawX = star.baseX + (cx - star.baseX) * warpFactor;
+        const drawY = star.baseY + (cy - star.baseY) * warpFactor;
+        const glowOpacity = Math.min(maxOpacity, star.opacity + intensity * 0.5);
+
         // Draw the star (square)
-        ctx.fillStyle = `rgba(27, 176, 242, ${star.opacity})`; // Use base color with dynamic alpha
-        ctx.fillRect(star.x, star.y, star.size, star.size);
+        ctx.fillStyle = `rgba(27, 176, 242, ${glowOpacity})`;
+        ctx.fillRect(drawX, drawY, star.size, star.size);
       });
 
       animationFrameId = requestAnimationFrame(animate);
@@ -141,10 +195,15 @@ export default function Home() {
     };
     window.addEventListener('resize', handleResize);
 
+    // Pause when tab is hidden
+    const onVis = () => { paused = document.hidden; };
+    document.addEventListener('visibilitychange', onVis);
+
     // Cleanup function
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', onVis);
     };
 
   }, [isMounted]); // Rerun effect if isMounted changes
@@ -251,20 +310,13 @@ export default function Home() {
         {/* Navigation */}
         <nav className="py-2 flex justify-end items-center">
           <div className="flex space-x-2">
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`px-6 py-2 rounded-md transition duration-300 flex items-center justify-center 
-                ${navigatingTo === '/login'
-                  ? 'bg-accent-1 text-background-primary animate-pulse cursor-not-allowed'
-                  : 'border border-accent-1 text-accent-1 hover:bg-accent-1/10'
-                }`}
-              onClick={() => handleNavClick('/login')}
-              disabled={navigatingTo === '/login'}
-              type="button"
+            <Link
+              href="/login"
+              prefetch={false}
+              className="px-6 py-2 rounded-md transition duration-300 flex items-center justify-center border border-accent-1 text-accent-1 hover:bg-accent-1/10"
             >
               Log In
-            </motion.button>
+            </Link>
             <motion.button
               whileHover={{ scale: navigatingTo === '/lobby' ? 1 : 1.05 }}
               whileTap={{ scale: navigatingTo === '/lobby' ? 1 : 0.95 }}

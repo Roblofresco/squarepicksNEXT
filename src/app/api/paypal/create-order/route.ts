@@ -32,6 +32,15 @@ export async function POST(request: NextRequest) {
     const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production'
     const paypalEnv = (process.env.PAYPAL_ENV || process.env.NEXT_PUBLIC_PAYPAL_ENV || (isProd ? 'live' : 'sandbox')).toLowerCase()
     const baseUrl = process.env.PAYPAL_API_BASE_URL || (paypalEnv === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com')
+    // Safe diagnostics (no secrets): verify env presence at runtime
+    console.log('[paypal:create-order] env presence', {
+      hasClientId: Boolean(clientId),
+      hasClientSecret: Boolean(clientSecret),
+      paypalEnv,
+      baseUrl,
+      nodeEnv: process.env.NODE_ENV,
+      vercelEnv: process.env.VERCEL_ENV
+    })
 
     if (!clientId || !clientSecret) {
       console.error('PayPal credentials not configured')

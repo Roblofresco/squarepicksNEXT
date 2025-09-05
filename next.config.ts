@@ -8,26 +8,23 @@ const cspDirectives = {
   "script-src": [
     "'self'",
     "https://*.paypal.com",       // Allow PayPal scripts
-    "https://*.paypalobjects.com", // Allow PayPal assets/scripts
     "https://www.google.com",     // ReCAPTCHA if used
     "https://www.gstatic.com",    // ReCAPTCHA if used
     // Add other trusted script sources here
   ],
   "style-src": ["'self'", "'unsafe-inline'"], // Allow inline styles
-  "img-src": ["'self'", "data:", "https://*.paypal.com", "https://*.paypalobjects.com"], // Allow data URIs and PayPal images
+  "img-src": ["'self'", "data:", "https://*.paypal.com"], // Allow data URIs and PayPal images
   "connect-src": [
     "'self'",
     "https://*.paypal.com",       // Allow connections to PayPal API
-    "https://*.paypalobjects.com", // Allow PayPal asset connections
     "https://capturepaypalorder-kjetjvm2ja-uc.a.run.app", // Allow connection to your Cloud Function
     // Add other API endpoints here
   ],
-  "frame-src": ["'self'", "https://*.paypal.com", "https://*.paypalobjects.com"], // Allow PayPal iframes
+  "frame-src": ["'self'", "https://*.paypal.com"], // Allow PayPal iframes
   "object-src": ["'none'"],
   "base-uri": ["'self'"],
-  "form-action": ["'self'", "https://*.paypal.com"],
-  // Allow PayPal to embed merchant pages during the approval flow
-  "frame-ancestors": ["'self'", "https://*.paypal.com"],
+  "form-action": ["'self'"],
+  "frame-ancestors": ["'none'"], // Disallow framing of your site
   "block-all-mixed-content": [],
   "upgrade-insecure-requests": [],
 };
@@ -51,6 +48,10 @@ const securityHeaders = [
   {
     key: 'Referrer-Policy',
     value: 'origin-when-cross-origin'
+  },
+  {
+    key: 'X-Frame-Options',
+    value: 'DENY'
   },
   {
     key: 'X-Content-Type-Options',

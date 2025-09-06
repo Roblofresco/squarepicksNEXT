@@ -34,33 +34,64 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const pointerDownRef = useRef(false);
+  const drawNowRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     setIsMounted(true); // Set mounted state
   }, []);
 
-  // Combined useEffect for pointer/mouse tracking
+  // Pointer tracking (mouse + touch) with scroll redraw
   useEffect(() => {
-    const handlePointerMove = (event: PointerEvent) => {
-      // Rotation logic (remains the same)
+    if (!isMounted) return;
+
+    const initX = window.innerWidth * 0.5;
+    const initY = window.innerHeight * 0.5;
+    pointerRef.current = { x: initX, y: initY };
+    setMousePosition({ x: initX, y: initY });
+
+    const updatePointer = (clientX: number, clientY: number) => {
       const windowHalfX = window.innerWidth / 2;
       const windowHalfY = window.innerHeight / 2;
-      const targetX = (event.clientX - windowHalfX) / windowHalfX;
-      const targetY = (event.clientY - windowHalfY) / windowHalfY;
+      const targetX = (clientX - windowHalfX) / windowHalfX;
+      const targetY = (clientY - windowHalfY) / windowHalfY;
       setRotation({ x: targetY, y: targetX });
 
-      // Mouse position tracking for spotlight effect
-      setMousePosition({ x: event.clientX, y: event.clientY });
+      pointerRef.current.x = clientX;
+      pointerRef.current.y = clientY;
+      setMousePosition({ x: clientX, y: clientY });
+      if (drawNowRef.current) drawNowRef.current();
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
+    const onMouseMove = (e: MouseEvent) => updatePointer(e.clientX, e.clientY);
+    const onMouseDown = (e: MouseEvent) => { pointerDownRef.current = true; updatePointer(e.clientX, e.clientY); };
+    const onMouseUp = () => { pointerDownRef.current = false; };
+    const onTouchMove = (e: TouchEvent) => { if (e.touches?.length) { const t = e.touches[0]; updatePointer(t.clientX, t.clientY); } };
+    const onTouchStart = (e: TouchEvent) => { pointerDownRef.current = true; if (e.touches?.length) { const t = e.touches[0]; updatePointer(t.clientX, t.clientY); } };
+    const onTouchEnd = () => { pointerDownRef.current = false; };
+    const onScroll = () => { if (drawNowRef.current) drawNowRef.current(); };
+
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    window.addEventListener('mousedown', onMouseDown, { passive: true });
+    window.addEventListener('mouseup', onMouseUp, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('scroll', onScroll);
     };
-  }, []); // Empty dependency array means this runs once on mount
+  }, [isMounted]);
 
-  // Canvas Animation for Twinkling Stars (copied from page.tsx)
+  // Canvas Animation with pointer-driven illumination/warp (match home)
   useEffect(() => {
     if (!isMounted || !canvasRef.current) return;
 
@@ -71,9 +102,13 @@ export default function LoginPage() {
     let animationFrameId: number;
     const stars: any[] = [];
     const numStars = 150;
-    const starColor = "rgba(27, 176, 242, 1)"; // accent-1
     const minOpacity = 0.1;
     const maxOpacity = 0.7;
+    const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let warpStrength = 0;
+    let warpTarget = 0;
+    const baseWarpOnHover = prefersReduced ? 0 : 0.5;
+    const baseWarpOnPress = prefersReduced ? 0 : 0.85;
 
     const setup = () => {
       canvas.width = window.innerWidth;
@@ -83,37 +118,74 @@ export default function LoginPage() {
         stars.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
+          baseX: 0,
+          baseY: 0,
           size: Math.random() * 2 + 1,
           opacity: Math.random() * (maxOpacity - minOpacity) + minOpacity,
-          twinkleSpeed: Math.random() * 0.015 + 0.005,
+          twinkleSpeed: Math.random() * 0.008 + 0.003,
           twinkleDirection: Math.random() < 0.5 ? 1 : -1,
         });
       }
+      for (let i = 0; i < stars.length; i++) {
+        stars[i].baseX = stars[i].x;
+        stars[i].baseY = stars[i].y;
+      }
     };
 
-    const animate = () => {
+    const renderFrame = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const cx = canvas.width * 0.5;
+      const cy = canvas.height * 0.5;
+      const px = pointerRef.current.x || cx;
+      const py = pointerRef.current.y || cy;
+      const radius = Math.min(canvas.width, canvas.height) * 0.35;
+
+      warpTarget = pointerDownRef.current ? baseWarpOnPress : baseWarpOnHover;
+      warpStrength += (warpTarget - warpStrength) * 0.12;
+
       stars.forEach(star => {
         star.opacity += star.twinkleSpeed * star.twinkleDirection;
         if (star.opacity > maxOpacity || star.opacity < minOpacity) {
           star.twinkleDirection *= -1;
           star.opacity = Math.max(minOpacity, Math.min(maxOpacity, star.opacity));
         }
-        ctx.fillStyle = `rgba(27, 176, 242, ${star.opacity})`;
-        ctx.fillRect(star.x, star.y, star.size, star.size);
+
+        const dx = star.baseX - px;
+        const dy = star.baseY - py;
+        const dist = Math.hypot(dx, dy);
+        const intensity = Math.max(0, 1 - Math.min(dist / radius, 1));
+        const warpFactor = warpStrength * (0.5 * intensity + 0.5 * intensity * intensity);
+        const drawX = star.baseX + (px - star.baseX) * warpFactor;
+        const drawY = star.baseY + (py - star.baseY) * warpFactor;
+        const glowOpacity = Math.min(1, star.opacity + intensity * 0.8);
+
+        ctx.fillStyle = `rgba(27, 176, 242, ${glowOpacity})`;
+        ctx.fillRect(drawX, drawY, star.size, star.size);
       });
+    };
+
+    const animate = () => {
+      renderFrame();
       animationFrameId = requestAnimationFrame(animate);
     };
 
     setup();
     animate();
+    drawNowRef.current = renderFrame;
 
-    const handleResize = () => setup();
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      setup();
+    };
     window.addEventListener('resize', handleResize);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      stars.length = 0;
     };
   }, [isMounted]);
 
@@ -244,7 +316,7 @@ export default function LoginPage() {
         <div
           className="pointer-events-none fixed inset-0 z-0 transition duration-300"
           style={{
-            background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
+            background: `radial-gradient(220px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
           }}
         />
       )}

@@ -420,7 +420,7 @@ export default function Home() {
       )}
       <main className="container mx-auto px-4 relative z-10">
         {/* Navigation */}
-        <nav className="py-2 flex justify-end items-center">
+        <nav className="py-2 flex justify-end items-center relative z-20 pointer-events-auto">
           <div className="flex space-x-2">
             <motion.button
               whileHover={{ scale: 1.05 }}

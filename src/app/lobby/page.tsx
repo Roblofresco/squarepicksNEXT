@@ -519,9 +519,6 @@ function LobbyContent() {
   // First-visit tour using Driver.js (dynamic import)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (tourStartedRef.current) return;
-    const seen = (() => { try { return localStorage.getItem('lobby:nux:v1') === '1'; } catch { return true; } })();
-    if (seen) return;
     const start = async () => {
       try {
         const mod = await import('driver.js');
@@ -539,7 +536,6 @@ function LobbyContent() {
           { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } },
           { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } },
         ]);
-        tourStartedRef.current = true;
         driver.drive();
         try { localStorage.setItem('lobby:nux:v1', '1'); } catch {}
         // Expose for replay
@@ -561,9 +557,15 @@ function LobbyContent() {
         console.warn('Tour failed to start', e);
       }
     };
-    // Defer slightly to allow content to render
-    const t = setTimeout(start, 600);
-    return () => clearTimeout(t);
+    // Start automatically only once per session
+    if (!tourStartedRef.current) {
+      const seen = (() => { try { return localStorage.getItem('lobby:nux:v1') === '1'; } catch { return true; } })();
+      if (!seen) {
+        tourStartedRef.current = true;
+        const t = setTimeout(start, 600);
+        return () => clearTimeout(t);
+      }
+    }
   }, []);
 
   if (showPrimaryLoadingScreen()) {

@@ -156,7 +156,25 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InApp
         onReplayTour={() => {
           try { localStorage.removeItem('lobby:nux:v1'); } catch {}
           setHelpOpen(false);
-          try { (window as any).__startLobbyTour?.(); } catch {}
+          // Delay to allow drawer close animation, then start tour with fallback
+          setTimeout(async () => {
+            try {
+              if ((window as any).__startLobbyTour) {
+                (window as any).__startLobbyTour();
+                return;
+              }
+              const mod = await import('driver.js');
+              const drv = mod.driver({ showProgress: true, allowClose: true, nextBtnText: 'Next', prevBtnText: 'Back', doneBtnText: 'Done' });
+              drv.defineSteps([
+                { element: '[data-tour="sport-selector"]', popover: { title: 'Choose Your View', description: 'Switch between free Sweepstakes and regular sports boards.', side: 'bottom' } },
+                { element: '[data-tour="sweepstakes"]', popover: { title: 'Free Weekly Entry', description: 'Enter the weekly sweepstakes. Numbers are assigned at game time.', side: 'bottom' } },
+                { element: '[data-tour="games-list"]', popover: { title: 'Pick a Game', description: 'Select a game to see related boards.', side: 'bottom' } },
+                { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } },
+                { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } },
+              ]);
+              drv.drive();
+            } catch {}
+          }, 250);
         }}
       />
     </div>

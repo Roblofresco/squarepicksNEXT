@@ -13,7 +13,7 @@ type LobbyHelpDrawerProps = {
 export default function LobbyHelpDrawer({ open, onOpenChange, onReplayTour }: LobbyHelpDrawerProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl">
+      <SheetContent side="right" className="w-full sm:max-w-md p-4 sm:p-6 bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl">
         <SheetHeader>
           <SheetTitle>Lobby Help</SheetTitle>
           <SheetDescription className="text-white/70">

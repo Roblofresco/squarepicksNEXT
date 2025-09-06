@@ -20,7 +20,7 @@ export default function LobbyHelpDrawer({ open, onOpenChange, onReplayTour }: Lo
             Learn how Sweepstakes and Sports boards work and how to enter.
           </SheetDescription>
         </SheetHeader>
-        <div className="mt-6 space-y-6 text-sm text-gray-300">
+        <div className="mt-6 space-y-6 text-sm text-gray-300 text-center max-w-md mx-auto">
           <section>
             <h3 className="text-white font-semibold mb-2">What is Sweepstakes?</h3>
             <p>Free weekly entry. Numbers are assigned at game time. One free entry per week per user.</p>
@@ -31,7 +31,7 @@ export default function LobbyHelpDrawer({ open, onOpenChange, onReplayTour }: Lo
           </section>
           <section>
             <h3 className="text-white font-semibold mb-2">Why dialogs appear</h3>
-            <ul className="list-disc list-inside space-y-1">
+            <ul className="list-disc list-inside space-y-1 inline-block text-left">
               <li>Login required to enter</li>
               <li>Wallet setup for eligibility</li>
               <li>Deposit when balance is low</li>

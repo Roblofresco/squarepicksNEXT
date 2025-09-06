@@ -156,6 +156,7 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InApp
         onReplayTour={() => {
           try { localStorage.removeItem('lobby:nux:v1'); } catch {}
           setHelpOpen(false);
+          try { (window as any).__startLobbyTour?.(); } catch {}
         }}
       />
     </div>

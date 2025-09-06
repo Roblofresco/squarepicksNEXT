@@ -245,7 +245,9 @@ export default function LoadingPage() {
     let animationFrameId: number;
     const stars: Array<{ x: number; y: number; angle: number; speed: number; size: number; opacity: number; dist: number; }> = [];
     const numStars = 400; // Density
-    const baseSpeedFactor = 0.01; // Controls how much distance affects speed
+    const baseSpeedFactor = 0.0035; // Slower base speed factor
+    const baseSpeedOffset = 0.04; // Minimum outward speed
+    const maxSpeedPxPerFrame = 2.2; // Clamp per-frame movement to avoid spikes
     let canvasCenterX = window.innerWidth / 2;
     let canvasCenterY = window.innerHeight / 2;
     // Warp parameters (match home/info)
@@ -274,15 +276,16 @@ export default function LoadingPage() {
         const angle = Math.atan2(dy, dx); // Angle from center
         const dist = Math.sqrt(dx * dx + dy * dy); // Distance from center
         
-        stars.push({
+        const initial = {
           x: initialX,
           y: initialY,
           angle: angle,
-          speed: dist * baseSpeedFactor + 0.1, // Speed increases with distance
+          speed: Math.min(maxSpeedPxPerFrame, dist * baseSpeedFactor + baseSpeedOffset),
           size: Math.random() * 2.0 + 1.0, // Increased size range
           opacity: Math.random() * (maxOpacity - minOpacity) + minOpacity, // Random opacity in bounds
           dist: dist,
-        });
+        };
+        stars.push(initial);
       }
       // Sort stars by distance initially (optional, for drawing order)
       // stars.sort((a, b) => a.dist - b.dist);
@@ -311,7 +314,7 @@ export default function LoadingPage() {
         const dx = star.x - canvasCenterX;
         const dy = star.y - canvasCenterY;
         star.dist = Math.sqrt(dx*dx + dy*dy);
-        star.speed = star.dist * baseSpeedFactor + 0.1;
+        star.speed = Math.min(maxSpeedPxPerFrame, star.dist * baseSpeedFactor + baseSpeedOffset);
         star.angle = Math.atan2(dy, dx); // Keep angle updated based on position
         
         // Optional: Increase size slightly as it moves out?
@@ -332,15 +335,16 @@ export default function LoadingPage() {
           const newAngle = Math.atan2(newDy, newDx);
           const newDist = Math.sqrt(newDx * newDx + newDy * newDy);
           
-          stars[index] = {
+          const replacement = {
             x: resetX,
             y: resetY,
             angle: newAngle, 
-            speed: newDist * baseSpeedFactor + 0.1, // Recalculate speed
+            speed: Math.min(maxSpeedPxPerFrame, newDist * baseSpeedFactor + baseSpeedOffset),
             size: Math.random() * 2.0 + 1.0, // Increased size range
             opacity: Math.random() * (maxOpacity - minOpacity) + minOpacity, // Reset opacity
             dist: newDist, // Reset distance
           };
+          stars[index] = replacement;
         } else {
           // Glow/warp toward pointer when nearby
           const pdx = star.x - px;

@@ -529,28 +529,30 @@ function LobbyContent() {
           prevBtnText: 'Back',
           doneBtnText: 'Done',
         });
-        driver.defineSteps([
-          { element: '[data-tour="sport-selector"]', popover: { title: 'Choose Your View', description: 'Switch between free Sweepstakes and regular sports boards.', side: 'bottom' } },
-          { element: '[data-tour="sweepstakes"]', popover: { title: 'Free Weekly Entry', description: 'Enter the weekly sweepstakes. Numbers are assigned at game time.', side: 'bottom' } },
-          { element: '[data-tour="games-list"]', popover: { title: 'Pick a Game', description: 'Select a game to see related boards.', side: 'bottom' } },
-          { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } },
-          { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } },
-        ]);
-        driver.drive();
+        driver.drive({
+          steps: [
+            { element: '[data-tour="sport-selector"]', popover: { title: 'Choose Your View', description: 'Switch between free Sweepstakes and regular sports boards.', side: 'bottom' } },
+            { element: '[data-tour="sweepstakes"]', popover: { title: 'Free Weekly Entry', description: 'Enter the weekly sweepstakes. Numbers are assigned at game time.', side: 'bottom' } },
+            { element: '[data-tour="games-list"]', popover: { title: 'Pick a Game', description: 'Select a game to see related boards.', side: 'bottom' } },
+            { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } },
+            { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } },
+          ]
+        });
         try { localStorage.setItem('lobby:nux:v1', '1'); } catch {}
         // Expose for replay
         ;(window as any).__startLobbyTour = async () => {
           try {
             const mod2 = await import('driver.js');
             const driver2 = mod2.driver({ showProgress: true, allowClose: true });
-            driver2.defineSteps([
-              { element: '[data-tour="sport-selector"]', popover: { title: 'Choose Your View', description: 'Switch between free Sweepstakes and regular sports boards.', side: 'bottom' } },
-              { element: '[data-tour="sweepstakes"]', popover: { title: 'Free Weekly Entry', description: 'Enter the weekly sweepstakes. Numbers are assigned at game time.', side: 'bottom' } },
-              { element: '[data-tour="games-list"]', popover: { title: 'Pick a Game', description: 'Select a game to see related boards.', side: 'bottom' } },
-              { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } },
-              { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } },
-            ]);
-            driver2.drive();
+            driver2.drive({
+              steps: [
+                { element: '[data-tour="sport-selector"]', popover: { title: 'Choose Your View', description: 'Switch between free Sweepstakes and regular sports boards.', side: 'bottom' } },
+                { element: '[data-tour="sweepstakes"]', popover: { title: 'Free Weekly Entry', description: 'Enter the weekly sweepstakes. Numbers are assigned at game time.', side: 'bottom' } },
+                { element: '[data-tour="games-list"]', popover: { title: 'Pick a Game', description: 'Select a game to see related boards.', side: 'bottom' } },
+                { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } },
+                { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } },
+              ]
+            });
           } catch {}
         }
       } catch (e) {

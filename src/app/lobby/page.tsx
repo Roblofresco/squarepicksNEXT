@@ -3,6 +3,7 @@
 export const runtime = 'edge';
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import 'driver.js/dist/driver.css';
 import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast, Toaster } from 'react-hot-toast';
@@ -519,7 +520,29 @@ function LobbyContent() {
   // First-visit tour using Driver.js (dynamic import)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const start = async () => {
+    const getSteps = () => {
+      const rawSteps = [
+        { selector: '[data-tour="sport-selector"]', step: { element: '[data-tour="sport-selector"]', popover: { title: 'Choose Your View', description: 'Switch between free Sweepstakes and regular sports boards.', side: 'bottom' } } },
+        { selector: '[data-tour="sweepstakes"]', step: { element: '[data-tour="sweepstakes"]', popover: { title: 'Free Weekly Entry', description: 'Enter the weekly sweepstakes. Numbers are assigned at game time.', side: 'bottom' } } },
+        { selector: '[data-tour="games-list"]', step: { element: '[data-tour="games-list"]', popover: { title: 'Pick a Game', description: 'Select a game to see related boards.', side: 'bottom' } } },
+        { selector: '[data-tour="boards-list"]', step: { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } } },
+        { selector: '[data-tour="bottom-nav"]', step: { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } } },
+      ];
+      return rawSteps
+        .filter(s => !!document.querySelector(s.selector))
+        .map(s => s.step);
+    };
+
+    const runTour = async (attempts: number) => {
+      const steps = getSteps();
+      if (!steps.length) {
+        if (attempts > 0) {
+          setTimeout(() => runTour(attempts - 1), 700);
+        } else {
+          console.warn('Tour aborted: no available steps');
+        }
+        return;
+      }
       try {
         const mod = await import('driver.js');
         const driver = mod.driver({
@@ -529,31 +552,19 @@ function LobbyContent() {
           prevBtnText: 'Back',
           doneBtnText: 'Done',
         });
-        driver.drive({
-          steps: [
-            { element: '[data-tour="sport-selector"]', popover: { title: 'Choose Your View', description: 'Switch between free Sweepstakes and regular sports boards.', side: 'bottom' } },
-            { element: '[data-tour="sweepstakes"]', popover: { title: 'Free Weekly Entry', description: 'Enter the weekly sweepstakes. Numbers are assigned at game time.', side: 'bottom' } },
-            { element: '[data-tour="games-list"]', popover: { title: 'Pick a Game', description: 'Select a game to see related boards.', side: 'bottom' } },
-            { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } },
-            { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } },
-          ]
-        });
+        driver.drive({ steps });
+      } catch (e) {
+        console.warn('Tour failed to start', e);
+      }
+    };
+
+    const start = async () => {
+      try {
+        await runTour(3);
         try { localStorage.setItem('lobby:nux:v1', '1'); } catch {}
         // Expose for replay
         ;(window as any).__startLobbyTour = async () => {
-          try {
-            const mod2 = await import('driver.js');
-            const driver2 = mod2.driver({ showProgress: true, allowClose: true });
-            driver2.drive({
-              steps: [
-                { element: '[data-tour="sport-selector"]', popover: { title: 'Choose Your View', description: 'Switch between free Sweepstakes and regular sports boards.', side: 'bottom' } },
-                { element: '[data-tour="sweepstakes"]', popover: { title: 'Free Weekly Entry', description: 'Enter the weekly sweepstakes. Numbers are assigned at game time.', side: 'bottom' } },
-                { element: '[data-tour="games-list"]', popover: { title: 'Pick a Game', description: 'Select a game to see related boards.', side: 'bottom' } },
-                { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } },
-                { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } },
-              ]
-            });
-          } catch {}
+          await runTour(5);
         }
       } catch (e) {
         console.warn('Tour failed to start', e);

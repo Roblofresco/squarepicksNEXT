@@ -422,13 +422,16 @@ export default function Home() {
         {/* Navigation */}
         <nav className="py-2 flex justify-end items-center">
           <div className="flex space-x-2">
-            <Link
-              href="/login"
-              prefetch={false}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleNavClick('/login')}
+              type="button"
+              aria-label="Log In"
               className="px-6 py-2 rounded-md transition duration-300 flex items-center justify-center border border-accent-1 text-accent-1 hover:bg-accent-1/10"
             >
               Log In
-            </Link>
+            </motion.button>
             <motion.button
               whileHover={{ scale: navigatingTo === '/lobby' ? 1 : 1.05 }}
               whileTap={{ scale: navigatingTo === '/lobby' ? 1 : 0.95 }}

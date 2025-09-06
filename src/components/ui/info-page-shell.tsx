@@ -22,35 +22,108 @@ export default function InfoPageShell({
   const [isMounted, setIsMounted] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const pointerDownRef = useRef(false)
+  const lastSizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 })
+  const resizeTimerRef = useRef<any>(null)
+  const drawNowRef = useRef<() => void>(() => {})
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
+  // Track pointer position for both desktop and mobile
   useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      setMousePosition({ x: event.clientX, y: event.clientY })
+    if (!isMounted) return
+
+    // Initialize pointer at center
+    const initX = window.innerWidth * 0.5
+    const initY = window.innerHeight * 0.5
+    pointerRef.current = { x: initX, y: initY }
+    setMousePosition({ x: initX, y: initY })
+
+    const updatePointer = (clientX: number, clientY: number) => {
+      pointerRef.current.x = clientX
+      pointerRef.current.y = clientY
+      setMousePosition({ x: clientX, y: clientY })
+      if (drawNowRef.current) {
+        drawNowRef.current()
+      }
     }
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
+
+    // Mouse events for desktop
+    const handleMouseMove = (e: MouseEvent) => {
+      updatePointer(e.clientX, e.clientY)
+    }
+    const handleMouseDown = (e: MouseEvent) => {
+      pointerDownRef.current = true
+      updatePointer(e.clientX, e.clientY)
+    }
+    const handleMouseUp = () => {
+      pointerDownRef.current = false
+    }
+
+    // Touch events for mobile
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0]
+        updatePointer(touch.clientX, touch.clientY)
+      }
+    }
+    const handleTouchStart = (e: TouchEvent) => {
+      pointerDownRef.current = true
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0]
+        updatePointer(touch.clientX, touch.clientY)
+      }
+    }
+    const handleTouchEnd = () => {
+      pointerDownRef.current = false
+    }
+
+    // Add event listeners
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    window.addEventListener('mousedown', handleMouseDown, { passive: true })
+    window.addEventListener('mouseup', handleMouseUp, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: true })
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+    const handleScroll = () => {
+      if (drawNowRef.current) {
+        drawNowRef.current()
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mousedown', handleMouseDown)
+      window.removeEventListener('mouseup', handleMouseUp)
+      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchend', handleTouchEnd)
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [isMounted])
 
   useEffect(() => {
     if (!isMounted || !canvasRef.current) return
+
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
-    if (!(ctx instanceof CanvasRenderingContext2D)) return
+    if (!ctx) return
 
     let animationFrameId: number
-    const stars: Array<{
-      x: number;
-      y: number;
-      size: number;
-      opacity: number;
-      twinkleSpeed: number;
-      twinkleDirection: number;
-    }> = []
+    const stars: any[] = []
     const numStars = 150
+    const minOpacity = 0.1
+    const maxOpacity = 0.7
+    const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let warpStrength = 0
+    let warpTarget = 0
+    const baseWarpOnHover = prefersReduced ? 0 : 0.5
+    const baseWarpOnPress = prefersReduced ? 0 : 0.85
+    let paused = false
 
     const setup = () => {
       canvas.width = window.innerWidth
@@ -60,37 +133,98 @@ export default function InfoPageShell({
         stars.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
+          baseX: 0,
+          baseY: 0,
           size: Math.random() * 2 + 1,
-          opacity: Math.random() * 0.6 + 0.1,
-          twinkleSpeed: Math.random() * 0.015 + 0.005,
+          opacity: Math.random() * (maxOpacity - minOpacity) + minOpacity,
+          twinkleSpeed: Math.random() * 0.008 + 0.003,
           twinkleDirection: Math.random() < 0.5 ? 1 : -1,
         })
       }
+      for (let i = 0; i < stars.length; i++) {
+        stars[i].baseX = stars[i].x
+        stars[i].baseY = stars[i].y
+      }
+      lastSizeRef.current = { w: canvas.width, h: canvas.height }
+    }
+
+    const renderFrame = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      const cx = canvas.width * 0.5
+      const cy = canvas.height * 0.5
+      const px = pointerRef.current.x || cx
+      const py = pointerRef.current.y || cy
+      const radius = Math.min(canvas.width, canvas.height) * 0.35
+
+      warpTarget = pointerDownRef.current ? baseWarpOnPress : baseWarpOnHover
+      warpStrength += (warpTarget - warpStrength) * 0.12
+
+      stars.forEach(star => {
+        star.opacity += star.twinkleSpeed * star.twinkleDirection
+        if (star.opacity > maxOpacity || star.opacity < minOpacity) {
+          star.twinkleDirection *= -1
+          star.opacity = Math.max(minOpacity, Math.min(maxOpacity, star.opacity))
+        }
+
+        const dx = star.baseX - px
+        const dy = star.baseY - py
+        const dist = Math.hypot(dx, dy)
+        const intensity = Math.max(0, 1 - Math.min(dist / radius, 1))
+        const warpFactor = warpStrength * (0.5 * intensity + 0.5 * intensity * intensity)
+        const drawX = star.baseX + (px - star.baseX) * warpFactor
+        const drawY = star.baseY + (py - star.baseY) * warpFactor
+        const glowOpacity = Math.min(1, star.opacity + intensity * 0.8)
+
+        ctx.fillStyle = `rgba(27, 176, 242, ${glowOpacity})`
+        ctx.fillRect(drawX, drawY, star.size, star.size)
+      })
     }
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      stars.forEach((star) => {
-        star.opacity += star.twinkleSpeed * star.twinkleDirection
-        if (star.opacity > 0.7 || star.opacity < 0.1) {
-          star.twinkleDirection *= -1
-          star.opacity = Math.max(0.1, Math.min(0.7, star.opacity))
-        }
-        ctx.fillStyle = `rgba(27, 176, 242, ${star.opacity})`
-        ctx.fillRect(star.x, star.y, star.size, star.size)
-      })
+      renderFrame()
       animationFrameId = requestAnimationFrame(animate)
     }
 
     setup()
     animate()
+    drawNowRef.current = renderFrame
 
-    const handleResize = () => setup()
+    const handleResize = () => {
+      const doResize = () => {
+        const newW = window.innerWidth
+        const newH = window.innerHeight
+        const { w: oldW, h: oldH } = lastSizeRef.current
+        const widthChanged = Math.abs(newW - oldW) > 16
+        const heightChanged = Math.abs(newH - oldH) > 160
+        canvas.width = newW
+        canvas.height = newH
+        if (widthChanged || heightChanged) {
+          setup()
+        } else {
+          lastSizeRef.current = { w: newW, h: newH }
+        }
+      }
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current)
+      resizeTimerRef.current = setTimeout(doResize, 200)
+    }
     window.addEventListener('resize', handleResize)
 
+    const onVis = () => { paused = document.hidden }
+    document.addEventListener('visibilitychange', onVis)
+
     return () => {
-      cancelAnimationFrame(animationFrameId)
+      if (animationFrameId) cancelAnimationFrame(animationFrameId)
       window.removeEventListener('resize', handleResize)
+      document.removeEventListener('visibilitychange', onVis)
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+      }
+      stars.length = 0
+      if (resizeTimerRef.current) {
+        clearTimeout(resizeTimerRef.current)
+        resizeTimerRef.current = null
+      }
     }
   }, [isMounted])
 
@@ -100,7 +234,7 @@ export default function InfoPageShell({
       <div
         className="pointer-events-none fixed inset-0 z-0 transition duration-300"
         style={{
-          background: `radial-gradient(300px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
+          background: `radial-gradient(220px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
         }}
       />
       <main className="container mx-auto px-4 py-12 relative z-10">

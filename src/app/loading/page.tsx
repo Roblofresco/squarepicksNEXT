@@ -22,8 +22,12 @@ export default function LoadingPage() {
   const animationFrameRef = useRef<number | null>(null);
   const idleRotationRef = useRef({ x: 0, y: 0 });
   const idleSpeedRef = useRef({ x: 0.025, y: 0.035 });
-  const canvasRef = useRef<HTMLCanvasElement>(null); // Added canvas ref
-  const [isMounted, setIsMounted] = useState(false); // Added isMounted state
+  const canvasRef = useRef<HTMLCanvasElement>(null); // Stars canvas
+  const [isMounted, setIsMounted] = useState(false); // Mount state
+  const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const pointerDownRef = useRef(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const drawNowRef = useRef<() => void>(() => {});
 
   // Added mount effect & navigation timer
   useEffect(() => {
@@ -50,6 +54,74 @@ export default function LoadingPage() {
         document.documentElement.style.overflow = ''; // Reset to default
       };
     }
+  }, [isMounted]);
+
+  // Pointer tracking for glow/warp effects
+  useEffect(() => {
+    if (!isMounted) return;
+
+    // Initialize pointer at center
+    const initX = window.innerWidth * 0.5;
+    const initY = window.innerHeight * 0.5;
+    pointerRef.current = { x: initX, y: initY };
+    setMousePosition({ x: initX, y: initY });
+
+    const updatePointer = (clientX: number, clientY: number) => {
+      pointerRef.current.x = clientX;
+      pointerRef.current.y = clientY;
+      setMousePosition({ x: clientX, y: clientY });
+      if (drawNowRef.current) {
+        drawNowRef.current();
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      updatePointer(e.clientX, e.clientY);
+    };
+    const handleMouseDown = (e: MouseEvent) => {
+      pointerDownRef.current = true;
+      updatePointer(e.clientX, e.clientY);
+    };
+    const handleMouseUp = () => { pointerDownRef.current = false; };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches && e.touches.length > 0) {
+        const t = e.touches[0];
+        updatePointer(t.clientX, t.clientY);
+      }
+    };
+    const handleTouchStart = (e: TouchEvent) => {
+      pointerDownRef.current = true;
+      if (e.touches && e.touches.length > 0) {
+        const t = e.touches[0];
+        updatePointer(t.clientX, t.clientY);
+      }
+    };
+    const handleTouchEnd = () => { pointerDownRef.current = false; };
+
+    const handleScroll = () => {
+      if (drawNowRef.current) {
+        drawNowRef.current();
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mousedown', handleMouseDown, { passive: true });
+    window.addEventListener('mouseup', handleMouseUp, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, [isMounted]);
 
   // Effect for pointer tracking (updates isInteracting)
@@ -162,7 +234,7 @@ export default function LoadingPage() {
     };
 }, [isInteracting, isMounted, rotation.x, rotation.y]);
 
-  // Canvas Animation for Forward Movement Starfield
+  // Canvas Animation for Forward Movement Starfield + pointer glow/warp
   useEffect(() => {
     if (!isMounted || !canvasRef.current) return;
 
@@ -176,6 +248,14 @@ export default function LoadingPage() {
     const baseSpeedFactor = 0.01; // Controls how much distance affects speed
     let canvasCenterX = window.innerWidth / 2;
     let canvasCenterY = window.innerHeight / 2;
+    // Warp parameters (match home/info)
+    const minOpacity = 0.1;
+    const maxOpacity = 0.7;
+    const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let warpStrength = 0;
+    let warpTarget = 0;
+    const baseWarpOnHover = prefersReduced ? 0 : 0.5;
+    const baseWarpOnPress = prefersReduced ? 0 : 0.85;
 
     // Function to initialize or reset stars
     const setup = () => {
@@ -200,7 +280,7 @@ export default function LoadingPage() {
           angle: angle,
           speed: dist * baseSpeedFactor + 0.1, // Speed increases with distance
           size: Math.random() * 2.0 + 1.0, // Increased size range
-          opacity: Math.random() * 0.5 + 0.2, // Random opacity
+          opacity: Math.random() * (maxOpacity - minOpacity) + minOpacity, // Random opacity in bounds
           dist: dist,
         });
       }
@@ -208,9 +288,19 @@ export default function LoadingPage() {
       // stars.sort((a, b) => a.dist - b.dist);
     };
 
-    // Animation loop
-    const animate = () => {
+    // Single-frame renderer
+    const renderFrame = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Pointer-based glow/warp
+      const cx = canvas.width * 0.5;
+      const cy = canvas.height * 0.5;
+      const px = pointerRef.current.x || cx;
+      const py = pointerRef.current.y || cy;
+      const radius = Math.min(canvas.width, canvas.height) * 0.35;
+
+      warpTarget = pointerDownRef.current ? baseWarpOnPress : baseWarpOnHover;
+      warpStrength += (warpTarget - warpStrength) * 0.12;
 
       stars.forEach((star, index) => {
         // Move star outwards along its angle
@@ -248,25 +338,36 @@ export default function LoadingPage() {
             angle: newAngle, 
             speed: newDist * baseSpeedFactor + 0.1, // Recalculate speed
             size: Math.random() * 2.0 + 1.0, // Increased size range
-            opacity: Math.random() * 0.5 + 0.2, // Reset opacity
+            opacity: Math.random() * (maxOpacity - minOpacity) + minOpacity, // Reset opacity
             dist: newDist, // Reset distance
           };
         } else {
-          // Draw the star if it's on screen
-          ctx.fillStyle = `rgba(27, 176, 242, ${star.opacity})`; 
-          ctx.fillRect(star.x - star.size / 2, star.y - star.size / 2, star.size, star.size);
+          // Glow/warp toward pointer when nearby
+          const pdx = star.x - px;
+          const pdy = star.y - py;
+          const pdist = Math.hypot(pdx, pdy);
+          const intensity = Math.max(0, 1 - Math.min(pdist / radius, 1));
+          const warpFactor = warpStrength * (0.5 * intensity + 0.5 * intensity * intensity);
+          const drawX = star.x + (px - star.x) * warpFactor;
+          const drawY = star.y + (py - star.y) * warpFactor;
+          const glowOpacity = Math.min(1, star.opacity + intensity * 0.8);
+
+          ctx.fillStyle = `rgba(27, 176, 242, ${glowOpacity})`;
+          ctx.fillRect(drawX - star.size / 2, drawY - star.size / 2, star.size, star.size);
         }
 
       });
-      
-      // Optional: Re-sort stars by distance for correct drawing order (farthest first)
-      // stars.sort((a, b) => a.dist - b.dist); 
-
+      // Optional: re-sort by distance if needed
       animationFrameId = requestAnimationFrame(animate);
+    };
+
+    const animate = () => {
+      renderFrame();
     };
 
     setup(); 
     animate();
+    drawNowRef.current = renderFrame;
 
     const handleResize = () => setup();
     window.addEventListener('resize', handleResize);
@@ -295,6 +396,15 @@ export default function LoadingPage() {
         className="absolute inset-0 -z-1 pointer-events-none" // Use z-index: -1
         id="center-starfield-canvas"
       />
+      {/* Cursor/touch spotlight overlay */}
+      {isMounted && (
+        <div
+          className="pointer-events-none absolute inset-0 z-0 transition duration-300"
+          style={{
+            background: `radial-gradient(220px at ${mousePosition.x}px ${mousePosition.y}px, rgba(29, 78, 216, 0.06), transparent 80%)`,
+          }}
+        />
+      )}
       {/* LogoCube container - Control size here */}
       <div 
         style={{

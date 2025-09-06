@@ -10,6 +10,8 @@ import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { NotificationIcon } from '@/components/notifications/NotificationIcon';
+import LobbyHelpDrawer from '@/components/info/LobbyHelpDrawer';
+import { HelpCircle } from 'lucide-react';
 
 interface InAppHeaderProps {
   showBalancePill?: boolean;
@@ -19,6 +21,7 @@ interface InAppHeaderProps {
 const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InAppHeaderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [helpOpen, setHelpOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -136,8 +139,25 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InApp
             )}
           </AnimatePresence>
           </div>
+          <button
+            type="button"
+            aria-label="Help"
+            onClick={() => setHelpOpen(true)}
+            className="h-7 w-7 rounded-full flex items-center justify-center hover:opacity-80"
+            data-tour="help-button"
+          >
+            <HelpCircle size={18} />
+          </button>
         </div>
       )}
+      <LobbyHelpDrawer
+        open={helpOpen}
+        onOpenChange={setHelpOpen}
+        onReplayTour={() => {
+          try { localStorage.removeItem('lobby:nux:v1'); } catch {}
+          setHelpOpen(false);
+        }}
+      />
     </div>
   );
 }

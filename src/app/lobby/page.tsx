@@ -139,6 +139,7 @@ function LobbyContent() {
   const [entryInteraction, setEntryInteraction] = useState<EntryInteractionState>({ 
     boardId: null, stage: 'idle', selectedNumber: null
   });
+  const tourStartedRef = useRef(false);
 
   // Use useWallet for auth and wallet status
   const { userId, emailVerified, isLoading: isWalletLoading, balance, hasWallet } = useWallet();
@@ -515,6 +516,41 @@ function LobbyContent() {
 
   console.log("[LobbyPage] Render. isWalletLoading:", isWalletLoading, "userId:", userId, "emailV:", emailVerified, "selSport:", selectedSport, "loadSweep:", isLoadingSweepstakesData, "sweepB:", !!sweepstakesBoard, "sweepG:", !!sweepstakesGame);
 
+  // First-visit tour using Driver.js (dynamic import)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (tourStartedRef.current) return;
+    const seen = (() => { try { return localStorage.getItem('lobby:nux:v1') === '1'; } catch { return true; } })();
+    if (seen) return;
+    const start = async () => {
+      try {
+        const mod = await import('driver.js');
+        const driver = mod.driver({
+          showProgress: true,
+          allowClose: true,
+          nextBtnText: 'Next',
+          prevBtnText: 'Back',
+          doneBtnText: 'Done',
+        });
+        driver.defineSteps([
+          { element: '[data-tour="sport-selector"]', popover: { title: 'Choose Your View', description: 'Switch between free Sweepstakes and regular sports boards.', side: 'bottom' } },
+          { element: '[data-tour="sweepstakes"]', popover: { title: 'Free Weekly Entry', description: 'Enter the weekly sweepstakes. Numbers are assigned at game time.', side: 'bottom' } },
+          { element: '[data-tour="games-list"]', popover: { title: 'Pick a Game', description: 'Select a game to see related boards.', side: 'bottom' } },
+          { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } },
+          { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } },
+        ]);
+        tourStartedRef.current = true;
+        driver.drive();
+        try { localStorage.setItem('lobby:nux:v1', '1'); } catch {}
+      } catch (e) {
+        console.warn('Tour failed to start', e);
+      }
+    };
+    // Defer slightly to allow content to render
+    const t = setTimeout(start, 600);
+    return () => clearTimeout(t);
+  }, []);
+
   if (showPrimaryLoadingScreen()) {
     console.log("[LobbyPage] Rendering LoadingScreen. isWalletLoading:", isWalletLoading, "userId:", userId, "emailVerified:", emailVerified, "selectedSport:", selectedSport);
     return (
@@ -548,6 +584,7 @@ function LobbyContent() {
       <div className="flex-grow pb-20">
         <main className="px-4 py-2"> 
           <div className="w-full">
+            <div data-tour="sport-selector">
             <SportSelector 
               sports={initialSportsData} 
               selectedSportId={selectedSport} 
@@ -556,6 +593,7 @@ function LobbyContent() {
               sportSelectorView={sportSelectorView}
               setSportSelectorView={setSportSelectorView}
             />
+            </div>
             {/* Balance pill moved to header component when in entry flow */}
             <div className="relative">
               <AnimatePresence mode="wait" initial={false}>
@@ -624,7 +662,7 @@ function LobbyContent() {
                   {selectedSport === SWEEPSTAKES_SPORT_ID ? (
                     <>
                       {sweepstakesGame && sweepstakesBoard && sweepstakesGame.teamA && sweepstakesGame.teamB && sweepstakesTeams[sweepstakesGame.teamA.id] && sweepstakesTeams[sweepstakesGame.teamB.id] ? (
-                        <>
+                        <div data-tour="sweepstakes">
                           {/* Primary condition: we have all necessary data */}
                               <SweepstakesScoreboard 
                                 awayTeam={sweepstakesTeams[sweepstakesGame.teamA.id]!}
@@ -647,7 +685,8 @@ function LobbyContent() {
                             walletBalance={balance}     // from useWallet
                             walletIsLoading={isWalletLoading} // from useWallet
                           />
-                        </>
+                          <p className="text-xs text-gray-400 mt-2">Free weekly entry. Numbers assigned at game time.</p>
+                        </div>
                       ) : (
                          <div className="text-center text-gray-400 py-10 mt-6">
                            {isLoadingSweepstakesData ? "Loading Sweepstakes Details..." : "No active Sweepstakes event or complete game data found."}
@@ -665,7 +704,7 @@ function LobbyContent() {
                           </div>
                         )}
                       </div>
-                      <div className="w-full mb-0">
+                      <div className="w-full mb-0" data-tour="games-list">
                         <AnimatePresence mode="wait">
                           {isLoadingGamesAndTeams ? (
                             <motion.div
@@ -707,6 +746,7 @@ function LobbyContent() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="w-full mt-0 px-2 pb-4"
+                            data-tour="boards-list"
                           >
                            <BoardsList 
                              games={games}

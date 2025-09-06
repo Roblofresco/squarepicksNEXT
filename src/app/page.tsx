@@ -670,7 +670,7 @@ export default function Home() {
                 variants={fadeIn}
                 className="text-xl text-gray-300 mb-10"
               >
-                Create your account today and get your first square on us.
+                Sign up today and claim your free weekly sweepstakes square
               </motion.p>
               
               <motion.div 

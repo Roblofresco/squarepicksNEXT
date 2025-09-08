@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 
 export default function SignUpSoonPage() {
   const [rotation, setRotation] = useState({ x: 0, y: 0 })
@@ -269,6 +270,12 @@ export default function SignUpSoonPage() {
         >
           Request Access
         </a>
+        <Link
+          href="/"
+          className="mt-4 text-gray-300 hover:text-white underline underline-offset-4"
+        >
+          Back to Home
+        </Link>
       </div>
     </main>
   )

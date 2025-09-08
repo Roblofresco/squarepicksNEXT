@@ -261,7 +261,7 @@ export default function SignUpSoonPage() {
       <div className="relative z-10 flex flex-col items-center gap-4 text-center px-6">
         <h1 className="text-3xl md:text-4xl font-semibold text-white">Sign up is coming soon</h1>
         <p className="text-gray-300 max-w-xl">
-          We\'re putting the finishing touches on the experience. Request early access and we\'ll notify you as soon as sign up is available.
+          We're putting the finishing touches on the experience. Request early access and we'll notify you as soon as sign up is available.
         </p>
         <a
           href="mailto:contacts@squarepicks.com?subject=SquarePicks%20Early%20Access%20Request&body=I%20would%20like%20to%20request%20early%20access%20to%20SquarePicks."

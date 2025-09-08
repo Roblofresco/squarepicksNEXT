@@ -756,7 +756,7 @@ export default function MyBoardsPage() {
               Login
             </Button>
             <Button 
-              onClick={() => { setIsLoginModalOpen(false); router.push('/signup'); }} 
+              onClick={() => { setIsLoginModalOpen(false); router.push('/signup-soon'); }} 
               variant="outline" 
               className="flex-1 bg-transparent border-gray-500 hover:bg-gray-500/20 text-gray-300 font-semibold hover:text-gray-300"
             >

@@ -485,14 +485,14 @@ export default function Home() {
               className="flex flex-row gap-4 justify-center items-center"
             >
                           <motion.button
-              whileHover={{ boxShadow: navigatingTo === '/signup/email' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
-              whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
+              whileHover={{ boxShadow: navigatingTo === '/signup-soon' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup-soon' ? 1 : 1.05 }}
+              whileTap={{ scale: navigatingTo === '/signup-soon' ? 1 : 0.95 }}
               className={`px-8 py-4 rounded-md text-white text-xl font-semibold transition-all duration-300 relative flex items-center justify-center 
-                ${navigatingTo === '/signup/email' 
+                ${navigatingTo === '/signup-soon' 
                   ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' 
                   : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
-              onClick={() => handleNavClick('/signup/email')}
-              disabled={navigatingTo === '/signup/email'}
+              onClick={() => handleNavClick('/signup-soon')}
+              disabled={navigatingTo === '/signup-soon'}
               type="button"
             >
               Get Started
@@ -678,14 +678,14 @@ export default function Home() {
                 className="flex flex-row gap-4 justify-center items-center"
               >
                 <motion.button
-                  whileHover={{ boxShadow: navigatingTo === '/signup/email' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup/email' ? 1 : 1.05 }}
-                  whileTap={{ scale: navigatingTo === '/signup/email' ? 1 : 0.95 }}
+                  whileHover={{ boxShadow: navigatingTo === '/signup-soon' ? 'none' : "0 0 20px rgba(0, 178, 255, 0.5)", scale: navigatingTo === '/signup-soon' ? 1 : 1.05 }}
+                  whileTap={{ scale: navigatingTo === '/signup-soon' ? 1 : 0.95 }}
                   className={`px-8 py-4 rounded-md text-white text-xl font-semibold transition-all duration-300 relative flex items-center justify-center 
-                    ${navigatingTo === '/signup/email' 
+                    ${navigatingTo === '/signup-soon' 
                       ? 'bg-gradient-accent2-accent3 animate-pulse cursor-not-allowed' 
                       : 'bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3'}`}
-                  onClick={() => handleNavClick('/signup/email')}
-                  disabled={navigatingTo === '/signup/email'}
+                  onClick={() => handleNavClick('/signup-soon')}
+                  disabled={navigatingTo === '/signup-soon'}
                   type="button"
                 >
                   Sign Up Now

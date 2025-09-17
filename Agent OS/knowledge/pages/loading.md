@@ -7,13 +7,11 @@ The Loading Page serves as an intermediary splash screen that is shown to users 
 ## 2. Key Responsibilities & Functionality
 
 -   **User Experience:**
-    -   Displays a large, interactive 3D `LogoCube` that the user can rotate with their mouse.
-    -   Features a dynamic "starfield" background effect that gives a sense of forward motion.
+    -   Displays a 3D `LogoCube` with pointer-controlled rotation plus smooth idle motion when not interacting.
+    -   Features a central forward-motion starfield with pointer glow/warp consistent with Home/Info pages.
 -   **Timed Navigation:**
-    -   The page displays an "Initializing..." message for the first 5 seconds.
-    -   After 5 seconds, the text changes to "Tap to continue..." and navigation is enabled.
-    -   The user can then click anywhere on the page to be programmatically redirected to the `/lobby`.
--   **Scroll Lock:** It explicitly disables scrolling on the `<body>` and `<html>` elements to ensure the splash screen is the only thing visible.
+    -   Auto-redirects to `/lobby` after ~3.5 seconds; clicking anywhere navigates immediately.
+-   **Scroll Lock:** Disables scrolling on `<body>` and `<html>` while visible.
 
 ## 3. Core Components Used
 
@@ -28,4 +26,4 @@ The Loading Page serves as an intermediary splash screen that is shown to users 
 ## 5. Core Components Used
 
 - `@/components/LogoCube`: Interactive 3D logo
-- `framer-motion`: Hint animations 
+- `framer-motion`: Minor animations

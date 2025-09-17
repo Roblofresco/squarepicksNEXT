@@ -6,18 +6,19 @@ The Welcome Page (root `page.tsx`) is the primary landing page for new, unauthen
 
 ## 2. Key Responsibilities & Functionality
 
--   **Authentication Check:**
-    -   It uses the `useWallet` hook to check if a user is already logged in.
-    -   If a user is logged in, it **automatically redirects them to the `/lobby`**, ensuring returning users bypass the marketing page.
 -   **Interactive Background:**
-    -   This page features a highly interactive 3D background powered by a `<canvas>` element.
-    -   It uses `useEffect` hooks to create and animate a "constellation" effect, where stars twinkle and lines are drawn between nearby stars and the user's mouse pointer, creating an engaging visual experience.
-    -   It also has a radial gradient "spotlight" that follows the user's mouse.
--   **User Interaction:**
-    -   The page listens for `ArrowUp` and `ArrowDown` key presses to simulate a "secret code" entry, which, when completed, triggers a celebratory animation and automatically navigates the user to the signup page.
--   **Call to Action:**
-    -   The primary UI element is a prominent "Get Started" button.
-    -   Clicking this button navigates the user to the first step of the signup flow (`/signup/email`).
+    -   Pointer-driven twinkling stars in a `<canvas>` with a radial spotlight that follows cursor/touch; star warp strength eases on hover/press.
+-   **Header Navigation:**
+    -   "Log In" and "View Lobby" buttons at top-right; buttons are fully clickable with appropriate z-index and `pointer-events`.
+-   **Calls to Action:**
+    -   Primary: "Get Started" → `/signup/email`.
+    -   Secondary: "How It Works" scrolls to the How to Play section with Edge-friendly fallback.
+-   **How to Play Section:**
+    -   Four-step overview with icons; animated on view.
+-   **Footer CTA:**
+    -   Copy: "Sign up today and claim your free weekly sweepstakes square" with a Sign Up button.
+-   **Easter Egg:**
+    -   Typing "squares" triggers a temporary easter egg toast.
 
 ## 3. Core Components Used
 
@@ -27,9 +28,8 @@ The Welcome Page (root `page.tsx`) is the primary landing page for new, unauthen
 
 ## 4. Key Data Dependencies & Hooks
 
--   **Custom Hooks:** `useWallet` is used exclusively for the authentication check and redirection logic.
--   **Next.js Hooks:** `useRouter` is used for programmatic navigation.
--   **React Hooks:** `useState` and `useEffect` are used extensively to manage the state of the interactive background and the secret code feature. 
+-   **Next.js Hooks:** `useRouter` for navigation.
+-   **React Hooks:** `useState`, `useEffect`, refs for canvas and pointer tracking.
 
 ## 5. Core Components Used
 

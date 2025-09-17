@@ -8,12 +8,12 @@ A key architectural pattern on these pages is that the **content is hardcoded as
 
 ## 2. Page-by-Page Breakdown
 
-All pages in this category share a very similar structure:
-- A `useEffect` hook to handle a "twinkling stars" canvas background animation.
-- A `useEffect` hook to track the mouse position for a radial gradient spotlight effect.
-- A standard navigation header with a "Back" button.
-- A standard footer.
-- A main content section that renders a Markdown string.
+All pages in this category now share a common background shell:
+- Wrapped by `InfoPageShell` which provides:
+  - Pointer-tracked warp/glow starfield canvas
+  - Radial spotlight overlay (220px radius)
+  - Optional back button
+- The page itself renders Markdown or JSX content inside.
 
 ### a. `/how-to-play`
 
@@ -50,8 +50,6 @@ All pages in this category share a very similar structure:
 -   **Content:** Provides a simple interface for users to get in touch with support, primarily via a `mailto:` link.
 -   **Functionality:** Unlike the other pages, this one renders simple JSX for its content rather than a Markdown string, but follows the same overall layout and background effect pattern.
 
-## 3. Identified Code Duplication & Refactoring Opportunity
+## 3. Background Implementation
 
-A significant opportunity for code simplification exists across these pages. The `useEffect` hooks for the **twinkling stars canvas** and the **mouse-tracking spotlight effect** are duplicated in every single one of these files.
-
-**Recommendation:** This background effect logic should be extracted into a reusable layout component or a higher-order component. These informational pages could then be wrapped by this new component to inherit the background effects, removing 50-100 lines of duplicated code from each file and centralizing the logic. 
+The previous duplicated background logic has been centralized into `InfoPageShell`. Pages pass a `canvasId` for unique canvas instances and receive consistent visuals and performance behavior across desktop and mobile.

@@ -8,6 +8,10 @@
 - Accepts the sweepstakes `board` with `teamA`/`teamB` resolved by parent.
 - Integrates `QuickEntrySelector` for single free entry.
 - Uses wallet state to enforce entry limits and auth prompts.
+- Calls callable functions:
+  - [`getBoardUserSelections`](../functions/getBoardUserSelections.md) to hydrate current user's taken squares
+  - [`checkSweepstakesParticipation`](../functions/checkSweepstakesParticipation.md) to gate free-entry
+  - [`enterBoard`](../functions/enterBoard.md) to submit the entry
 
 ## 3. Props (as used)
 - `board: BoardType & { teamA: TeamInfo; teamB: TeamInfo }`

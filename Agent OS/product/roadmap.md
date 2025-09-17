@@ -163,3 +163,39 @@ This document outlines the development roadmap for SquarePicks. This version has
 This roadmap represents the comprehensive development plan for SquarePicks, from core functionality through advanced payment systems and future enhancements. Each epic builds upon the previous ones, ensuring a solid foundation while progressively enhancing the user experience to rival industry-leading platforms.
 
 The enhanced payment system (Epic 9) represents a significant milestone that will position SquarePicks as a market leader in sweepstakes platforms, providing users with a professional payment experience that matches or exceeds industry standards while maintaining full compliance with sweepstakes regulations.
+
+---
+
+## Epic 11: Production Readiness (Green to Ship)
+
+-   **User Stories:**
+    -   `[ ]` As an operator, I need CI to block merges unless tests, build, and quality gates pass.
+    -   `[ ]` As an on-call engineer, I need errors and deploys visible in Sentry with alerts.
+    -   `[ ]` As a security lead, I need App Check, rate limits, and strict input validation enforced.
+    -   `[ ]` As a payments operator, I need idempotent deposits, documented refund flow, and sandbox verification.
+    -   `[ ]` As a compliance reviewer, I need KYC/age/location gates and finalized policies.
+    -   `[ ]` As a performance lead, I need mobile Lighthouse and Core Web Vitals budgets met.
+    -   `[ ]` As an accessibility reviewer, I need zero critical axe issues and keyboard operability.
+    -   `[ ]` As a release manager, I need rollback plan and feature flags verified.
+
+-   **Technical Tasks:**
+    -   `[ ]` CI pipeline: lint, typecheck, build, unit, emulator integration tests, Playwright e2e; upload reports.
+    -   `[ ]` Emulator IT: Functions (`enterBoard`, `capturePayPalOrder`, `requestWithdrawal`, `getBoardUserSelections`, `checkSweepstakesParticipation`) happy/edge/error paths.
+    -   `[ ]` E2E (Playwright): auth, deposit (sandbox), board entry, withdraw, help tour replay.
+    -   `[ ]` Observability: Sentry (web + functions) with release tags and source maps; uptime check.
+    -   `[ ]` Security: enforce App Check on Functions/Firestore; add zod/Valibot schemas; per-route rate limiting; remove `x-user-id` trust in `/api/wallet/update-balance` and derive uid server-side.
+    -   `[ ]` Payments: unify capture via callable; add idempotency keys; sandbox-to-live checklist; post-capture consistency checks.
+    -   `[ ]` Headers/CSP: add strict CSP (report-only first), CORS tightening, security headers via middleware.
+    -   `[ ]` Performance: Lighthouse CI on mobile with budgets; verify canvas frame budget on mid-tier devices; image/code-split audits.
+    -   `[ ]` Accessibility: axe/Pa11y in CI; fix focus/ARIA in dialogs/tour/help until zero critical issues.
+    -   `[ ]` Deploy: protect previews, env parity matrix, feature flags, rollback drill and runbook.
+
+-   **Acceptance Criteria:**
+    -   `[ ]` All CI jobs green on PR; main branch protected.
+    -   `[ ]` Sentry showing deploys, error groups, and linked releases; alerts configured.
+    -   `[ ]` App Check required; input validation and rate limits active; wallet update API no longer depends on headers for uid.
+    -   `[ ]` Deposit sandbox flow idempotent and consistent; documented refund/dispute flow.
+    -   `[ ]` KYC/age/location gates enforced; policies finalized and linked.
+    -   `[ ]` Mobile Lighthouse ≥ 90; CLS ≤ 0.1; acceptable GPU load for canvas.
+    -   `[ ]` Zero critical accessibility violations.
+    -   `[ ]` Canary + rollback verified; feature flag tested.

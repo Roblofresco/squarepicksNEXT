@@ -8,6 +8,7 @@
 - Stage control: selecting → confirming.
 - Delegates purchase to parent via `handleBoardAction`.
 - Triggers wallet/setup or deposit dialogs via `openWalletDialog`.
+- On confirm calls callable [`enterBoard`](../functions/enterBoard.md).
 
 ## 3. Props (as used)
 - `entryInteraction`

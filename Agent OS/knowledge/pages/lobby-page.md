@@ -32,6 +32,11 @@ The Lobby Page is the central hub for the SquarePicks application. Its primary p
     -   These handlers manage the state for the quick-entry system and open dialogs for wallet setup or insufficient funds.
 -   **Navigation:**
     -   Renders the `InAppHeader` and `BottomNav` for consistent application navigation.
+ -   **NUX Tour & Help:**
+     -   Imports `driver.js/dist/driver.css` and dynamically loads `driver.js`.
+     -   On first visit (tracked via `localStorage` key `lobby:nux:v1`), filters tour steps to existing DOM nodes and starts a guided tour using `driver.drive({ steps })`.
+     -   Exposes `window.__startLobbyTour` to allow replay from the Help drawer.
+     -   The Help button in `InAppHeader` opens `LobbyHelpDrawer`, which can replay the tour.
 
 ## 3. Core Components Used
 
@@ -43,6 +48,7 @@ The Lobby Page is the central hub for the SquarePicks application. Its primary p
 -   `@/components/lobby/BoardsList`: A vertically scrolling list that renders a `BoardCard` for each game, displaying the active $1 board.
 -   `@/components/lobby/BottomNav`: The main application navigation bar.
 -   `@/components/ui/dialog`: Used to display modals for login prompts, wallet setup, and insufficient funds.
+ -   `@/components/info/LobbyHelpDrawer`: Contextual help with replay tour action.
 
 ## 4. Key Data Dependencies & Hooks
 
@@ -51,6 +57,7 @@ The Lobby Page is the central hub for the SquarePicks application. Its primary p
 -   **Custom Hooks:**
     -   `useWallet`: Provides critical user (`userId`, `emailVerified`), wallet (`hasWallet`, `balance`), and loading state information.
 -   **Next.js Hooks:** `useRouter`, `useSearchParams`, `usePathname` for navigation and reading URL state. 
+ -   **Other:** Uses `localStorage` for first-visit tour gating.
 
 ## 5. Core Components Used
 
@@ -62,4 +69,10 @@ The Lobby Page is the central hub for the SquarePicks application. Its primary p
 - `@/components/lobby/sweepstakes/SweepstakesBoardCard`
 - `@/components/lobby/BottomNav`
 - `@/components/ui/dialog`: Login, Wallet Setup, Deposit dialogs
-- `@/components/effects/StarfieldBackground`: Backdrop when dialogs open 
+- `@/components/effects/StarfieldBackground`: Backdrop when dialogs open
+
+## 6. Functions Called
+
+- Callable: [`enterBoard`](../functions/enterBoard.md)
+- Callable: [`getBoardUserSelections`](../functions/getBoardUserSelections.md)
+- Callable: [`checkSweepstakesParticipation`](../functions/checkSweepstakesParticipation.md) 

@@ -32,9 +32,14 @@ The deposit page allows users to add funds to their wallet using PayPal. This pa
 - `PayPalDepositButton`: Handles complete payment flow
 - `DepositPage`: Main page with amount selection and payment flow
 
+### Functions Called
+- Callable: [`capturePayPalOrder`](../functions/capturePayPalOrder.md)
+- API Route: [`/api/paypal/create-order`](../functions/api-paypal-create-order.md)
+
 ### Integration Points
-- **Firebase Functions**: `createPayPalOrder`, `capturePayPalOrder`
-- **PayPal API**: Order creation and payment capture
+- **Next.js API Routes**: `/api/paypal/create-order` (server-side PayPal order creation)
+- **Firebase Functions**: `capturePayPalOrder` (secure server-side capture)
+- **PayPal API**: Order creation and payment capture via backend
 - **Firestore**: Transaction recording and wallet balance updates
 
 ### Environment Configuration

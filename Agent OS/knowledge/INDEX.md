@@ -39,6 +39,7 @@
 ## Components & Hooks
 - [AllComponentsIndex.md](./components/AllComponentsIndex.md)
 - [InAppHeader.md](./components/InAppHeader.md)
+- [LobbyHelpDrawer.md](./components/LobbyHelpDrawer.md)
 - [BottomNav.md](./components/BottomNav.md)
 - [BoardsList.md](./components/BoardsList.md)
 - [BoardCard.md](./components/BoardCard.md)
@@ -54,3 +55,12 @@
 - [SignupProgressDots.md](./components/SignupProgressDots.md)
 - [useWallet.md](./components/useWallet.md)
 - [AuthBackground.md](./components/AuthBackground.md) 
+
+## Functions (Cloud + API)
+- [enterBoard.md](./functions/enterBoard.md)
+- [getBoardUserSelections.md](./functions/getBoardUserSelections.md)
+- [checkSweepstakesParticipation.md](./functions/checkSweepstakesParticipation.md)
+- [capturePayPalOrder.md](./functions/capturePayPalOrder.md)
+- [requestWithdrawal.md](./functions/requestWithdrawal.md)
+- [verifyLocationFromCoords.md](./functions/verifyLocationFromCoords.md)
+- [api-paypal-create-order.md](./functions/api-paypal-create-order.md)

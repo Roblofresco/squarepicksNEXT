@@ -810,7 +810,14 @@ function GamePageContent() {
                   <button
                     type="button"
                       onClick={handleConfirmSelection} 
-                      disabled={isConfirming || isLoadingBoard || (gameDetails && gameDetails.start_time.toMillis() < Date.now()) || walletIsLoading || currentBoard.status !== 'open' || isLoadingUserSquares}
+                      disabled={
+                        isConfirming ||
+                        isLoadingBoard ||
+                        (((gameDetails?.start_time?.toMillis?.() ?? Number.POSITIVE_INFINITY) < Date.now())) ||
+                        walletIsLoading ||
+                        currentBoard.status !== 'open' ||
+                        isLoadingUserSquares
+                      }
                     className={cn(
                       "w-full rounded-xl px-4 py-3 font-bold text-base sm:text-lg tracking-wide",
                       "glass border text-white border-green-500/95 backdrop-blur-xl backdrop-saturate-200",

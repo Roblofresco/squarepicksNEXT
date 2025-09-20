@@ -514,17 +514,34 @@ function GamePageContent() {
     }
   };
 
-  const handleEntryAmountClick = (amount: number) => {
-    if (!currentBoard?.isFreeEntry && balance < amount) {
+  const handleEntryAmountClick = async (amount: number) => {
+    // Changing entry fee resets current selections
+    setSelectedSquares(new Set());
+    setSelectedEntryAmount(amount);
+
+    // If user not logged in, do not attempt server creation; UI will show no board until login
+    if (!userId) return;
+
+    // If insufficient balance for paid tiers, prompt deposit first
+    if (amount > 0 && balance < amount) {
       setShakeEntryFee(true);
       setTimeout(() => setShakeEntryFee(false), 500);
       setRequiredDepositAmount(amount);
       setIsDepositDialogOpen(true);
       return;
     }
-    // Changing entry fee resets current selections
-    setSelectedSquares(new Set());
-    setSelectedEntryAmount(amount);
+
+    // Proactively ensure an open board exists for this amount
+    try {
+      const functions = getFunctions(undefined, "us-east1");
+      const callable = httpsCallable(functions, 'createBoardIfMissing');
+      await callable({ gameId, amount });
+      // Trigger re-fetch by toggling a counter
+      setEntrySuccessCount((c) => c + 1);
+    } catch (e: any) {
+      console.error('ensure board failed', e);
+      // Non-fatal; UI will continue to show empty state if creation failed
+    }
   };
 
   const renderGrid = () => {

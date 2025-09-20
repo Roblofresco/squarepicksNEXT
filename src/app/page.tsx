@@ -9,6 +9,8 @@ import { LogoIcon } from "@/components/LogoIcon";
 import { LogoWithText } from "@/components/LogoWithText";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function Home() {
   const router = useRouter();
@@ -25,6 +27,20 @@ export default function Home() {
   const lastSizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
   const resizeTimerRef = useRef<any>(null);
   const drawNowRef = useRef<() => void>(() => {});
+
+  // If already authenticated, immediately send to lobby
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        try {
+          router.replace('/lobby');
+        } catch {
+          router.push('/lobby');
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   useEffect(() => {
     setIsMounted(true);

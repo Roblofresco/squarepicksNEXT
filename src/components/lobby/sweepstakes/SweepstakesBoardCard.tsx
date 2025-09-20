@@ -397,7 +397,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
 
   return (
     <div 
-      className={`p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20`}
+      className={`p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20 ${isActive ? 'ring-2 ring-[#5855e0] z-40' : ''}`}
       style={gradientStyle}
     >
       <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
@@ -432,6 +432,10 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
                   onClick={() => {
                     setInputValue("");
                     handleBoardAction('SET_NUMBER', board.id, null);
+                    // Reset interaction to idle when input is cleared by user
+                    if (isActive) {
+                      handleBoardAction('ENTRY_COMPLETED_RESET', board.id);
+                    }
                   }}
                   className="absolute top-[-6px] right-[-6px] p-0.5 bg-black/20 rounded-full text-[#B8860B]/70 hover:text-[#B8860B] hover:bg-black/40 transition-all z-10"
                   aria-label="Clear input"

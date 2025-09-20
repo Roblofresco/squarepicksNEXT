@@ -287,18 +287,35 @@ function LobbyContent() {
                 id: gameSnap.id, ...gameDataFirestore,
                 teamA: gameDataFirestore.away_team_id instanceof DocumentReference ? fetchedTeams[gameDataFirestore.away_team_id.id] : undefined,
                 teamB: gameDataFirestore.home_team_id instanceof DocumentReference ? fetchedTeams[gameDataFirestore.home_team_id.id] : undefined,
-                start_time: gameDataFirestore.start_time as Timestamp,
+                // Times
+                startTime: (gameDataFirestore.startTime as Timestamp) || (gameDataFirestore.start_time as Timestamp),
+                start_time: (gameDataFirestore.start_time as Timestamp) || undefined,
+                // Team refs
                 away_team_id: gameDataFirestore.away_team_id as DocumentReference,
                 home_team_id: gameDataFirestore.home_team_id as DocumentReference,
-                away_score: gameDataFirestore.away_team_score, home_score: gameDataFirestore.home_team_score,
-                is_live: gameDataFirestore.is_live || false,
-                is_over: gameDataFirestore.is_over || false,
+                // Scores (prefer camelCase)
+                awayScore: typeof gameDataFirestore.awayScore === 'number' ? gameDataFirestore.awayScore : gameDataFirestore.away_team_score,
+                homeScore: typeof gameDataFirestore.homeScore === 'number' ? gameDataFirestore.homeScore : gameDataFirestore.home_team_score,
+                away_score: typeof gameDataFirestore.away_team_score === 'number' ? gameDataFirestore.away_team_score : undefined,
+                home_score: typeof gameDataFirestore.home_team_score === 'number' ? gameDataFirestore.home_team_score : undefined,
+                // Live flags (prefer camelCase)
+                isLive: gameDataFirestore.isLive ?? gameDataFirestore.is_live ?? false,
+                isOver: gameDataFirestore.isOver ?? gameDataFirestore.is_over ?? false,
+                is_live: gameDataFirestore.is_live ?? undefined,
+                is_over: gameDataFirestore.is_over ?? undefined,
+                // Period
                 quarter: gameDataFirestore.quarter || '',
                 sport: gameDataFirestore.sport || SWEEPSTAKES_SPORT_ID,
                 status: gameDataFirestore.status || 'scheduled',
+                // Broadcast (prefer camelCase)
+                broadcastProvider: gameDataFirestore.broadcastProvider || gameDataFirestore.broadcast_provider,
+                broadcast_provider: gameDataFirestore.broadcast_provider ?? undefined,
               } as GameType;
               setSweepstakesGame(typedGameData);
-              setSweepstakesStartTime(typedGameData.start_time.toDate());
+              {
+                const ts = typedGameData.startTime || typedGameData.start_time;
+                setSweepstakesStartTime(ts ? ts.toDate() : null);
+              }
               console.log("[LobbyPage] Sweepstakes game data set:", typedGameData);
               setSweepstakesDataError(null);
                 } else {
@@ -346,6 +363,7 @@ function LobbyContent() {
       setWeekNumber(currentWeekNumber);
       setDateRange(timestampRange);
 
+      // Query keeps snake_case for backward compatibility
       const gamesQuery = query(
         collection(db, 'games'),
         where("sport", "==", selectedSport.toUpperCase()),
@@ -374,12 +392,24 @@ function LobbyContent() {
           ...gr,
           teamA: gr.away_team_id instanceof DocumentReference ? fetchedTeamsMap[gr.away_team_id.id] : undefined,
           teamB: gr.home_team_id instanceof DocumentReference ? fetchedTeamsMap[gr.home_team_id.id] : undefined,
+          // times
+          startTime: (gr.startTime as Timestamp) || (gr.start_time as Timestamp),
           start_time: gr.start_time as Timestamp,
+          // refs
           away_team_id: gr.away_team_id as DocumentReference,
           home_team_id: gr.home_team_id as DocumentReference,
-          away_score: gr.away_team_score,
-          home_score: gr.home_team_score,
+          // scores (prefer camelCase)
+          awayScore: typeof gr.awayScore === 'number' ? gr.awayScore : gr.away_team_score,
+          homeScore: typeof gr.homeScore === 'number' ? gr.homeScore : gr.home_team_score,
+          away_score: typeof gr.away_team_score === 'number' ? gr.away_team_score : undefined,
+          home_score: typeof gr.home_team_score === 'number' ? gr.home_team_score : undefined,
           period: gr.quarter,
+          // live flags
+          isLive: gr.isLive ?? gr.is_live ?? false,
+          isOver: gr.isOver ?? gr.is_over ?? false,
+          // broadcast
+          broadcastProvider: gr.broadcastProvider || gr.broadcast_provider,
+          broadcast_provider: gr.broadcast_provider ?? undefined,
         })) as GameType[];
         
         setGames(enrichedGames);

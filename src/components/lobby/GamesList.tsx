@@ -90,16 +90,17 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
     }
   };
 
-  // Format start_time into time and date strings
-  const formatStartTime = (timestamp: Timestamp | undefined): { timeStr: string; dateStr: string } => {
-      if (!timestamp) return { timeStr: '--:--', dateStr: '-- --' };
-      const date = timestamp.toDate();
+  // Format startTime (camelCase preferred, fallback to start_time)
+  const formatStartTime = (g: GameType): { timeStr: string; dateStr: string } => {
+      const ts: Timestamp | undefined = (g as any).startTime || (g as any).start_time;
+      if (!ts) return { timeStr: '--:--', dateStr: '-- --' };
+      const date = ts.toDate();
       const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute:'2-digit' });
       const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
       return { timeStr, dateStr };
   };
   
-  const { timeStr, dateStr } = formatStartTime(game.start_time);
+  const { timeStr, dateStr } = formatStartTime(game);
 
   return (
     <HoverCard>
@@ -116,7 +117,7 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
           <Card className="relative w-[150px] sm:w-[240px] bg-gradient-to-b from-background-primary to-background-secondary border-accent-1/20">
             <Link href={`/game/${game.id}`} onClick={handleClick}>
               <CardContent className="flex items-center justify-between p-0.5 sm:p-2 h-[50px] sm:h-[90px]">
-                {game.is_live && (
+                {(game.isLive ?? game.is_live) && (
                   <Badge variant="destructive" className="absolute top-0.5 sm:top-1 right-0.5 sm:right-1 text-[0.45rem] sm:text-[0.5rem] uppercase">
                     Live
                   </Badge>
@@ -128,18 +129,18 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
                 {/* Center Column: Game Details */}
                 <div className="flex flex-col items-center justify-center w-1/2 text-center px-0.5 sm:px-1"> 
                   <div className="text-xs sm:text-sm font-bold mb-0.5 sm:mb-1 text-white"> 
-                    {game.is_live ? `${game.away_score ?? 0} - ${game.home_score ?? 0}` : 'VS'}
+                    {(game.isLive ?? game.is_live) ? `${(game.awayScore ?? game.away_score) ?? 0} - ${(game.homeScore ?? game.home_score) ?? 0}` : 'VS'}
                   </div>
                   <div className="text-[10px] sm:text-xs text-text-secondary mb-0.5"> 
-                    {game.is_live ? (
-                      <span>{game.period || game.quarter || 'Live'}</span>
+                    {(game.isLive ?? game.is_live) ? (
+                      <span>{game.period || (game.quarter as any) || 'Live'}</span>
                     ) : (
                       <span>{timeStr} - {dateStr}</span>
                     )}
                   </div>
-                  {game.broadcast_provider && (
+                  {(game.broadcastProvider || game.broadcast_provider) && (
                     <span className="text-[0.55rem] sm:text-[0.65rem] text-gray-400 font-medium truncate w-full">
-                      {game.broadcast_provider}
+                      {game.broadcastProvider || game.broadcast_provider}
                     </span>
                   )}
                 </div>
@@ -157,15 +158,15 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
           <div className="space-y-1">
             <h4 className="text-sm font-semibold text-white">{game.teamA?.fullName} vs {game.teamB?.fullName}</h4>
             <div className="text-sm text-white/70">
-              {game.is_live ? (
-                <span>Currently Live • {game.period || game.quarter}</span>
+              {(game.isLive ?? game.is_live) ? (
+                <span>Currently Live • {game.period || (game.quarter as any)}</span>
               ) : (
                 <span>Starts {timeStr} on {dateStr}</span>
               )}
             </div>
-            {game.broadcast_provider && (
+            {(game.broadcastProvider || game.broadcast_provider) && (
               <div className="text-xs text-white/50">
-                Watch on {game.broadcast_provider}
+                Watch on {game.broadcastProvider || game.broadcast_provider}
               </div>
             )}
           </div>

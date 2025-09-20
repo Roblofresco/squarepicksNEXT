@@ -35,12 +35,17 @@ interface GameDetails extends Omit<Game, 'teamA' | 'teamB'> {
   id: string;
   teamA: TeamInfo;
   teamB: TeamInfo;
-  start_time: Timestamp;
+  // normalized preferred fields + fallbacks retained in type
+  startTime?: Timestamp;
+  start_time?: Timestamp;
+  homeScore?: number;
+  awayScore?: number;
   home_score?: number;
   away_score?: number;
   time?: string;
   date?: string;
   period?: string;
+  broadcastProvider?: string;
   broadcast_provider?: string;
   away_team_id: DocumentReference;
   home_team_id: DocumentReference;
@@ -161,18 +166,22 @@ function GamePageContent() {
         setGameDetails({
           id: gameSnap.id,
           sport: gameData.sport,
-          status: gameData.is_live ? 'live' : (gameData.is_over ? 'final' : 'upcoming'),
+          status: (gameData.isLive ?? gameData.is_live) ? 'live' : ((gameData.isOver ?? gameData.is_over) ? 'final' : 'upcoming'),
           teamA: teamAData, teamB: teamBData,
           away_team_id: gameData.away_team_id as DocumentReference,
           home_team_id: gameData.home_team_id as DocumentReference,
-          time: !gameData.is_live && !gameData.is_over && gameData.start_time ? new Date(gameData.start_time.seconds * 1000).toLocaleTimeString([], { hour: 'numeric', minute:'2-digit' }) : undefined,
-          date: !gameData.is_live && !gameData.is_over && gameData.start_time ? new Date(gameData.start_time.seconds * 1000).toLocaleDateString([], { month: 'short', day: 'numeric' }) : undefined,
-          period: gameData.is_live ? (gameData.period?.toString() || 'Live') : undefined,
+          time: !(gameData.isLive ?? gameData.is_live) && !(gameData.isOver ?? gameData.is_over) && (gameData.startTime || gameData.start_time) ? new Date(((gameData.startTime || gameData.start_time) as Timestamp).toMillis()).toLocaleTimeString([], { hour: 'numeric', minute:'2-digit' }) : undefined,
+          date: !(gameData.isLive ?? gameData.is_live) && !(gameData.isOver ?? gameData.is_over) && (gameData.startTime || gameData.start_time) ? new Date(((gameData.startTime || gameData.start_time) as Timestamp).toMillis()).toLocaleDateString([], { month: 'short', day: 'numeric' }) : undefined,
+          period: (gameData.isLive ?? gameData.is_live) ? (gameData.period?.toString() || 'Live') : undefined,
           quarter: gameData.quarter,
+          broadcastProvider: gameData.broadcastProvider || gameData.broadcast_provider || undefined,
           broadcast_provider: gameData.broadcast_provider || undefined,
-          home_score: gameData.home_team_score ?? 0,
-          away_score: gameData.away_team_score ?? 0,
-          start_time: gameData.start_time as Timestamp
+          homeScore: typeof gameData.homeScore === 'number' ? gameData.homeScore : (gameData.home_team_score ?? 0),
+          awayScore: typeof gameData.awayScore === 'number' ? gameData.awayScore : (gameData.away_team_score ?? 0),
+          home_score: typeof gameData.home_team_score === 'number' ? gameData.home_team_score : undefined,
+          away_score: typeof gameData.away_team_score === 'number' ? gameData.away_team_score : undefined,
+          startTime: (gameData.startTime as Timestamp) || (gameData.start_time as Timestamp),
+          start_time: (gameData.start_time as Timestamp) || undefined,
         });
       } catch (err: any) { setError(err.message || 'Failed to load game details.'); }
       finally { setIsLoadingGame(false); }
@@ -343,7 +352,7 @@ function GamePageContent() {
   const handleSquareClick = (squareNumber: number) => {
     // === Pre-computation and State Checks ===
     const isBoardReady = currentBoard && currentBoard.status === 'open';
-    const hasGameStarted = gameDetails && gameDetails.start_time && gameDetails.start_time.toMillis() < Date.now();
+    const hasGameStarted = gameDetails && (gameDetails.startTime || gameDetails.start_time) && ((gameDetails.startTime || gameDetails.start_time) as Timestamp).toMillis() < Date.now();
     const isSquareTaken = currentBoard?.selected_indexes?.includes(squareNumber);
 
     // === Immediate Blockers (no interaction possible) ===
@@ -463,7 +472,7 @@ function GamePageContent() {
 
   const handleConfirmSelection = async () => {
     if (selectedSquares.size === 0 || !currentBoard || currentBoard.status !== 'open' || !userId || walletIsLoading || isConfirming || isLoadingUserSquares) return;
-    if (gameDetails && gameDetails.start_time.toMillis() < Date.now()) {
+    if (gameDetails && (gameDetails.startTime || gameDetails.start_time) && ((gameDetails.startTime || gameDetails.start_time) as Timestamp).toMillis() < Date.now()) {
         toast.error("Cannot enter, game has already started.");
         return;
     }
@@ -572,7 +581,7 @@ function GamePageContent() {
       );
     } else {
       const gridItems = [];
-      const gameHasStarted = gameDetails && gameDetails.start_time && gameDetails.start_time.toMillis() < Date.now();
+      const gameHasStarted = gameDetails && (gameDetails.startTime || gameDetails.start_time) && ((gameDetails.startTime || gameDetails.start_time) as Timestamp).toMillis() < Date.now();
       const boardIsOpen = currentBoard.status === 'open';
 
       for (let i = 0; i < 100; i++) {

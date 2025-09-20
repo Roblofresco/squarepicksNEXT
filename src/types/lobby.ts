@@ -44,9 +44,14 @@ export interface GameTeamInfo {
 export interface Game {
   id: string;           // Firestore document ID (or the value from 'game_id' field if it's the primary business key)
   sport: string;        // From 'sport' field in Firestore
-  status: string;       // From 'status' field in Firestore (e.g., "UPCOMING", "LIVE", "FINAL")
-  is_live?: boolean;     // From 'is_live' field in Firestore
-  is_over?: boolean;     // From 'is_over' field in Firestore
+  status: string;       // From 'status' field in Firestore (e.g., "scheduled", "live", "final")
+
+  // Normalized camelCase flags (preferred)
+  isLive?: boolean;
+  isOver?: boolean;
+  // Backward-compat fields (snake_case) that may still exist in some docs
+  is_live?: boolean;
+  is_over?: boolean;
 
   away_team_id: DocumentReference; // Firestore 'away_team_id' reference
   home_team_id: DocumentReference; // Firestore 'home_team_id' reference
@@ -55,23 +60,27 @@ export interface Game {
   teamA: TeamInfo; 
   teamB: TeamInfo;
 
-  start_time: Timestamp; // From 'start_time' field in Firestore
+  // Normalized start time (preferred)
+  startTime?: Timestamp;
+  // Backward-compat field
+  start_time?: Timestamp;
 
-  // Scores - using direct fields from Firestore schema for clarity
-  away_score?: number;    // From 'away_team_score' in Firestore (or calculated from quarter scores)
-  home_score?: number;    // From 'home_team_score' in Firestore (or calculated from quarter scores)
-  // Individual quarter scores are also available in Firestore: 
-  // away_q1_score, home_q1_score, etc.
-  // away_f_score, home_f_score (final scores if different from team_score)
+  // Scores (preferred camelCase)
+  awayScore?: number;
+  homeScore?: number;
+  // Backward-compat score fields
+  away_score?: number;
+  home_score?: number;
 
-  period?: string;        // Derived from 'quarter' field in Firestore (e.g., "Q1", "HALFTIME", "FINAL")
-  quarter?: string;       // Actual 'quarter' field from Firestore
+  // Individual quarter scores may also be present on the document
+
+  period?: string;        // Derived from 'quarter' field (e.g., "Q1", "HALFTIME", "FINAL")
+  quarter?: string;       // Raw quarter/period label
   
-  broadcast_provider?: string; // From 'broadcast_provider' field in Firestore
-  // game_id?: string; // Specific game identifier if different from document ID, as per schema
-  // created_time?: Timestamp; // Available
-  // updated_time?: Timestamp; // Available
-  // end_time?: Timestamp | null; // Available
+  // Preferred camelCase broadcast provider
+  broadcastProvider?: string;
+  // Backward-compat field
+  broadcast_provider?: string;
 }
 
 // Interface for Board data used in BoardsList and LobbyPage

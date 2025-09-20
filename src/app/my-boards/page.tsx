@@ -164,8 +164,8 @@ export default function MyBoardsPage() {
         }
         
         let gameDateTimeStr = new Date().toISOString(); 
-        if (gameData && gameData.start_time && gameData.start_time.toDate) {
-             gameDateTimeStr = gameData.start_time.toDate().toISOString();
+        if (gameData && (gameData.startTime || gameData.start_time) && (gameData.startTime || gameData.start_time).toDate) {
+             gameDateTimeStr = ((gameData.startTime || gameData.start_time).toDate()).toISOString();
         } else if (boardData.created_time && boardData.created_time.toDate) { 
              gameDateTimeStr = boardData.created_time.toDate().toISOString();
         }
@@ -177,8 +177,8 @@ export default function MyBoardsPage() {
           awayTeam: awayTeamData || { name: "Team B", initials: "TB", logo: undefined },
           gameDateTime: gameDateTimeStr,
           status: boardData.status as BoardStatus || 'open' as BoardStatus,
-          is_live: gameData?.is_live || false, 
-          broadcast_provider: gameData?.broadcast_provider || undefined,
+          is_live: (gameData?.isLive ?? gameData?.is_live) || false, 
+          broadcast_provider: gameData?.broadcastProvider || gameData?.broadcast_provider || undefined,
           sport: gameData?.sport || "N/A", 
           league: gameData?.leagueName || "N/A",
           userSquareSelectionCount: userPickedSquaresData.length,
@@ -365,8 +365,8 @@ export default function MyBoardsPage() {
           }
           
           let gameDateTimeStr = new Date().toISOString(); 
-          if (gameData && gameData.start_time && gameData.start_time.toDate) {
-               gameDateTimeStr = gameData.start_time.toDate().toISOString();
+          if (gameData && (gameData.startTime || gameData.start_time) && (gameData.startTime || gameData.start_time).toDate) {
+               gameDateTimeStr = ((gameData.startTime || gameData.start_time).toDate()).toISOString();
           } else if (boardData.created_time && boardData.created_time.toDate) { 
                gameDateTimeStr = boardData.created_time.toDate().toISOString();
           }
@@ -378,8 +378,8 @@ export default function MyBoardsPage() {
             awayTeam: awayTeamData || { name: "Team B", initials: "TB", logo: undefined },
             gameDateTime: gameDateTimeStr,
             status: boardData.status as BoardStatus || 'open' as BoardStatus,
-            is_live: gameData?.is_live || false, 
-            broadcast_provider: gameData?.broadcast_provider || undefined, // Populate broadcast_provider
+            is_live: (gameData?.isLive ?? gameData?.is_live) || false, 
+            broadcast_provider: gameData?.broadcastProvider || gameData?.broadcast_provider || undefined, // Populate broadcast_provider
             sport: gameData?.sport || "N/A", 
             league: gameData?.leagueName || "N/A", // leagueName might not be on game doc based on memory
             userSquareSelectionCount: userPickedSquaresData.length,

@@ -567,7 +567,7 @@ function LobbyContent() {
       const steps = getSteps();
       if (!steps.length) {
         if (attempts > 0) {
-          setTimeout(() => runTour(attempts - 1), 700);
+          setTimeout(() => runTour(attempts - 1), 900);
         } else {
           console.warn('Tour aborted: no available steps');
         }
@@ -590,12 +590,12 @@ function LobbyContent() {
 
     // Expose replay globally regardless of first-visit gating
     ;(window as any).__startLobbyTour = async () => {
-      await runTour(5);
+      await runTour(10);
     };
 
     const start = async () => {
       try {
-        await runTour(3);
+        await runTour(10);
         try { localStorage.setItem('lobby:nux:v1', '1'); } catch {}
       } catch (e) {
         console.warn('Tour failed to start', e);

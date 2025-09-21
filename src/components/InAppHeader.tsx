@@ -107,7 +107,6 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InApp
             aria-label="Help"
             onClick={() => setHelpOpen(true)}
             className="h-7 w-7 rounded-full flex items-center justify-center hover:opacity-80"
-            data-tour="help-button"
           >
             <HelpCircle size={18} />
           </button>
@@ -153,33 +152,6 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InApp
       <LobbyHelpDrawer
         open={helpOpen}
         onOpenChange={setHelpOpen}
-        onReplayTour={() => {
-          try { localStorage.removeItem('lobby:nux:v1'); } catch {}
-          setHelpOpen(false);
-          // Allow sheet close animation to finish, then start tour. Build steps dynamically.
-          const startAfterClose = async () => {
-            try {
-              if ((window as any).__startLobbyTour) {
-                await (window as any).__startLobbyTour();
-                return;
-              }
-              const mod = await import('driver.js');
-              const driver = mod.driver({ showProgress: true, allowClose: true, nextBtnText: 'Next', prevBtnText: 'Back', doneBtnText: 'Done' });
-              const raw = [
-                { selector: '[data-tour="sport-selector"]', step: { element: '[data-tour="sport-selector"]', popover: { title: 'Choose Your View', description: 'Switch between free Sweepstakes and regular sports boards.', side: 'bottom' } } },
-                { selector: '[data-tour="sweepstakes"]', step: { element: '[data-tour="sweepstakes"]', popover: { title: 'Free Weekly Entry', description: 'Enter the weekly sweepstakes. Numbers are assigned at game time.', side: 'bottom' } } },
-                { selector: '[data-tour="games-list"]', step: { element: '[data-tour="games-list"]', popover: { title: 'Pick a Game', description: 'Select a game to see related boards.', side: 'bottom' } } },
-                { selector: '[data-tour="boards-list"]', step: { element: '[data-tour="boards-list"]', popover: { title: 'Boards', description: 'Choose a board and start your entry.', side: 'bottom' } } },
-                { selector: '[data-tour="bottom-nav"]', step: { element: '[data-tour="bottom-nav"]', popover: { title: 'Navigation', description: 'Access wallet, profile, and more.', side: 'top' } } },
-              ];
-              const steps = raw.filter(s => !!document.querySelector(s.selector)).map(s => s.step);
-              if (steps.length === 0) return;
-              driver.drive({ steps });
-            } catch {}
-          };
-          // Slightly longer delay to ensure the Sheet overlay unmounts (mobile-safe)
-          setTimeout(() => { requestAnimationFrame(() => { startAfterClose(); }); }, 700);
-        }}
       />
     </div>
   );

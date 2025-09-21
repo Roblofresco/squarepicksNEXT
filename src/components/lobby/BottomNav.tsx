@@ -69,7 +69,7 @@ const BottomNavComponent = ({ user, onProtectedAction }: BottomNavProps) => {
   ];
 
   return (
-    <nav data-tour="bottom-nav" className="fixed bottom-0 left-0 right-0 h-16 w-full bg-background-secondary/80 backdrop-blur-sm border-t border-gray-700/50 z-50 rounded-tl-2xl rounded-tr-2xl px-0">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 w-full bg-background-secondary/80 backdrop-blur-sm border-t border-gray-700/50 z-50 rounded-tl-2xl rounded-tr-2xl px-0">
       <div className="flex justify-around items-stretch h-full w-full"> 
         {navItems.map((item) => {
           const isActive = pathname === item.href;

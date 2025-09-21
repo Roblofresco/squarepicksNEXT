@@ -588,26 +588,24 @@ function LobbyContent() {
       }
     };
 
+    // Expose replay globally regardless of first-visit gating
+    ;(window as any).__startLobbyTour = async () => {
+      await runTour(5);
+    };
+
     const start = async () => {
       try {
         await runTour(3);
         try { localStorage.setItem('lobby:nux:v1', '1'); } catch {}
-        // Expose for replay
-        ;(window as any).__startLobbyTour = async () => {
-          await runTour(5);
-        }
       } catch (e) {
         console.warn('Tour failed to start', e);
       }
     };
-    // Start automatically only once per session
+    // Force start on page load for debugging/verification
     if (!tourStartedRef.current) {
-      const seen = (() => { try { return localStorage.getItem('lobby:nux:v1') === '1'; } catch { return true; } })();
-      if (!seen) {
-        tourStartedRef.current = true;
-        const t = setTimeout(start, 600);
-        return () => clearTimeout(t);
-      }
+      tourStartedRef.current = true;
+      const t = setTimeout(start, 400);
+      return () => clearTimeout(t);
     }
   }, []);
 

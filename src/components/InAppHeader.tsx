@@ -102,7 +102,15 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InApp
       )}
       {user && (
         <div className="flex items-center space-x-3">
-          <NotificationIcon />
+          <button
+            type="button"
+            aria-label="Help"
+            onClick={() => setHelpOpen(true)}
+            className="h-7 w-7 rounded-full flex items-center justify-center hover:opacity-80"
+            data-tour="help-button"
+          >
+            <HelpCircle size={18} />
+          </button>
           <div className="relative flex items-center justify-end min-w-[28px]">
           <AnimatePresence mode="wait" initial={false}>
             {showBalancePill ? (
@@ -139,15 +147,7 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InApp
             )}
           </AnimatePresence>
           </div>
-          <button
-            type="button"
-            aria-label="Help"
-            onClick={() => setHelpOpen(true)}
-            className="h-7 w-7 rounded-full flex items-center justify-center hover:opacity-80"
-            data-tour="help-button"
-          >
-            <HelpCircle size={18} />
-          </button>
+          <NotificationIcon />
         </div>
       )}
       <LobbyHelpDrawer

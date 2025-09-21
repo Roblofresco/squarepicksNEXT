@@ -102,8 +102,17 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
   }, [targetDate]); // Rerun effect if targetDate changes
   // --- End Countdown State --- 
 
+  const [comingSoonVisible, setComingSoonVisible] = useState(false);
+  const [comingSoonKey, setComingSoonKey] = useState(0);
+
   const handleSelect = (sportId: string) => {
     onSelectSport(sportId);
+    if (sportId !== 'sweepstakes') {
+      // Show a single overlay spanning all three regular sports
+      setComingSoonKey(prev => prev + 1);
+      setComingSoonVisible(true);
+      setTimeout(() => setComingSoonVisible(false), 3000);
+    }
   };
 
   // Function to handle clicking the "More" button
@@ -282,6 +291,27 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                   </button>
                 );
               })}
+              {/* Coming Soon overlay spanning all three buttons */}
+              <AnimatePresence mode="wait">
+                {comingSoonVisible && (
+                  <motion.div
+                    key={`coming-soon-${comingSoonKey}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0, 1, 0.6, 1, 0] }}
+                    transition={{ duration: 3, times: [0, 0.25, 0.5, 0.75, 1] }}
+                    className="absolute left-0 right-0 mx-0 px-0 sm:px-[50px]"
+                    style={{ top: 0 }}
+                  >
+                    <div className="pointer-events-none w-full">
+                      <div className="mx-0 flex gap-1">
+                        <div className="flex-1 h-[48px] rounded-lg border border-yellow-500/60 bg-yellow-400/10 backdrop-blur-[2px] flex items-center justify-center">
+                          <span className="text-yellow-300 font-semibold tracking-wide">Coming Soon</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>)
           )}
         </AnimatePresence>

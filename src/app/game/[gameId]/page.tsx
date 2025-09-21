@@ -127,6 +127,10 @@ function GamePageContent() {
   const scrollDownTimerRef = useRef<number | null>(null);
   const scrollUpTimerRef = useRef<number | null>(null);
 
+  // Compute optimistic displayed balance: subtract cost of currently selected squares
+  const costCommitted = selectedSquares.size * selectedEntryAmount;
+  const displayedBalance = Math.max(0, balance - costCommitted);
+
   const handleWalletClick = useCallback(() => {
     if (!userId) {
       router.push('/login');
@@ -706,7 +710,7 @@ function GamePageContent() {
         <div className="w-full bg-background-primary">
           {!(selectedSquares.size > 0 && currentBoard && currentBoard.status === 'open') && (
             <div className="flex justify-end px-4 pt-2 pb-1">
-              <WalletPill balance={balance} onClick={handleWalletClick} variant="header" />
+              <WalletPill balance={displayedBalance} onClick={handleWalletClick} variant="header" />
             </div>
           )}
         </div>
@@ -854,7 +858,7 @@ function GamePageContent() {
                   </button>
                   {selectedSquares.size > 0 && (
                     <div className="absolute -top-3 right-3 z-40 pointer-events-auto">
-                      <WalletPill balance={balance} onClick={handleWalletClick} variant="docked" />
+                      <WalletPill balance={displayedBalance} onClick={handleWalletClick} variant="docked" />
                     </div>
                   )}
                 </div>

@@ -698,10 +698,10 @@ export default function MyBoardsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background-primary pb-16"> {/* Added pb-16 for BottomNav clearance */}
-      <main className="flex-grow container mx-auto py-8 px-4">
-        <header className="mb-4 flex items-center gap-3">
-          <Image src="/brandkit/logos/sp-logo-app-icon.png" alt="SquarePicks" width={28} height={28} className="rounded" />
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-text-primary">My Boards</h1>
+      <main className="flex-grow container mx-auto pt-2 md:pt-3 px-4">
+        <header className="mb-3 flex items-center gap-3">
+          <Image src="/brandkit/logos/sp-logo-icon-default-text-white.svg" alt="SquarePicks" width={180} height={30} priority />
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text-primary">My Boards</h1>
         </header>
 
         <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full">

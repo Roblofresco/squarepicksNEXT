@@ -3,6 +3,7 @@
 export const runtime = 'edge';
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import 'driver.js/dist/driver.css';
 import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast, Toaster } from 'react-hot-toast';
@@ -546,6 +547,51 @@ function LobbyContent() {
 
   console.log("[LobbyPage] Render. isWalletLoading:", isWalletLoading, "userId:", userId, "emailV:", emailVerified, "selSport:", selectedSport, "loadSweep:", isLoadingSweepstakesData, "sweepB:", !!sweepstakesBoard, "sweepG:", !!sweepstakesGame);
 
+  // Dev-only Step 1 tour (sport-selector) when ?tour=dev
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('tour') || params.get('tour') !== 'dev') return;
+    const run = async () => {
+      try {
+        const { driver } = await import('driver.js');
+        const driverObj = driver({
+          showProgress: false,
+          allowClose: true,
+          disableActiveInteraction: true,
+        });
+        const steps = [
+          {
+            element: '[data-tour="sport-selector"]',
+            popover: { title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', side: 'bottom', align: 'center' }
+          },
+          {
+            element: '[data-tour="sweepstakes"]',
+            popover: { title: 'Free Weekly Entry', description: 'One free entry weekly. Numbers assigned at game time.', side: 'bottom', align: 'center' }
+          },
+          {
+            element: '[data-tour="bottom-nav"]',
+            popover: { title: 'Navigation', description: 'Wallet, profile, and more.', side: 'top', align: 'center' }
+          },
+        ];
+        // Only include existing elements
+        const filtered = steps.filter(s => !!document.querySelector(s.element as string));
+        if (!filtered.length) return;
+        driverObj.setSteps(filtered as any);
+        // Lock actual sport tabs during step 1
+        document.body.classList.add('tour-step1');
+        driverObj.drive();
+        const cleanup = () => document.body.classList.remove('tour-step1');
+        window.addEventListener('driver:destroy', cleanup, { once: true } as any);
+        // Fallback cleanup in 30s
+        const t = setTimeout(cleanup, 30000);
+        return () => { clearTimeout(t); cleanup(); };
+      } catch {}
+    };
+    const t = setTimeout(run, 500);
+    return () => clearTimeout(t);
+  }, []);
+
   
 
   if (showPrimaryLoadingScreen()) {
@@ -581,7 +627,7 @@ function LobbyContent() {
       <div className="flex-grow pb-20">
         <main className="px-4 py-2"> 
           <div className="w-full">
-            <div>
+            <div data-tour="sport-selector">
             <SportSelector 
               sports={initialSportsData} 
               selectedSportId={selectedSport} 
@@ -659,7 +705,7 @@ function LobbyContent() {
                   {selectedSport === SWEEPSTAKES_SPORT_ID ? (
                     <>
                       {sweepstakesGame && sweepstakesBoard && sweepstakesGame.teamA && sweepstakesGame.teamB && sweepstakesTeams[sweepstakesGame.teamA.id] && sweepstakesTeams[sweepstakesGame.teamB.id] ? (
-                        <div>
+                        <div data-tour="sweepstakes">
                           {/* Primary condition: we have all necessary data */}
                               <SweepstakesScoreboard 
                                 awayTeam={sweepstakesTeams[sweepstakesGame.teamA.id]!}

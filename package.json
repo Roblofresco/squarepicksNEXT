@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "driver.js": "1.3.6",
     "@hookform/resolvers": "^5.2.1",
     "@paypal/react-paypal-js": "^8.8.3",
     "@radix-ui/react-alert-dialog": "^1.1.11",

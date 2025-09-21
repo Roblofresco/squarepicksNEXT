@@ -1,3 +1,5 @@
+/* Disable sport tab clicks during Step 1 */
+.tour-step1 [data-sport-tab] { pointer-events: none !important; }
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -700,7 +700,7 @@ export default function MyBoardsPage() {
     <div className="flex flex-col min-h-screen bg-background-primary pb-16"> {/* Added pb-16 for BottomNav clearance */}
       <main className="flex-grow container mx-auto pt-2 md:pt-3 px-4">
         <header className="mb-3 flex items-center gap-3">
-          <Image src="/brandkit/logos/sp-logo-icon-default-text-white.svg" alt="SquarePicks" width={180} height={30} priority />
+          <Image src="/brandkit/logos/sp-logo-icon-default.svg" alt="SquarePicks" width={28} height={28} priority />
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text-primary">My Boards</h1>
         </header>
 
@@ -722,7 +722,7 @@ export default function MyBoardsPage() {
           </TabsList>
             
           </div>
-          <div className="border-b border-white/10 my-4" />
+          <div className="border-b border-white/10 mt-1 mb-6" />
           <TabsContent value="active" className="mt-0">
             {renderBoardGrid(filteredActiveBoards, 'active')}
           </TabsContent>

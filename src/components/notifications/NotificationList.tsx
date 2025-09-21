@@ -36,10 +36,10 @@ export const NotificationList = ({ onClose }: NotificationListProps) => {
   }
 
   return (
-    <div className="notification-list-container max-h-[70vh] flex flex-col 
+    <div className="notification-list-container flex flex-col 
                     bg-slate-800/70 backdrop-blur-md 
                     border border-accent-1/50 rounded-lg 
-                    shadow-2xl shadow-accent-1/30">
+                    shadow-2xl shadow-accent-1/30 max-h-[80vh]">
       <div className="p-3 border-b border-slate-700 flex justify-between items-center">
         <h3 className="font-semibold text-lg text-slate-100">Notifications</h3>
         <div className="flex items-center gap-3">

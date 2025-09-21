@@ -14,6 +14,7 @@ import { User as FirebaseUser } from 'firebase/auth'; // Firebase user type
 import { 
   collection, query, where, getDocs, doc, getDoc, DocumentData, Timestamp, onSnapshot 
 } from 'firebase/firestore'; // Firestore imports
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle
 } from "@/components/ui/dialog"; // Import Dialog components
@@ -108,31 +109,38 @@ export default function MyBoardsPage() {
         const boardData = boardDoc.data();
         console.log(`[MyBoardsPage] Checking board ID: ${boardDoc.id}, Status: ${boardData.status}`);
 
-        const userRef = doc(db, "users", userId);
-        const squaresQueryRef = query(collection(db, "boards", boardDoc.id, "squares"), where("userID", "==", userRef)); 
-        const userSquaresSnap = await getDocs(squaresQueryRef);
-
-        if (userSquaresSnap.empty) {
-          // Not a user board; ensure listeners are cleaned if any existed
+        // Use Cloud Function to fetch current user's selections (Firestore rules block client reads)
+        const functions = getFunctions(undefined, 'us-east1');
+        const getSelectionsFn = httpsCallable(functions, 'getBoardUserSelections');
+        let userPickedSquaresData: BoardSquare[] = [];
+        try {
+          const result = await getSelectionsFn({ boardID: boardDoc.id });
+          const data = result.data as { selectedIndexes?: number[] };
+          const idxs = Array.isArray(data?.selectedIndexes) ? data!.selectedIndexes! : [];
+          if (idxs.length === 0) {
+            const existing = boardListenersRef.current.get(boardDoc.id);
+            if (existing) {
+              existing.board();
+              existing.squares();
+              if (existing.winners) existing.winners();
+              if (existing.wins && existing.wins.length) existing.wins.forEach(u => u());
+              boardListenersRef.current.delete(boardDoc.id);
+            }
+            return null;
+          }
+          userPickedSquaresData = idxs.map((i) => ({ index: typeof i === 'number' ? i : -1, isUserSquare: true, square: undefined }));
+        } catch (cfErr) {
+          console.warn('[MyBoardsPage] getBoardUserSelections failed for board', boardDoc.id, cfErr);
           const existing = boardListenersRef.current.get(boardDoc.id);
           if (existing) {
             existing.board();
             existing.squares();
+            if (existing.winners) existing.winners();
+            if (existing.wins && existing.wins.length) existing.wins.forEach(u => u());
             boardListenersRef.current.delete(boardDoc.id);
           }
-          return null; 
+          return null;
         }
-        
-        const userPickedSquaresData: BoardSquare[] = userSquaresSnap.docs.map((sqDoc: any) => {
-            const data = sqDoc.data();
-            const squareIndex = typeof data.index === 'number' ? data.index : -1; 
-          const squareValue = typeof data.square === 'string' ? data.square : undefined;
-            return { 
-                index: squareIndex,
-                isUserSquare: true, 
-            square: squareValue,
-            };
-        });
 
         let gameData: DocumentData | null = null;
         let homeTeamData: TeamInfo | undefined = undefined;
@@ -198,8 +206,8 @@ export default function MyBoardsPage() {
         // Setup realtime listeners for this board if not already
         if (!boardListenersRef.current.has(boardDoc.id)) {
           const boardRef = doc(db, 'boards', boardDoc.id);
-          const userRefForSquares = doc(db, 'users', userId);
-          const squaresRef = query(collection(db, 'boards', boardDoc.id, 'squares'), where('userID', '==', userRefForSquares));
+          // Squares subcollection is not readable by clients per rules; skip attaching a listener
+          const noOp = () => {};
 
           const unsubBoard = onSnapshot(boardRef, (snap) => {
             if (!snap.exists()) return;
@@ -214,21 +222,7 @@ export default function MyBoardsPage() {
             } : ab));
           });
 
-          const unsubSquares = onSnapshot(squaresRef, (sqSnap) => {
-            const picks: BoardSquare[] = [];
-            let latestTs: number = 0;
-            sqSnap.forEach((d) => {
-              const data = d.data();
-              picks.push({
-                index: typeof data.index === 'number' ? data.index : -1,
-                isUserSquare: true,
-                square: typeof data.square === 'string' ? data.square : undefined,
-              });
-              const ts = data.created_time?.toDate ? data.created_time.toDate().getTime() : (data.updated_time?.toDate ? data.updated_time.toDate().getTime() : 0);
-              if (ts > latestTs) latestTs = ts;
-            });
-            setActiveBoardsData(prev => prev.map(ab => ab.id === boardDoc.id ? { ...ab, userPickedSquares: picks, userSquareSelectionCount: picks.length, purchasedAt: latestTs ? new Date(latestTs).toISOString() : ab.purchasedAt } : ab));
-          });
+          // Keep purchasedAt as-is; can be refreshed on next fetch if needed
 
           // Winners subcollection listener (public summary of winning indexes)
           const winnersCollRef = collection(db, 'boards', boardDoc.id, 'winners');
@@ -288,7 +282,7 @@ export default function MyBoardsPage() {
             winsUnsubs.push(unsub);
           });
 
-          boardListenersRef.current.set(boardDoc.id, { board: unsubBoard, squares: unsubSquares, winners: unsubWinners, wins: winsUnsubs });
+          boardListenersRef.current.set(boardDoc.id, { board: unsubBoard, squares: noOp, winners: unsubWinners, wins: winsUnsubs });
         }
 
         return appBoardEntry;

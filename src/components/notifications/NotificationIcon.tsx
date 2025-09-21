@@ -43,7 +43,7 @@ export const NotificationIcon = () => {
         )}
       </button>
       {isOpen && !isLoadingContext && (
-        <div className="absolute right-0 mt-2 z-50 w-80 md:w-96 bg-popover shadow-lg rounded-md border border-border">
+        <div className="absolute right-0 mt-2 z-50 w-[92vw] max-w-sm sm:w-96 bg-popover shadow-lg rounded-md border border-border overflow-hidden max-h-[80vh]">
           <NotificationList onClose={() => setIsOpen(false)} />
         </div>
       )}

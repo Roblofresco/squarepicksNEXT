@@ -163,7 +163,7 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
   };
 
   return (
-    <div className="mb-2 w-full min-h-[64px]">
+    <div className="mb-2 w-full min-h-[64px]" data-tour="sport-selector-restricted">
       <div className="w-full"> 
         <AnimatePresence mode="wait" initial={false}>
           {sportSelectorView === 'sweepstakes' ? (

@@ -562,7 +562,7 @@ function LobbyContent() {
         });
         const steps = [
           {
-            element: '[data-tour="sport-selector"]',
+            element: '[data-tour="sport-selector-restricted"]',
             popover: { title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', side: 'bottom', align: 'center' }
           },
           {
@@ -627,7 +627,7 @@ function LobbyContent() {
       <div className="flex-grow pb-20">
         <main className="px-4 py-2"> 
           <div className="w-full">
-            <div data-tour="sport-selector">
+            <div>
             <SportSelector 
               sports={initialSportsData} 
               selectedSportId={selectedSport} 

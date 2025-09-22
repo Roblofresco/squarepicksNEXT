@@ -571,7 +571,11 @@ function LobbyContent() {
         const steps = [
           {
             element: anchor,
-            popover: { title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', side: 'bottom', align: 'center' }
+            popover: { title: 'See both views', description: 'Tap More to switch from Sweepstakes to Sports. Next is disabled until you tap More.', side: 'bottom', align: 'center' }
+          },
+          {
+            element: anchor,
+            popover: { title: 'This is Sports', description: 'League tabs are disabled during the tour. Tap Sweepstakes to go back, or Next to continue.', side: 'bottom', align: 'center' }
           },
         ];
         const driverObj = driver({
@@ -673,6 +677,26 @@ function LobbyContent() {
               ctaWrap.appendChild(sBtn);
               ctaWrap.appendChild(spBtn);
               footer.prepend(ctaWrap);
+            }
+            const nextBtn = footer.querySelector('.driver-popover-next-btn') as HTMLButtonElement | null;
+            const doneBtn = footer.querySelector('.driver-popover-done-btn') as HTMLButtonElement | null;
+            const onSweepstakesView = document.querySelector('[data-tour="sport-selector"]') && !document.querySelector('[data-tour="sport-selector"] [data-sport-tab]');
+            if ((title?.textContent || '').includes('See both views') && onSweepstakesView) {
+              if (nextBtn) nextBtn.disabled = true;
+              if (doneBtn) doneBtn.disabled = true;
+              const moreBtn = document.querySelector('[data-tour="sport-selector"] [data-tour-allow="more"]') as HTMLButtonElement | null;
+              if (moreBtn) {
+                const handler = () => {
+                  if (nextBtn) nextBtn.disabled = false;
+                  if (doneBtn) doneBtn.disabled = false;
+                  setTimeout(() => { try { (driverObj as any).moveNext?.(); } catch {} }, 300);
+                };
+                moreBtn.addEventListener('click', handler, { once: true });
+                // Ensure cleanup on destroy
+                window.addEventListener('driver:destroy', () => {
+                  try { moreBtn.removeEventListener('click', handler as any); } catch {}
+                }, { once: true } as any);
+              }
             }
           }
         } as any);

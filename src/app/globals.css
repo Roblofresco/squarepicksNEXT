@@ -2,33 +2,35 @@
 .tour-step1 [data-sport-tab] { pointer-events: none !important; }
 
 /* Driver.js popover theming to match app */
-.driver-popover {
-  background: linear-gradient(to bottom, rgba(10,10,14,0.92), rgba(16,16,22,0.92));
+/* Increase specificity and force background to override driver.css */
+body .driver-popover {
+  background: linear-gradient(to bottom, rgba(10,10,14,0.94), rgba(16,16,22,0.94)) !important;
   color: #fff !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
   backdrop-filter: blur(10px) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06) inset !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08) inset !important;
+  border-radius: 12px !important;
 }
-.driver-popover .driver-popover-title {
+body .driver-popover .driver-popover-title {
   color: #ffffff !important;
   font-weight: 700;
 }
-.driver-popover .driver-popover-description {
+body .driver-popover .driver-popover-description {
   color: rgba(255,255,255,0.9) !important;
 }
-.driver-popover .driver-popover-close-btn {
+body .driver-popover .driver-popover-close-btn {
   color: rgba(255,255,255,0.7) !important;
 }
-.driver-popover .driver-popover-progress-text { display: none !important; }
-.driver-popover .driver-popover-navigation-btns button {
+body .driver-popover .driver-popover-progress-text { display: none !important; }
+body .driver-popover .driver-popover-navigation-btns button {
   background: linear-gradient(90deg, rgba(27,176,242,0.6), rgba(99,102,241,0.6));
   border: 1px solid rgba(255,255,255,0.18) !important;
   color: #fff !important;
 }
-.driver-popover .driver-popover-navigation-btns button:hover {
+body .driver-popover .driver-popover-navigation-btns button:hover {
   filter: brightness(1.1);
 }
-.driver-popover .driver-popover-arrow { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+body .driver-popover .driver-popover-arrow { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

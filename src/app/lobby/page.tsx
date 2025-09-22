@@ -585,11 +585,15 @@ function LobbyContent() {
         // Add hard lock and global guards
         const clickGuard = (e: Event) => {
           if (!document.body.classList.contains('tour-lock')) return;
+          const target = e.target as Node | null;
           const pop = document.querySelector('.driver-popover');
-          if (!pop || !pop.contains(e.target as Node)) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
+          const active = document.querySelector('.driver-active-element');
+          const isInPopover = !!(pop && target && pop.contains(target));
+          const isWhitelisted = target instanceof HTMLElement && !!target.closest('[data-tour-allow]');
+          const isInActive = !!(active && target && active.contains(target));
+          if (isInPopover || isWhitelisted || isInActive) return;
+          e.preventDefault();
+          e.stopPropagation();
         };
         const keyGuard = (e: KeyboardEvent) => {
           if (!document.body.classList.contains('tour-lock')) return;

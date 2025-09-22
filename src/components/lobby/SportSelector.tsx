@@ -106,13 +106,14 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
   const [comingSoonKey, setComingSoonKey] = useState(0);
 
   const handleSelect = (sportId: string) => {
-    onSelectSport(sportId);
-    if (sportId !== 'sweepstakes') {
-      // Show a single overlay spanning all three regular sports
-      setComingSoonKey(prev => prev + 1);
-      setComingSoonVisible(true);
-      setTimeout(() => setComingSoonVisible(false), 3000);
+    if (sportId === 'sweepstakes') {
+      onSelectSport('sweepstakes');
+      return;
     }
+    // Regular sports: do not navigate; only show overlay
+    setComingSoonKey(prev => prev + 1);
+    setComingSoonVisible(true);
+    setTimeout(() => setComingSoonVisible(false), 3000);
   };
 
   // Function to handle clicking the "More" button

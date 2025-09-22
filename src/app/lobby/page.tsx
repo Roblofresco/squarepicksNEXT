@@ -556,7 +556,7 @@ function LobbyContent() {
       try {
         const { driver } = await import('driver.js');
         // Wait briefly for the restricted selector anchor to be present
-        const anchor = '[data-tour="sport-selector-restricted"]';
+        const anchor = '[data-tour="sport-selector"]';
         let present = !!document.querySelector(anchor);
         for (let i = 0; i < 10 && !present; i++) {
           await new Promise(r => setTimeout(r, 300));
@@ -587,11 +587,9 @@ function LobbyContent() {
           if (!document.body.classList.contains('tour-lock')) return;
           const target = e.target as Node | null;
           const pop = document.querySelector('.driver-popover');
-          const active = document.querySelector('.driver-active-element');
           const isInPopover = !!(pop && target && pop.contains(target));
           const isWhitelisted = target instanceof HTMLElement && !!target.closest('[data-tour-allow]');
-          const isInActive = !!(active && target && active.contains(target));
-          if (isInPopover || isWhitelisted || isInActive) return;
+          if (isInPopover || isWhitelisted) return;
           e.preventDefault();
           e.stopPropagation();
         };
@@ -722,7 +720,7 @@ function LobbyContent() {
       <div className="flex-grow pb-20">
         <main className="px-4 py-2"> 
           <div className="w-full">
-            <div>
+            <div data-tour="sport-selector">
             <SportSelector 
               sports={initialSportsData} 
               selectedSportId={selectedSport} 

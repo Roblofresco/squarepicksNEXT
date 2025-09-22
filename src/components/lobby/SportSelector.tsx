@@ -110,7 +110,12 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
       onSelectSport('sweepstakes');
       return;
     }
-    // Regular sports: do not navigate; only show overlay
+    if (sportId === 'nfl') {
+      // Allow NFL navigation
+      onSelectSport('nfl');
+      return;
+    }
+    // For CFB, NBA, WNBA: block navigation and show overlay
     setComingSoonKey(prev => prev + 1);
     setComingSoonVisible(true);
     setTimeout(() => setComingSoonVisible(false), 3000);

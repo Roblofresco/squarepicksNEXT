@@ -560,24 +560,21 @@ function LobbyContent() {
           allowClose: false,
           disableActiveInteraction: true,
         });
+        // Wait briefly for the restricted selector anchor to be present
+        const anchor = '[data-tour="sport-selector-restricted"]';
+        let present = !!document.querySelector(anchor);
+        for (let i = 0; i < 10 && !present; i++) {
+          await new Promise(r => setTimeout(r, 300));
+          present = !!document.querySelector(anchor);
+        }
+        if (!present) return;
         const steps = [
           {
-            element: '[data-tour="sport-selector-restricted"]',
+            element: anchor,
             popover: { title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', side: 'bottom', align: 'center' }
           },
-          {
-            element: '[data-tour="sweepstakes"]',
-            popover: { title: 'Free Weekly Entry', description: 'One free entry weekly. Numbers assigned at game time.', side: 'bottom', align: 'center' }
-          },
-          {
-            element: '[data-tour="bottom-nav"]',
-            popover: { title: 'Navigation', description: 'Wallet, profile, and more.', side: 'top', align: 'center' }
-          },
         ];
-        // Only include existing elements
-        const filtered = steps.filter(s => !!document.querySelector(s.element as string));
-        if (!filtered.length) return;
-        driverObj.setSteps(filtered as any);
+        driverObj.setSteps(steps as any);
 
         // Expose view toggler for popover CTAs
         (window as any).__setSportSelectorView = (view: 'sweepstakes' | 'allRegularSports') => {

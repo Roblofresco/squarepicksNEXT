@@ -637,12 +637,17 @@ function LobbyContent() {
           window.removeEventListener('popstate', popstateGuard, true);
         };
 
-        // Inject popover CTAs to switch views (Step 1)
+        // Inject popover CTAs to switch views (Step 1) and attach guards only after popover exists
+        let guardsAttached = false;
         driverObj.setConfig({
           onPopoverRender: (popover: any) => {
             const title = (popover as any).title as HTMLElement | null;
             const footer = (popover as any).footer as HTMLElement | null;
             if (!footer) return;
+            if (!guardsAttached) {
+              attachGuards();
+              guardsAttached = true;
+            }
             if (!footer.querySelector('[data-tour-cta-sweepstakes]')) {
               const ctaWrap = document.createElement('div');
               ctaWrap.style.display = 'flex';
@@ -665,7 +670,7 @@ function LobbyContent() {
           }
         } as any);
 
-        attachGuards();
+        // Note: guards now attach in onPopoverRender to avoid interfering with tour init
 
         const cleanup = () => { detachGuards(); };
         // Attempt to cleanup on destroy or after some fallback

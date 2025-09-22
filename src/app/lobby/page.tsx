@@ -574,7 +574,9 @@ function LobbyContent() {
             popover: { title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', side: 'bottom', align: 'center' }
           },
         ];
+        // Set steps and start the tour
         driverObj.setSteps(steps as any);
+        driverObj.drive();
 
         // Expose view toggler for popover CTAs
         (window as any).__setSportSelectorView = (view: 'sweepstakes' | 'allRegularSports') => {
@@ -665,7 +667,6 @@ function LobbyContent() {
         } as any);
 
         attachGuards();
-        driverObj.drive();
 
         const cleanup = () => { detachGuards(); };
         // Attempt to cleanup on destroy or after some fallback

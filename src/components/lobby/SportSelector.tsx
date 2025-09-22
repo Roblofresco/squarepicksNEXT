@@ -230,7 +230,7 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
             // --- All Regular Sports View --- 
             (<motion.div 
               key="all-sports-view"
-              className="flex w-full items-center gap-1 px-0.5 sm:px-[50px]" 
+              className="relative flex w-full items-center gap-1 px-0.5 sm:px-[50px]" 
               initial="hidden" animate="visible" exit="exit" variants={variants}
             >
               {/* "Back to Sweepstakes" Button */}
@@ -253,6 +253,7 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                 </div>
               </button>
 
+              <div className="relative flex flex-grow gap-1">
               {sports.filter(sport => sport.id !== 'sweepstakes').map((sport) => {
                 const isActive = selectedSportId === sport.id;
                 const iconToShow = isActive ? sport.iconActive : sport.iconDefault;
@@ -264,6 +265,7 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                   <button
                     key={sport.id}
                     onClick={() => handleSelect(sport.id)}
+                    data-sport-tab
                     className={cn(`
                       h-[48px] rounded-lg // REDUCED height
                       flex flex-col items-center justify-center space-y-0.5 // REDUCED space
@@ -299,19 +301,17 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                     initial={{ opacity: 0 }}
                     animate={{ opacity: [0, 1, 0.6, 1, 0] }}
                     transition={{ duration: 3, times: [0, 0.25, 0.5, 0.75, 1] }}
-                    className="absolute left-0 right-0 mx-0 px-0 sm:px-[50px]"
-                    style={{ top: 0 }}
+                    className="absolute inset-0 z-20 pointer-events-none"
                   >
-                    <div className="pointer-events-none w-full">
-                      <div className="mx-0 flex gap-1">
-                        <div className="flex-1 h-[48px] rounded-lg border border-yellow-500/60 bg-yellow-400/10 backdrop-blur-[2px] flex items-center justify-center">
-                          <span className="text-yellow-300 font-semibold tracking-wide">Coming Soon</span>
-                        </div>
+                    <div className="w-full h-full flex items-center gap-1">
+                      <div className="flex-1 h-[48px] rounded-lg border border-yellow-500/60 bg-yellow-400/10 backdrop-blur-[2px] flex items-center justify-center">
+                        <span className="text-yellow-300 font-semibold tracking-wide">Coming Soon</span>
                       </div>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
+              </div>
             </motion.div>)
           )}
         </AnimatePresence>

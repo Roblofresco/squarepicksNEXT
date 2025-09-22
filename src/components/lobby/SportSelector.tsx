@@ -226,10 +226,11 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                   transition-all duration-200 ease-in-out 
                   relative group border
                   flex-grow basis-1/4 
-                  `, 
+                `, 
                   'border-accent-2 bg-gradient-to-b from-background-primary to-[#220248] shadow-[0_4px_12px_-4px_rgba(99,102,241,0.5)] backdrop-blur-sm',
                   'hover:brightness-125 hover:shadow-[0_6px_15px_-3px_rgba(99,102,241,0.6)] hover:border-white'
                 )}
+                data-tour-allow="more"
               >
                 {/* Remove separate background div */}
                 
@@ -261,6 +262,7 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                   border-gray-600 bg-gradient-to-b from-gray-700 to-gray-800 text-gray-300
                   hover:shadow-[0_0_15px_0px_rgba(184,134,11,0.5)] hover:border-[#F0E68C] hover:text-[#F0E68C] hover:bg-gradient-to-b hover:from-[#B8860B]/40 hover:to-[#B8860B]/90
                 `)}
+                data-tour-allow="sweepstakes"
               >
                  <div className="relative z-10 flex flex-col items-center justify-center">
                   <Ticket size={18} className="mb-0.5" /> {/* REDUCED size */}

@@ -572,7 +572,7 @@ function LobbyContent() {
         const driverObj = driver({
           showProgress: false,
           allowClose: false,
-          disableActiveInteraction: true,
+          disableActiveInteraction: false,
           steps: steps as any,
         });
         driverObj.drive();

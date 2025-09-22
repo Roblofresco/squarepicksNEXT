@@ -25,6 +25,8 @@ body .driver-popover .driver-popover-close-btn {
 body .driver-popover .driver-popover-close-btn { display: none !important; }
 /* Lock all sport tabs when tour lock is active */
 .tour-lock [data-sport-tab] { pointer-events: none !important; }
+/* Allow only whitelisted buttons during tour */
+.tour-lock [data-tour-allow] { pointer-events: auto !important; }
 body .driver-popover .driver-popover-progress-text { display: none !important; }
 body .driver-popover .driver-popover-navigation-btns button {
   background: linear-gradient(90deg, #1bb0f2, #6366f1) !important;

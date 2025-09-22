@@ -439,6 +439,10 @@ function LobbyContent() {
   }, [userId, emailVerified, isWalletLoading, router, selectedSport]);
 
   const handleSelectSport = useCallback((sportId: string) => {
+    // Block navigation during the tour lock except returning to sweepstakes view
+    if (typeof document !== 'undefined' && document.body.classList.contains('tour-lock') && sportId !== SWEEPSTAKES_SPORT_ID) {
+      return;
+    }
     if (selectedSport === sportId) {
       if (sportId === SWEEPSTAKES_SPORT_ID) setSportSelectorView('sweepstakes');
       else setSportSelectorView('allRegularSports');

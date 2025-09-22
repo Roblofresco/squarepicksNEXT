@@ -557,8 +557,8 @@ function LobbyContent() {
         const { driver } = await import('driver.js');
         const driverObj = driver({
           showProgress: false,
-          allowClose: true,
-          disableActiveInteraction: false,
+          allowClose: false,
+          disableActiveInteraction: true,
         });
         const steps = [
           {
@@ -578,13 +578,102 @@ function LobbyContent() {
         const filtered = steps.filter(s => !!document.querySelector(s.element as string));
         if (!filtered.length) return;
         driverObj.setSteps(filtered as any);
-        // Lock actual sport tabs during step 1
-        document.body.classList.add('tour-step1');
+
+        // Expose view toggler for popover CTAs
+        (window as any).__setSportSelectorView = (view: 'sweepstakes' | 'allRegularSports') => {
+          try { setSportSelectorView(view); } catch {}
+        };
+
+        // Add hard lock and global guards
+        const clickGuard = (e: Event) => {
+          if (!document.body.classList.contains('tour-lock')) return;
+          const pop = document.querySelector('.driver-popover');
+          if (!pop || !pop.contains(e.target as Node)) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        };
+        const keyGuard = (e: KeyboardEvent) => {
+          if (!document.body.classList.contains('tour-lock')) return;
+          const active = document.activeElement as HTMLElement | null;
+          const pop = document.querySelector('.driver-popover');
+          const inside = !!(pop && active && pop.contains(active));
+          const blocked = ['Enter',' ','Escape','Backspace','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
+          if (!inside && blocked.includes(e.key)) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        };
+        const origPush = history.pushState.bind(history);
+        const origReplace = history.replaceState.bind(history);
+        const wrappedPush = function(this: History, ...args: any[]) {
+          if (document.body.classList.contains('tour-lock')) return;
+          return origPush(...args as [any, string, string?]);
+        } as any;
+        const wrappedReplace = function(this: History, ...args: any[]) {
+          if (document.body.classList.contains('tour-lock')) return;
+          return origReplace(...args as [any, string, string?]);
+        } as any;
+        const popstateGuard = (e: Event) => {
+          if (document.body.classList.contains('tour-lock')) {
+            e.preventDefault();
+            e.stopPropagation();
+            history.pushState(null, '', window.location.href);
+          }
+        };
+
+        const attachGuards = () => {
+          document.body.classList.add('tour-lock');
+          document.addEventListener('click', clickGuard, true);
+          document.addEventListener('keydown', keyGuard, true);
+          (history as any).pushState = wrappedPush;
+          (history as any).replaceState = wrappedReplace;
+          window.addEventListener('popstate', popstateGuard, true);
+        };
+        const detachGuards = () => {
+          document.body.classList.remove('tour-lock');
+          document.removeEventListener('click', clickGuard, true);
+          document.removeEventListener('keydown', keyGuard, true);
+          (history as any).pushState = origPush;
+          (history as any).replaceState = origReplace;
+          window.removeEventListener('popstate', popstateGuard, true);
+        };
+
+        // Inject popover CTAs to switch views (Step 1)
+        driverObj.setConfig({
+          onPopoverRender: (popover: any) => {
+            const title = (popover as any).title as HTMLElement | null;
+            const footer = (popover as any).footer as HTMLElement | null;
+            if (!footer) return;
+            if (!footer.querySelector('[data-tour-cta-sweepstakes]')) {
+              const ctaWrap = document.createElement('div');
+              ctaWrap.style.display = 'flex';
+              ctaWrap.style.gap = '8px';
+              ctaWrap.style.marginRight = 'auto';
+              const sBtn = document.createElement('button');
+              sBtn.textContent = 'Sweepstakes';
+              sBtn.setAttribute('data-tour-cta-sweepstakes', '1');
+              sBtn.className = 'driver-popover-next-btn';
+              sBtn.onclick = () => { (window as any).__setSportSelectorView?.('sweepstakes'); };
+              const spBtn = document.createElement('button');
+              spBtn.textContent = 'Sports';
+              spBtn.setAttribute('data-tour-cta-sports', '1');
+              spBtn.className = 'driver-popover-prev-btn';
+              spBtn.onclick = () => { (window as any).__setSportSelectorView?.('allRegularSports'); };
+              ctaWrap.appendChild(sBtn);
+              ctaWrap.appendChild(spBtn);
+              footer.prepend(ctaWrap);
+            }
+          }
+        } as any);
+
+        attachGuards();
         driverObj.drive();
-        const cleanup = () => document.body.classList.remove('tour-step1');
+
+        const cleanup = () => { detachGuards(); };
+        // Attempt to cleanup on destroy or after some fallback
         window.addEventListener('driver:destroy', cleanup, { once: true } as any);
-        // Fallback cleanup in 30s
-        const t = setTimeout(cleanup, 30000);
+        const t = setTimeout(cleanup, 60000);
         return () => { clearTimeout(t); cleanup(); };
       } catch {}
     };

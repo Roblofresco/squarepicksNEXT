@@ -106,12 +106,21 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
   const [comingSoonKey, setComingSoonKey] = useState(0);
 
   const handleSelect = (sportId: string) => {
+    // During tour lock, only allow view switch via dialog; no sport nav
+    if (typeof document !== 'undefined' && document.body.classList.contains('tour-lock')) {
+      if (sportId !== 'sweepstakes') {
+        setComingSoonKey(prev => prev + 1);
+        setComingSoonVisible(true);
+        setTimeout(() => setComingSoonVisible(false), 3000);
+        return;
+      }
+    }
     if (sportId === 'sweepstakes') {
       onSelectSport('sweepstakes');
       return;
     }
+    // Outside tour: allow NFL; others show overlay for now
     if (sportId === 'nfl') {
-      // Allow NFL navigation
       onSelectSport('nfl');
       return;
     }

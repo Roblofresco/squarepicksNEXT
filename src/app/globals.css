@@ -21,6 +21,10 @@ body .driver-popover .driver-popover-description {
 body .driver-popover .driver-popover-close-btn {
   color: rgba(255,255,255,0.7) !important;
 }
+/* Hide close to enforce dialog-only control during tour */
+body .driver-popover .driver-popover-close-btn { display: none !important; }
+/* Lock all sport tabs when tour lock is active */
+.tour-lock [data-sport-tab] { pointer-events: none !important; }
 body .driver-popover .driver-popover-progress-text { display: none !important; }
 body .driver-popover .driver-popover-navigation-btns button {
   background: linear-gradient(90deg, #1bb0f2, #6366f1) !important;

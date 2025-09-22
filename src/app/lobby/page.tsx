@@ -687,7 +687,7 @@ function LobbyContent() {
       } catch {}
     };
     const t = setTimeout(run, 500);
-    return () => clearTimeout(t);
+        return () => clearTimeout(t);
   }, []);
 
   
@@ -734,14 +734,14 @@ function LobbyContent() {
                 setSportSelectorView={setSportSelectorView}
               />
             ) : (
-              <SportSelector 
-                sports={initialSportsData} 
-                selectedSportId={selectedSport} 
-                onSelectSport={handleSelectSport} 
-                sweepstakesStartTime={sweepstakesStartTime}
-                sportSelectorView={sportSelectorView}
-                setSportSelectorView={setSportSelectorView}
-              />
+            <SportSelector 
+              sports={initialSportsData} 
+              selectedSportId={selectedSport} 
+              onSelectSport={handleSelectSport} 
+              sweepstakesStartTime={sweepstakesStartTime}
+              sportSelectorView={sportSelectorView}
+              setSportSelectorView={setSportSelectorView}
+            />
             )}
             </div>
             {/* Balance pill moved to header component when in entry flow */}

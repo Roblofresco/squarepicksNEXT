@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import SportSelector from '@/components/lobby/SportSelector';
+import TourSportSelector from '@/components/lobby/TourSportSelector';
 import GamesList from '@/components/lobby/GamesList';
 import BoardsList from '@/components/lobby/BoardsList';
 import BottomNav from '@/components/lobby/BottomNav';
@@ -725,14 +726,23 @@ function LobbyContent() {
         <main className="px-4 py-2"> 
           <div className="w-full">
             <div data-tour="sport-selector">
-            <SportSelector 
-              sports={initialSportsData} 
-              selectedSportId={selectedSport} 
-              onSelectSport={handleSelectSport} 
-              sweepstakesStartTime={sweepstakesStartTime}
-              sportSelectorView={sportSelectorView}
-              setSportSelectorView={setSportSelectorView}
-            />
+            {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev' ? (
+              <TourSportSelector
+                sports={initialSportsData}
+                sweepstakesStartTime={sweepstakesStartTime}
+                sportSelectorView={sportSelectorView}
+                setSportSelectorView={setSportSelectorView}
+              />
+            ) : (
+              <SportSelector 
+                sports={initialSportsData} 
+                selectedSportId={selectedSport} 
+                onSelectSport={handleSelectSport} 
+                sweepstakesStartTime={sweepstakesStartTime}
+                sportSelectorView={sportSelectorView}
+                setSportSelectorView={setSportSelectorView}
+              />
+            )}
             </div>
             {/* Balance pill moved to header component when in entry flow */}
             <div className="relative">

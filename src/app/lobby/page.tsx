@@ -555,11 +555,6 @@ function LobbyContent() {
     const run = async () => {
       try {
         const { driver } = await import('driver.js');
-        const driverObj = driver({
-          showProgress: false,
-          allowClose: false,
-          disableActiveInteraction: true,
-        });
         // Wait briefly for the restricted selector anchor to be present
         const anchor = '[data-tour="sport-selector-restricted"]';
         let present = !!document.querySelector(anchor);
@@ -574,8 +569,12 @@ function LobbyContent() {
             popover: { title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', side: 'bottom', align: 'center' }
           },
         ];
-        // Set steps and start the tour
-        driverObj.setSteps(steps as any);
+        const driverObj = driver({
+          showProgress: false,
+          allowClose: false,
+          disableActiveInteraction: true,
+          steps: steps as any,
+        });
         driverObj.drive();
 
         // Expose view toggler for popover CTAs

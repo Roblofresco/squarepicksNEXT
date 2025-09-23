@@ -2,7 +2,7 @@
 
 export const runtime = 'edge';
 
-import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense, useMemo } from 'react';
 // driver removed
 import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -565,6 +565,15 @@ function LobbyContent() {
   const [tourPhase, setTourPhase] = useState<'A'|'B'|'C'>('A');
   const [moreClicked, setMoreClicked] = useState(false);
   const [sweepstakesClicked, setSweepstakesClicked] = useState(false);
+  const stepsForRender = useMemo(() => {
+    const s = [...tourSteps];
+    if (tourStep === 0) {
+      s[0] = tourPhase === 'A'
+        ? { ...s[0], title: 'Tap More', description: 'Tap More to switch to Sports.' }
+        : { ...s[0], title: 'Tap Sweepstakes', description: 'Tap Sweepstakes to return.' };
+    }
+    return s;
+  }, [tourSteps, tourStep, tourPhase]);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -980,20 +989,13 @@ function LobbyContent() {
       {(isLoginModalOpen || isWalletSetupDialogOpen || isDepositDialogOpen) && <StarfieldBackground className="z-40" />}
       {tourOpen && (
         <TourOverlay
-          steps={tourSteps}
+          steps={stepsForRender}
           open={tourOpen}
           stepIndex={tourStep}
           nextEnabled={tourStep === 0 ? (tourPhase === 'A' ? moreClicked : sweepstakesClicked) : true}
           onNext={() => {
             if (tourStep === 0) {
-              if (tourPhase === 'A' && moreClicked) {
-                setTourPhase('B');
-                // keep same step, change copy to instruct sweepstakes
-                // Update description dynamically
-                tourSteps[0].title = 'Switch back to Sweepstakes';
-                tourSteps[0].description = 'Tap Sweepstakes to return.';
-                return;
-              }
+              if (tourPhase === 'A' && moreClicked) { setTourPhase('B'); return; }
               if (tourPhase === 'B' && sweepstakesClicked) {
                 setTourStep(1);
                 return;

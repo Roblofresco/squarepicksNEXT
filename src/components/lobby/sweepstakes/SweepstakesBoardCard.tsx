@@ -185,6 +185,17 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
 
   const allTakenSet = useMemo(() => new Set((board?.selected_indexes as number[] | undefined) || []), [board?.selected_indexes]);
 
+  // Tour demo: prefill a number so the selected grid anchor exists
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tour') === 'dev') {
+      if (!inputValue) {
+        setInputValue('37');
+      }
+    }
+  }, [inputValue]);
+
   useEffect(() => {
     if (!board?.id || !user?.uid) {
       setCurrentUserSquaresSet(new Set()); 
@@ -266,6 +277,16 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
   }, [isActive, entryInteraction.selectedNumber, board.id, inputValue]);
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tour') === 'dev') {
+        // In tour demo, keep local-only update; no side effects
+        let valStr = e.target.value.replace(/\D/g, '');
+        if (valStr.length > 2) valStr = valStr.slice(0, 2);
+        setInputValue(valStr);
+        return;
+      }
+    }
     let valStr = e.target.value.replace(/\D/g, '');
     if (valStr.length > 2) valStr = valStr.slice(0, 2);
     
@@ -282,6 +303,13 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
   }, [isActive, currentStage, handleBoardAction, board.id]);
 
   const handleMiniGridSquareClick = useCallback((squareNumber: number) => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tour') === 'dev') {
+        // In tour demo, do nothing (read-only)
+        return;
+      }
+    }
     if (isLoadingParticipantStatus || isCurrentUserParticipant) return; // Don't allow selection if already entered or loading status
     if (!user) {
       onProtectedAction();

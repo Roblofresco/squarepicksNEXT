@@ -570,6 +570,10 @@ function LobbyContent() {
         if (!present) return;
         const steps = [
           {
+            element: '[data-tour="sport-selector"]',
+            popover: { title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', side: 'bottom', align: 'center' }
+          },
+          {
             element: '[data-tour="sweepstakes-input"]',
             popover: { title: 'Choose your number', description: 'Type to change, then press Enter (disabled in tour).', side: 'top', align: 'center' }
           },

@@ -145,7 +145,9 @@ const SweepstakesMiniGrid = memo(({
             currentTextSizeClass,
             currentGlowClass,
             cellBorderRadius
-        )}>
+        )}
+          { ...(isHighlightedByInput ? { 'data-tour': 'sweepstakes-grid-selected' } as any : {}) }
+        >
             {squareContent}
         </div>
         );
@@ -420,7 +422,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
             <div className="w-0 h-10 flex-shrink-0" /> // Empty, non-visible placeholder
           ) : (
             // Not confirming, show the input field
-            <div className="relative w-20 h-10 flex-shrink-0">
+            <div className="relative w-20 h-10 flex-shrink-0" data-tour="sweepstakes-input">
               <input
                 type="text" inputMode="numeric" pattern="[0-9]*" value={inputValue} onChange={handleInputChange} placeholder="##" maxLength={2}
                 disabled={(currentStage === 'confirming' && isActive) || walletIsLoading || isLoadingSelections}
@@ -501,7 +503,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
         </div>
       </div>
 
-      <div className="rounded-md bg-black/30 backdrop-blur-xs shadow-inner border-none mt-2">
+      <div className="rounded-md bg-black/30 backdrop-blur-xs shadow-inner border-none mt-2" data-tour="sweepstakes-grid">
            <SweepstakesMiniGrid
               highlightedNumber={finalNumberToHighlight}
               allTakenSet={allTakenSet}

@@ -570,12 +570,12 @@ function LobbyContent() {
         if (!present) return;
         const steps = [
           {
-            element: anchor,
-            popover: { title: 'See both views', description: 'Tap More to switch from Sweepstakes to Sports.', side: 'bottom', align: 'center' }
+            element: '[data-tour="sweepstakes-input"]',
+            popover: { title: 'Choose your number', description: 'Type to change, then press Enter (disabled in tour).', side: 'top', align: 'center' }
           },
           {
-            element: anchor,
-            popover: { title: 'This is Sports', description: 'League tabs are disabled during the tour. Tap Sweepstakes to go back, or Next to continue.', side: 'bottom', align: 'center' }
+            element: '[data-tour="sweepstakes-grid-selected"]',
+            popover: { title: 'Your square', description: 'You can also click a square to select (disabled in tour).', side: 'top', align: 'center' }
           },
         ];
         const driverObj = driver({
@@ -678,19 +678,6 @@ function LobbyContent() {
               ctaWrap.appendChild(spBtn);
               footer.prepend(ctaWrap);
             }
-            // Auto-advance to Step 2 after user taps More on Step 1
-            try {
-              const idx = (driverObj as any).getActiveIndex?.() ?? 0;
-              if (idx === 0) {
-                const moreBtn = document.querySelector('[data-tour="sport-selector"] [data-tour-allow="more"]') as HTMLButtonElement | null;
-                if (moreBtn && !moreBtn.getAttribute('data-tour-more-bound')) {
-                  moreBtn.setAttribute('data-tour-more-bound', '1');
-                  moreBtn.addEventListener('click', () => {
-                    setTimeout(() => { try { (driverObj as any).moveNext?.(); } catch {} }, 300);
-                  }, { once: true });
-                }
-              }
-            } catch {}
           }
         } as any);
 

@@ -678,6 +678,19 @@ function LobbyContent() {
               ctaWrap.appendChild(spBtn);
               footer.prepend(ctaWrap);
             }
+            // Auto-advance to Step 2 after user taps More on Step 1
+            try {
+              const idx = (driverObj as any).getActiveIndex?.() ?? 0;
+              if (idx === 0) {
+                const moreBtn = document.querySelector('[data-tour="sport-selector"] [data-tour-allow="more"]') as HTMLButtonElement | null;
+                if (moreBtn && !moreBtn.getAttribute('data-tour-more-bound')) {
+                  moreBtn.setAttribute('data-tour-more-bound', '1');
+                  moreBtn.addEventListener('click', () => {
+                    setTimeout(() => { try { (driverObj as any).moveNext?.(); } catch {} }, 300);
+                  }, { once: true });
+                }
+              }
+            } catch {}
           }
         } as any);
 

@@ -594,11 +594,21 @@ function LobbyContent() {
             popover: { title: 'Your square', description: 'You can also click a square to select (disabled in tour).', side: 'top', align: 'center' }
           },
         ];
+        // Adjust/fallback and filter for present elements to avoid empty step list
+        const adjusted = steps.map((s) => {
+          if (s.element === '[data-tour="sweepstakes-grid-selected"]' && !document.querySelector('[data-tour="sweepstakes-grid-selected"]')) {
+            return { ...s, element: '[data-tour="sweepstakes-grid"]' };
+          }
+          return s;
+        });
+        const presentSteps = adjusted.filter(s => !!document.querySelector(s.element as string));
+        if (!presentSteps.length) return;
+
         const driverObj = driver({
           showProgress: false,
           allowClose: false,
           disableActiveInteraction: true,
-          steps: steps as any,
+          steps: presentSteps as any,
         });
         driverObj.drive();
 

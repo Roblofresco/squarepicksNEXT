@@ -571,7 +571,7 @@ function LobbyContent() {
         const steps = [
           {
             element: anchor,
-            popover: { title: 'See both views', description: 'Tap More to switch from Sweepstakes to Sports. Next is disabled until you tap More.', side: 'bottom', align: 'center' }
+            popover: { title: 'See both views', description: 'Tap More to switch from Sweepstakes to Sports.', side: 'bottom', align: 'center' }
           },
           {
             element: anchor,
@@ -696,6 +696,20 @@ function LobbyContent() {
                 window.addEventListener('driver:destroy', () => {
                   try { moreBtn.removeEventListener('click', handler as any); } catch {}
                 }, { once: true } as any);
+                // Flash effect on Next click while locked
+                if (nextBtn) {
+                  const flash = () => {
+                    try {
+                      moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2');
+                      setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 500);
+                      setTimeout(() => { moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2'); setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 500); }, 700);
+                    } catch {}
+                  };
+                  nextBtn.addEventListener('click', flash);
+                  window.addEventListener('driver:destroy', () => {
+                    try { nextBtn.removeEventListener('click', flash as any); } catch {}
+                  }, { once: true } as any);
+                }
               }
             }
           }

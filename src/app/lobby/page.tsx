@@ -602,6 +602,26 @@ function LobbyContent() {
           e.preventDefault();
           e.stopPropagation();
         };
+        // Gate: block Next/Done in Step 1 via global capture
+        let gateActive = false;
+        const nextDoneGuard = (e: Event) => {
+          if (!gateActive) return;
+          const target = e.target as HTMLElement | null;
+          const isNext = !!target?.closest('.driver-popover-next-btn');
+          const isDone = !!target?.closest('.driver-popover-done-btn');
+          if (isNext || isDone) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            const moreBtn = document.querySelector('[data-tour="sport-selector"] [data-tour-allow="more"]') as HTMLButtonElement | null;
+            if (moreBtn) {
+              try {
+                moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2');
+                setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 400);
+                setTimeout(() => { moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2'); setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 400); }, 650);
+              } catch {}
+            }
+          }
+        };
         const keyGuard = (e: KeyboardEvent) => {
           if (!document.body.classList.contains('tour-lock')) return;
           const active = document.activeElement as HTMLElement | null;
@@ -634,6 +654,7 @@ function LobbyContent() {
         const attachGuards = () => {
           document.body.classList.add('tour-lock');
           document.addEventListener('click', clickGuard, true);
+          document.addEventListener('click', nextDoneGuard, true);
           document.addEventListener('keydown', keyGuard, true);
           (history as any).pushState = wrappedPush;
           (history as any).replaceState = wrappedReplace;
@@ -642,6 +663,7 @@ function LobbyContent() {
         const detachGuards = () => {
           document.body.classList.remove('tour-lock');
           document.removeEventListener('click', clickGuard, true);
+          document.removeEventListener('click', nextDoneGuard, true);
           document.removeEventListener('keydown', keyGuard, true);
           (history as any).pushState = origPush;
           (history as any).replaceState = origReplace;
@@ -683,19 +705,13 @@ function LobbyContent() {
             const doneBtn = footer.querySelector('.driver-popover-done-btn') as HTMLButtonElement | null;
             const onSweepstakesView = document.querySelector('[data-tour="sport-selector"]') && !document.querySelector('[data-tour="sport-selector"] [data-sport-tab]');
             if ((title?.textContent || '').includes('See both views') && onSweepstakesView) {
+              gateActive = true;
               if (nextBtn) nextBtn.disabled = true;
               if (doneBtn) doneBtn.disabled = true;
               const moreBtn = document.querySelector('[data-tour="sport-selector"] [data-tour-allow="more"]') as HTMLButtonElement | null;
               if (moreBtn) {
-                // Block Next/Done clicks while gated
-                const flash = () => {
-                  try {
-                    moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2');
-                    setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 450);
-                    setTimeout(() => { moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2'); setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 450); }, 650);
-                  } catch {}
-                };
-                const blockNext = (e: Event) => { e.preventDefault(); e.stopImmediatePropagation(); flash(); };
+                // Local blockers for redundancy
+                const blockNext = (e: Event) => { e.preventDefault(); e.stopImmediatePropagation(); };
                 if (nextBtn) nextBtn.addEventListener('click', blockNext, true);
                 if (doneBtn) doneBtn.addEventListener('click', blockNext, true);
                 removeGateListeners = () => {
@@ -705,20 +721,19 @@ function LobbyContent() {
                   } catch {}
                 };
                 const handler = () => {
-                  // Unblock and advance
+                  gateActive = false;
                   try { removeGateListeners?.(); } catch {}
                   if (nextBtn) nextBtn.disabled = false;
                   if (doneBtn) doneBtn.disabled = false;
                   setTimeout(() => { try { (driverObj as any).moveNext?.(); } catch {} }, 300);
                 };
                 moreBtn.addEventListener('click', handler, { once: true });
-                // Ensure cleanup on destroy
                 window.addEventListener('driver:destroy', () => {
                   try { moreBtn.removeEventListener('click', handler as any); removeGateListeners?.(); } catch {}
                 }, { once: true } as any);
               }
             } else {
-              // Not gated: ensure no leftover blockers
+              gateActive = false;
               try { removeGateListeners?.(); } catch {}
               if (nextBtn) nextBtn.disabled = false;
               if (doneBtn) doneBtn.disabled = false;

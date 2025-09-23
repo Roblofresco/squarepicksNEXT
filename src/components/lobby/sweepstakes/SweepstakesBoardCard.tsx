@@ -557,3 +557,11 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
            />
       </div>
       <style jsx>{`
+        .glow-border-gold { box-shadow: 0 8px 20px 4px rgba(${accentGlowRgb}, 0.55); }
+      `}</style>
+    </div>
+  );
+}
+
+SweepstakesBoardCardComponent.displayName = 'SweepstakesBoardCard';
+export default memo(SweepstakesBoardCardComponent);

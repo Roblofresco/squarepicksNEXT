@@ -584,6 +584,23 @@ function LobbyContent() {
           disableActiveInteraction: false,
           steps: steps as any,
         });
+        // Wrap moveNext to honor gating
+        const __origMoveNext = driverObj.moveNext.bind(driverObj);
+        (window as any).__driver = driverObj;
+        driverObj.moveNext = () => {
+          try {
+            const isStep1 = (driverObj.getActiveStep()?.popover?.title || '').includes('See both views');
+            if (isStep1 && (document as any).__tourGateActive) {
+              const moreBtn = document.querySelector('[data-tour="sport-selector"] [data-tour-allow="more"]') as HTMLButtonElement | null;
+              if (moreBtn) {
+                moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2');
+                setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 400);
+              }
+              return;
+            }
+          } catch {}
+          __origMoveNext();
+        };
         driverObj.drive();
 
         // Expose view toggler for popover CTAs
@@ -705,22 +722,39 @@ function LobbyContent() {
             const doneBtn = footer.querySelector('.driver-popover-done-btn') as HTMLButtonElement | null;
             const onSweepstakesView = document.querySelector('[data-tour="sport-selector"]') && !document.querySelector('[data-tour="sport-selector"] [data-sport-tab]');
             if ((title?.textContent || '').includes('See both views') && onSweepstakesView) {
+              (document as any).__tourGateActive = true;
               gateActive = true;
               if (nextBtn) nextBtn.disabled = true;
               if (doneBtn) doneBtn.disabled = true;
               const moreBtn = document.querySelector('[data-tour="sport-selector"] [data-tour-allow="more"]') as HTMLButtonElement | null;
               if (moreBtn) {
-                // Local blockers for redundancy
-                const blockNext = (e: Event) => { e.preventDefault(); e.stopImmediatePropagation(); };
-                if (nextBtn) nextBtn.addEventListener('click', blockNext, true);
-                if (doneBtn) doneBtn.addEventListener('click', blockNext, true);
+                const blockEarly = (e: Event) => { e.preventDefault(); e.stopImmediatePropagation(); };
+                if (nextBtn) {
+                  nextBtn.addEventListener('click', blockEarly, true);
+                  nextBtn.addEventListener('pointerdown', blockEarly, true);
+                  nextBtn.addEventListener('mousedown', blockEarly, true);
+                }
+                if (doneBtn) {
+                  doneBtn.addEventListener('click', blockEarly, true);
+                  doneBtn.addEventListener('pointerdown', blockEarly, true);
+                  doneBtn.addEventListener('mousedown', blockEarly, true);
+                }
                 removeGateListeners = () => {
                   try {
-                    if (nextBtn) nextBtn.removeEventListener('click', blockNext, true);
-                    if (doneBtn) doneBtn.removeEventListener('click', blockNext, true);
+                    if (nextBtn) {
+                      nextBtn.removeEventListener('click', blockEarly, true);
+                      nextBtn.removeEventListener('pointerdown', blockEarly, true);
+                      nextBtn.removeEventListener('mousedown', blockEarly, true);
+                    }
+                    if (doneBtn) {
+                      doneBtn.removeEventListener('click', blockEarly, true);
+                      doneBtn.removeEventListener('pointerdown', blockEarly, true);
+                      doneBtn.removeEventListener('mousedown', blockEarly, true);
+                    }
                   } catch {}
                 };
                 const handler = () => {
+                  (document as any).__tourGateActive = false;
                   gateActive = false;
                   try { removeGateListeners?.(); } catch {}
                   if (nextBtn) nextBtn.disabled = false;
@@ -729,10 +763,11 @@ function LobbyContent() {
                 };
                 moreBtn.addEventListener('click', handler, { once: true });
                 window.addEventListener('driver:destroy', () => {
-                  try { moreBtn.removeEventListener('click', handler as any); removeGateListeners?.(); } catch {}
+                  try { moreBtn.removeEventListener('click', handler as any); removeGateListeners?.(); (document as any).__tourGateActive = false; } catch {}
                 }, { once: true } as any);
               }
             } else {
+              (document as any).__tourGateActive = false;
               gateActive = false;
               try { removeGateListeners?.(); } catch {}
               if (nextBtn) nextBtn.disabled = false;

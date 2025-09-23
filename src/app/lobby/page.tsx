@@ -3,7 +3,7 @@
 export const runtime = 'edge';
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
-import 'driver.js/dist/driver.css';
+// driver removed
 import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast, Toaster } from 'react-hot-toast';
@@ -34,6 +34,7 @@ import {
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { useWallet } from '@/hooks/useWallet';
 import { motion, AnimatePresence } from 'framer-motion';
+import TourOverlay from '@/components/tour/TourOverlay';
 import { AlertCircle, Wallet } from 'lucide-react';
 
 // Import StarfieldBackground dynamically to prevent SSR issues
@@ -553,6 +554,23 @@ function LobbyContent() {
 
   console.log("[LobbyPage] Render. isWalletLoading:", isWalletLoading, "userId:", userId, "emailV:", emailVerified, "selSport:", selectedSport, "loadSweep:", isLoadingSweepstakesData, "sweepB:", !!sweepstakesBoard, "sweepG:", !!sweepstakesGame);
 
+  // App-driven tour state (dev only for now)
+  const [tourOpen, setTourOpen] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const tourSteps = [
+    { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.' },
+    { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose your number', description: 'Type to change (disabled in tour).' },
+    { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Your square', description: 'Click to select (disabled in tour).' },
+  ];
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const dev = params.get('tour') === 'dev';
+    if (!dev) return;
+    setTourOpen(true);
+    setTourStep(0);
+  }, []);
+
   // Dev-only Step 1 tour (sport-selector) when ?tour=dev
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -560,7 +578,7 @@ function LobbyContent() {
     if (!params.has('tour') || params.get('tour') !== 'dev') return;
     const run = async () => {
       try {
-        const { driver } = await import('driver.js');
+        // driver removed
         // Wait briefly for the restricted selector anchor to be present
         const anchor = '[data-tour="sport-selector"]';
         let present = !!document.querySelector(anchor);
@@ -604,13 +622,9 @@ function LobbyContent() {
         const presentSteps = adjusted.filter(s => !!document.querySelector(s.element as string));
         if (!presentSteps.length) return;
 
-        const driverObj = driver({
-          showProgress: false,
-          allowClose: false,
-          disableActiveInteraction: true,
-          steps: presentSteps as any,
-        });
-        driverObj.drive();
+        // start app-driven overlay instead
+        setTourOpen(true);
+        setTourStep(0);
 
         // Expose view toggler for popover CTAs
         (window as any).__setSportSelectorView = (view: 'sweepstakes' | 'allRegularSports') => {
@@ -676,36 +690,7 @@ function LobbyContent() {
 
         // Inject popover CTAs to switch views (Step 1) and attach guards only after popover exists
         let guardsAttached = false;
-        driverObj.setConfig({
-          onPopoverRender: (popover: any) => {
-            const title = (popover as any).title as HTMLElement | null;
-            const footer = (popover as any).footer as HTMLElement | null;
-            if (!footer) return;
-            if (!guardsAttached) {
-              attachGuards();
-              guardsAttached = true;
-            }
-            if (!footer.querySelector('[data-tour-cta-sweepstakes]')) {
-              const ctaWrap = document.createElement('div');
-              ctaWrap.style.display = 'flex';
-              ctaWrap.style.gap = '8px';
-              ctaWrap.style.marginRight = 'auto';
-              const sBtn = document.createElement('button');
-              sBtn.textContent = 'Sweepstakes';
-              sBtn.setAttribute('data-tour-cta-sweepstakes', '1');
-              sBtn.className = 'driver-popover-next-btn';
-              sBtn.onclick = () => { (window as any).__setSportSelectorView?.('sweepstakes'); };
-              const spBtn = document.createElement('button');
-              spBtn.textContent = 'Sports';
-              spBtn.setAttribute('data-tour-cta-sports', '1');
-              spBtn.className = 'driver-popover-prev-btn';
-              spBtn.onclick = () => { (window as any).__setSportSelectorView?.('allRegularSports'); };
-              ctaWrap.appendChild(sBtn);
-              ctaWrap.appendChild(spBtn);
-              footer.prepend(ctaWrap);
-            }
-          }
-        } as any);
+        // driver config removed
 
         // Note: guards now attach in onPopoverRender to avoid interfering with tour init
 
@@ -974,6 +959,15 @@ function LobbyContent() {
       </div>
       <BottomNav user={user} onProtectedAction={handleProtectedAction} />
       {(isLoginModalOpen || isWalletSetupDialogOpen || isDepositDialogOpen) && <StarfieldBackground className="z-40" />}
+      {tourOpen && (
+        <TourOverlay
+          steps={tourSteps}
+          open={tourOpen}
+          stepIndex={tourStep}
+          onNext={() => setTourStep(prev => Math.min(prev + 1, tourSteps.length - 1))}
+          onClose={() => setTourOpen(false)}
+        />
+      )}
       {/* Login Dialog */}
       <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
         <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">

@@ -562,6 +562,9 @@ function LobbyContent() {
     { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose your number', description: 'Type to change (disabled in tour).' },
     { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Your square', description: 'Click to select (disabled in tour).' },
   ];
+  const [tourPhase, setTourPhase] = useState<'A'|'B'|'C'>('A');
+  const [moreClicked, setMoreClicked] = useState(false);
+  const [sweepstakesClicked, setSweepstakesClicked] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -569,7 +572,29 @@ function LobbyContent() {
     if (!dev) return;
     setTourOpen(true);
     setTourStep(0);
+    setTourPhase('A');
+    setMoreClicked(false);
+    setSweepstakesClicked(false);
   }, []);
+
+  // Allow clicks on tour selector buttons to set flags
+  useEffect(() => {
+    if (!tourOpen) return;
+    const onClick = (e: Event) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      const more = t.closest('[data-tour-allow="more"]');
+      const sweeps = t.closest('[data-tour-allow="sweepstakes"]');
+      if (more) {
+        setMoreClicked(true);
+        setTourPhase('B');
+      } else if (sweeps) {
+        setSweepstakesClicked(true);
+      }
+    };
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
+  }, [tourOpen]);
 
   // Dev-only Step 1 tour (sport-selector) when ?tour=dev
   useEffect(() => {
@@ -964,7 +989,36 @@ function LobbyContent() {
           steps={tourSteps}
           open={tourOpen}
           stepIndex={tourStep}
-          onNext={() => setTourStep(prev => Math.min(prev + 1, tourSteps.length - 1))}
+          nextEnabled={tourStep === 0 ? (tourPhase === 'A' ? moreClicked : sweepstakesClicked) : true}
+          onNext={() => {
+            if (tourStep === 0) {
+              if (tourPhase === 'A' && moreClicked) {
+                setTourPhase('B');
+                // keep same step, change copy to instruct sweepstakes
+                // Update description dynamically
+                tourSteps[0].title = 'Switch back to Sweepstakes';
+                tourSteps[0].description = 'Tap Sweepstakes to return.';
+                return;
+              }
+              if (tourPhase === 'B' && sweepstakesClicked) {
+                setTourStep(1);
+                return;
+              }
+              return;
+            }
+            setTourStep(prev => Math.min(prev + 1, tourSteps.length - 1));
+          }}
+          onNextBlocked={() => {
+            // flash the relevant button
+            const sel = tourPhase === 'A' ? '[data-tour-allow="more"]' : '[data-tour-allow="sweepstakes"]';
+            const btn = document.querySelector(sel) as HTMLElement | null;
+            if (btn) {
+              btn.classList.add('ring-2','ring-accent-2','ring-offset-2');
+              setTimeout(() => btn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 400);
+              setTimeout(() => { btn.classList.add('ring-2','ring-accent-2','ring-offset-2'); setTimeout(() => btn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 400); }, 650);
+            }
+          }}
+          allowClickSelectors={['[data-tour-allow="more"]','[data-tour-allow="sweepstakes"]']}
           onClose={() => setTourOpen(false)}
         />
       )}

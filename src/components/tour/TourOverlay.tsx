@@ -11,9 +11,13 @@ interface TourOverlayProps {
   stepIndex: number;
   onNext: () => void;
   onClose: () => void;
+  // Optional gating and whitelists
+  nextEnabled?: boolean;
+  onNextBlocked?: () => void;
+  allowClickSelectors?: string[];
 }
 
-export default function TourOverlay({ steps, open, stepIndex, onNext, onClose }: TourOverlayProps) {
+export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [] }: TourOverlayProps) {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = steps[stepIndex];
@@ -64,6 +68,12 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose }:
     const blockClick = (e: Event) => {
       const t = e.target as Node | null;
       if (popRef.current && t && popRef.current.contains(t)) return; // allow clicks inside popover
+      // allow clicks on whitelisted selectors
+      if (t instanceof HTMLElement) {
+        for (const sel of allowClickSelectors) {
+          if (t.closest(sel)) return;
+        }
+      }
       e.preventDefault();
       e.stopPropagation();
     };
@@ -121,7 +131,12 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose }:
           {stepIndex === steps.length - 1 ? (
             <button onClick={onClose} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Done</button>
           ) : (
-            <button onClick={onNext} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
+            <button
+              onClick={() => (nextEnabled ? onNext() : (onNextBlocked && onNextBlocked()))}
+              className={`px-3 py-1 rounded ${nextEnabled ? 'bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]' : 'bg-white/10 text-white/50 cursor-not-allowed'}`}
+            >
+              Next
+            </button>
           )}
         </div>
       </div>

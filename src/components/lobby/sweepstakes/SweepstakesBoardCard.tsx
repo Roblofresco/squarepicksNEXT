@@ -265,6 +265,19 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
   useEffect(() => {
     const centralSelectedStr = entryInteraction.selectedNumber !== null ? String(entryInteraction.selectedNumber) : null;
 
+    // In tour demo mode, keep the local prefilled value; do not clear
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tour') === 'dev') {
+        if (isActive) {
+          if (centralSelectedStr !== inputValue) {
+            setInputValue(centralSelectedStr === null ? inputValue : centralSelectedStr);
+          }
+        }
+        return;
+      }
+    }
+
     if (isActive) {
       if (centralSelectedStr !== inputValue) {
         setInputValue(centralSelectedStr === null ? "" : centralSelectedStr);

@@ -18,6 +18,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose }:
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = steps[stepIndex];
   const [placement, setPlacement] = useState<'top' | 'bottom'>('top');
+  const popRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -60,12 +61,23 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose }:
 
   useEffect(() => {
     if (!open) return;
-    const block = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
-    document.addEventListener('click', block, true);
-    document.addEventListener('keydown', block, true);
+    const blockClick = (e: Event) => {
+      const t = e.target as Node | null;
+      if (popRef.current && t && popRef.current.contains(t)) return; // allow clicks inside popover
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    const blockKeys = (e: KeyboardEvent) => {
+      const active = document.activeElement as HTMLElement | null;
+      if (popRef.current && active && popRef.current.contains(active)) return; // allow keys in popover
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    document.addEventListener('click', blockClick, true);
+    document.addEventListener('keydown', blockKeys, true);
     return () => {
-      document.removeEventListener('click', block, true);
-      document.removeEventListener('keydown', block, true);
+      document.removeEventListener('click', blockClick, true);
+      document.removeEventListener('keydown', blockKeys, true);
     };
   }, [open]);
 
@@ -74,7 +86,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose }:
   // spotlight overlay with four rectangles to carve a hole
   const hole = rect;
   const popLeft = hole ? hole.left + hole.width / 2 : 80;
-  const popTop = hole ? (placement === 'top' ? hole.top - 16 : hole.bottom + 16) : 80;
+  const popTop = hole ? (placement === 'top' ? hole.top - 12 : hole.bottom + 12) : 80;
 
   return createPortal(
     <div className="fixed inset-0 z-[1000] pointer-events-none">
@@ -90,16 +102,9 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose }:
         <div className="absolute left-0 right-0 bg-black/60" style={{ top: hole ? hole.bottom : 0, bottom: 0 }} />
       </div>
 
-      {/* focus ring */}
-      {hole && (
-        <div
-          className="absolute rounded-xl ring-2 ring-white/90 shadow-[0_0_0_4px_rgba(255,255,255,0.25)]"
-          style={{ left: hole.left, top: hole.top, width: hole.width, height: hole.height }}
-        />
-      )}
-
       {/* popover */}
       <div
+        ref={popRef}
         className="absolute max-w-sm bg-gradient-to-b from-black/90 via-black/85 to-black/90 text-white rounded-lg border border-white/10 p-4 shadow-2xl pointer-events-auto backdrop-blur-md"
         style={{ left: popLeft, top: popTop, transform: 'translate(-50%, 0)' }}
       >
@@ -113,8 +118,11 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose }:
         <div className="font-bold text-base">{step?.title}</div>
         <div className="text-white/80 text-sm mt-1">{step?.description}</div>
         <div className="flex justify-end gap-2 mt-3">
-          <button onClick={onClose} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20">Done</button>
-          <button onClick={onNext} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
+          {stepIndex === steps.length - 1 ? (
+            <button onClick={onClose} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Done</button>
+          ) : (
+            <button onClick={onNext} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
+          )}
         </div>
       </div>
     </div>,

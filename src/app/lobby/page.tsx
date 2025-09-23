@@ -25,6 +25,7 @@ import { initialSportsData, SWEEPSTAKES_SPORT_ID, FREE_BOARD_ENTRY_FEE, BOARD_ST
 import SweepstakesScoreboard from '@/components/lobby/sweepstakes/SweepstakesScoreboard';
 // StarfieldBackground now imported dynamically above
 import SweepstakesBoardCard from '@/components/lobby/sweepstakes/SweepstakesBoardCard';
+import TourSweepstakesBoardCard from '@/components/lobby/sweepstakes/TourSweepstakesBoardCard';
 import {
   collection, query, where, onSnapshot, doc, getDoc, getDocs,
   Timestamp, DocumentReference, DocumentData, documentId, orderBy, limit,
@@ -842,7 +843,10 @@ function LobbyContent() {
                                 awayScore={sweepstakesGame.away_score}
                                 homeScore={sweepstakesGame.home_score}
                               />
-                              <SweepstakesBoardCard 
+                              {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev' ? (
+                                <TourSweepstakesBoardCard />
+                              ) : (
+                                <SweepstakesBoardCard 
                                 key={sweepstakesBoard.id}
                                 board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
                             user={user} // Pass the LobbyPage's user state
@@ -854,6 +858,7 @@ function LobbyContent() {
                             walletBalance={balance}     // from useWallet
                             walletIsLoading={isWalletLoading} // from useWallet
                           />
+                              )}
                           <p className="text-xs text-gray-400 mt-2">Free weekly entry. Numbers assigned at game time.</p>
                         </div>
                       ) : (

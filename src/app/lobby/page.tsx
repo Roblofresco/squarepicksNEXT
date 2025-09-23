@@ -568,6 +568,17 @@ function LobbyContent() {
           present = !!document.querySelector(anchor);
         }
         if (!present) return;
+        // Ensure subsequent step anchors are also present to avoid disappearing between steps
+        const required = ['[data-tour="sweepstakes-input"]','[data-tour="sweepstakes-grid-selected"]'];
+        const waitForAll = async (sels: string[], tries: number, delayMs: number) => {
+          for (let t = 0; t < tries; t++) {
+            const ok = sels.every(s => !!document.querySelector(s));
+            if (ok) return true;
+            await new Promise(r => setTimeout(r, delayMs));
+          }
+          return false;
+        };
+        await waitForAll(required, 30, 200); // up to ~6s
         const steps = [
           {
             element: '[data-tour="sport-selector"]',
@@ -585,7 +596,7 @@ function LobbyContent() {
         const driverObj = driver({
           showProgress: false,
           allowClose: false,
-          disableActiveInteraction: false,
+          disableActiveInteraction: true,
           steps: steps as any,
         });
         driverObj.drive();

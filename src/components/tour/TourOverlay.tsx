@@ -73,6 +73,15 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         for (const sel of allowClickSelectors) {
           if (t.closest(sel)) return;
         }
+        // emit specific events for known selectors
+        if (t.closest('[data-tour-allow="more"]')) {
+          window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'more' } }));
+          return;
+        }
+        if (t.closest('[data-tour-allow="sweepstakes"]')) {
+          window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'sweepstakes' } }));
+          return;
+        }
       }
       e.preventDefault();
       e.stopPropagation();

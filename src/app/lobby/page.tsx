@@ -580,20 +580,14 @@ function LobbyContent() {
   // Allow clicks on tour selector buttons to set flags
   useEffect(() => {
     if (!tourOpen) return;
-    const onClick = (e: Event) => {
-      const t = e.target as HTMLElement | null;
-      if (!t) return;
-      const more = t.closest('[data-tour-allow="more"]');
-      const sweeps = t.closest('[data-tour-allow="sweepstakes"]');
-      if (more) {
-        setMoreClicked(true);
-        setTourPhase('B');
-      } else if (sweeps) {
-        setSweepstakesClicked(true);
-      }
+    const onAllow = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { kind: 'more' | 'sweepstakes' } | undefined;
+      if (!detail) return;
+      if (detail.kind === 'more') { setMoreClicked(true); setTourPhase('B'); }
+      if (detail.kind === 'sweepstakes') { setSweepstakesClicked(true); }
     };
-    document.addEventListener('click', onClick, true);
-    return () => document.removeEventListener('click', onClick, true);
+    window.addEventListener('tour-allow', onAllow as any);
+    return () => window.removeEventListener('tour-allow', onAllow as any);
   }, [tourOpen]);
 
   // Dev-only Step 1 tour (sport-selector) when ?tour=dev

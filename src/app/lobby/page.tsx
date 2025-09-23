@@ -650,6 +650,7 @@ function LobbyContent() {
 
         // Inject popover CTAs to switch views (Step 1) and attach guards only after popover exists
         let guardsAttached = false;
+        let removeGateListeners: (() => void) | null = null;
         driverObj.setConfig({
           onPopoverRender: (popover: any) => {
             const title = (popover as any).title as HTMLElement | null;
@@ -686,7 +687,26 @@ function LobbyContent() {
               if (doneBtn) doneBtn.disabled = true;
               const moreBtn = document.querySelector('[data-tour="sport-selector"] [data-tour-allow="more"]') as HTMLButtonElement | null;
               if (moreBtn) {
+                // Block Next/Done clicks while gated
+                const flash = () => {
+                  try {
+                    moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2');
+                    setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 450);
+                    setTimeout(() => { moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2'); setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 450); }, 650);
+                  } catch {}
+                };
+                const blockNext = (e: Event) => { e.preventDefault(); e.stopImmediatePropagation(); flash(); };
+                if (nextBtn) nextBtn.addEventListener('click', blockNext, true);
+                if (doneBtn) doneBtn.addEventListener('click', blockNext, true);
+                removeGateListeners = () => {
+                  try {
+                    if (nextBtn) nextBtn.removeEventListener('click', blockNext, true);
+                    if (doneBtn) doneBtn.removeEventListener('click', blockNext, true);
+                  } catch {}
+                };
                 const handler = () => {
+                  // Unblock and advance
+                  try { removeGateListeners?.(); } catch {}
                   if (nextBtn) nextBtn.disabled = false;
                   if (doneBtn) doneBtn.disabled = false;
                   setTimeout(() => { try { (driverObj as any).moveNext?.(); } catch {} }, 300);
@@ -694,23 +714,14 @@ function LobbyContent() {
                 moreBtn.addEventListener('click', handler, { once: true });
                 // Ensure cleanup on destroy
                 window.addEventListener('driver:destroy', () => {
-                  try { moreBtn.removeEventListener('click', handler as any); } catch {}
+                  try { moreBtn.removeEventListener('click', handler as any); removeGateListeners?.(); } catch {}
                 }, { once: true } as any);
-                // Flash effect on Next click while locked
-                if (nextBtn) {
-                  const flash = () => {
-                    try {
-                      moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2');
-                      setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 500);
-                      setTimeout(() => { moreBtn.classList.add('ring-2','ring-accent-2','ring-offset-2'); setTimeout(() => moreBtn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 500); }, 700);
-                    } catch {}
-                  };
-                  nextBtn.addEventListener('click', flash);
-                  window.addEventListener('driver:destroy', () => {
-                    try { nextBtn.removeEventListener('click', flash as any); } catch {}
-                  }, { once: true } as any);
-                }
               }
+            } else {
+              // Not gated: ensure no leftover blockers
+              try { removeGateListeners?.(); } catch {}
+              if (nextBtn) nextBtn.disabled = false;
+              if (doneBtn) doneBtn.disabled = false;
             }
           }
         } as any);

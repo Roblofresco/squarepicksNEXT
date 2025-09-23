@@ -50,6 +50,7 @@ interface SweepstakesMiniGridProps {
   takenByUserSet?: Set<number>;
   theme?: SweepstakesMiniGridThemeProps;
   onSquareClick?: (squareNumber: number) => void;
+  isTourDemo?: boolean;
 }
 
 const defaultMiniGridTheme: Required<SweepstakesMiniGridThemeProps> = {
@@ -72,7 +73,8 @@ const SweepstakesMiniGrid = memo(({
   allTakenSet,
   takenByUserSet,
   theme = {},
-  onSquareClick
+  onSquareClick,
+  isTourDemo = false
 }: SweepstakesMiniGridProps) => {
   const currentTheme = { ...defaultMiniGridTheme, ...theme };
   const {
@@ -146,7 +148,7 @@ const SweepstakesMiniGrid = memo(({
             currentGlowClass,
             cellBorderRadius
         )}
-          { ...(isHighlightedByInput ? { 'data-tour': 'sweepstakes-grid-selected' } as any : {}) }
+          data-tour={isTourDemo && isHighlightedByInput ? 'sweepstakes-grid-selected' : undefined}
         >
             {squareContent}
         </div>
@@ -551,14 +553,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
               takenByUserSet={currentUserSquaresSet}
               theme={sweepstakesGridTheme}
               onSquareClick={handleMiniGridSquareClick}
+              isTourDemo={typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev'}
            />
       </div>
       <style jsx>{`
-        .glow-border-gold { box-shadow: 0 8px 20px 4px rgba(${accentGlowRgb}, 0.55); }
-      `}</style>
-    </div>
-  );
-} 
-
-SweepstakesBoardCardComponent.displayName = 'SweepstakesBoardCard';
-export default memo(SweepstakesBoardCardComponent);

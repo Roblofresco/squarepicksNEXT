@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-type Step = { id: string; anchor: string; title: string; description: string; side?: 'top'|'bottom'|'left'|'right'; scroll?: 'bottom' | 'center' };
+type Step = { id: string; anchor: string; title: string; description: string; side?: 'top'|'bottom'; scroll?: 'bottom' | 'center' };
 
 interface TourOverlayProps {
   steps: Step[];

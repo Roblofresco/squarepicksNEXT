@@ -569,8 +569,8 @@ function LobbyContent() {
     const s = [...tourSteps];
     if (tourStep === 0) {
       s[0] = tourPhase === 'A'
-        ? { ...s[0], title: 'Tap More', description: 'Tap More to switch to Sports.' }
-        : { ...s[0], title: 'Tap Sweepstakes', description: 'Tap Sweepstakes to return.' };
+        ? { ...s[0], title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports. Click More.' }
+        : { ...s[0], title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports. Click Sweepstakes.' };
     }
     return s;
   }, [tourSteps, tourStep, tourPhase]);
@@ -869,7 +869,7 @@ function LobbyContent() {
                               {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev' ? (
                                 <TourSweepstakesBoardCard />
                               ) : (
-                                <SweepstakesBoardCard 
+                              <SweepstakesBoardCard 
                                 key={sweepstakesBoard.id}
                                 board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
                             user={user} // Pass the LobbyPage's user state

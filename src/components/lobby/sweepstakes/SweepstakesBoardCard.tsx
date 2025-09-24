@@ -50,7 +50,6 @@ interface SweepstakesMiniGridProps {
   takenByUserSet?: Set<number>;
   theme?: SweepstakesMiniGridThemeProps;
   onSquareClick?: (squareNumber: number) => void;
-  isTourDemo?: boolean;
 }
 
 const defaultMiniGridTheme: Required<SweepstakesMiniGridThemeProps> = {
@@ -73,8 +72,7 @@ const SweepstakesMiniGrid = memo(({
   allTakenSet,
   takenByUserSet,
   theme = {},
-  onSquareClick,
-  isTourDemo = false
+  onSquareClick
 }: SweepstakesMiniGridProps) => {
   const currentTheme = { ...defaultMiniGridTheme, ...theme };
   const {
@@ -148,7 +146,6 @@ const SweepstakesMiniGrid = memo(({
             currentGlowClass,
             cellBorderRadius
         )}
-          data-tour={isTourDemo && isHighlightedByInput ? 'sweepstakes-grid-selected' : undefined}
         >
             {squareContent}
         </div>
@@ -187,17 +184,6 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
 
   const allTakenSet = useMemo(() => new Set((board?.selected_indexes as number[] | undefined) || []), [board?.selected_indexes]);
 
-  // Tour demo: prefill a number so the selected grid anchor exists
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('tour') === 'dev') {
-      if (!inputValue) {
-        setInputValue('37');
-      }
-    }
-  }, [inputValue]);
-
   useEffect(() => {
     if (!board?.id || !user?.uid) {
       setCurrentUserSquaresSet(new Set()); 
@@ -234,51 +220,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
   }, [board?.id, user?.uid]);
 
   useEffect(() => {
-    const checkParticipation = async () => {
-      if (!board?.sweepstakesID || !user?.uid) {
-        setIsLoadingParticipantStatus(false);
-        if (isCurrentUserParticipant) { 
-            setIsCurrentUserParticipant(false);
-        }
-        return;
-      }
-
-      setIsLoadingParticipantStatus(true);
-
-      try {
-        const functions = getFunctions(undefined, "us-east1"); 
-        const checkParticipantFn = httpsCallable(functions, 'checkSweepstakesParticipation');
-        const result = await checkParticipantFn({ sweepstakesID: board.sweepstakesID });
-        const data = result.data as { isParticipant?: boolean };
-        if (typeof data?.isParticipant === 'boolean') {
-          setIsCurrentUserParticipant(data.isParticipant);
-        } else {
-          setIsCurrentUserParticipant(false);
-        }
-      } catch (error: any) {
-        setIsCurrentUserParticipant(false);
-      } finally {
-        setIsLoadingParticipantStatus(false);
-      }
-    };
-    checkParticipation();
-  }, [board?.sweepstakesID, user?.uid]);
-
-  useEffect(() => {
     const centralSelectedStr = entryInteraction.selectedNumber !== null ? String(entryInteraction.selectedNumber) : null;
-
-    // In tour demo mode, keep the local prefilled value; do not clear
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('tour') === 'dev') {
-        if (isActive) {
-          if (centralSelectedStr !== inputValue) {
-            setInputValue(centralSelectedStr === null ? inputValue : centralSelectedStr);
-          }
-        }
-        return;
-      }
-    }
 
     if (isActive) {
       if (centralSelectedStr !== inputValue) {
@@ -292,16 +234,6 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
   }, [isActive, entryInteraction.selectedNumber, board.id, inputValue]);
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('tour') === 'dev') {
-        // In tour demo, keep local-only update; no side effects
-        let valStr = e.target.value.replace(/\D/g, '');
-        if (valStr.length > 2) valStr = valStr.slice(0, 2);
-        setInputValue(valStr);
-        return;
-      }
-    }
     let valStr = e.target.value.replace(/\D/g, '');
     if (valStr.length > 2) valStr = valStr.slice(0, 2);
     
@@ -318,13 +250,6 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
   }, [isActive, currentStage, handleBoardAction, board.id]);
 
   const handleMiniGridSquareClick = useCallback((squareNumber: number) => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('tour') === 'dev') {
-        // In tour demo, do nothing (read-only)
-        return;
-      }
-    }
     if (isLoadingParticipantStatus || isCurrentUserParticipant) return; // Don't allow selection if already entered or loading status
     if (!user) {
       onProtectedAction();
@@ -465,7 +390,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
             <div className="w-0 h-10 flex-shrink-0" /> // Empty, non-visible placeholder
           ) : (
             // Not confirming, show the input field
-            <div className="relative w-20 h-10 flex-shrink-0" data-tour="sweepstakes-input">
+            <div className="relative w-20 h-10 flex-shrink-0">
               <input
                 type="text" inputMode="numeric" pattern="[0-9]*" value={inputValue} onChange={handleInputChange} placeholder="##" maxLength={2}
                 disabled={(currentStage === 'confirming' && isActive) || walletIsLoading || isLoadingSelections}
@@ -546,14 +471,13 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
         </div>
       </div>
 
-      <div className="rounded-md bg-black/30 backdrop-blur-xs shadow-inner border-none mt-2" data-tour="sweepstakes-grid">
+      <div className="rounded-md bg-black/30 backdrop-blur-xs shadow-inner border-none mt-2">
            <SweepstakesMiniGrid
               highlightedNumber={finalNumberToHighlight}
               allTakenSet={allTakenSet}
               takenByUserSet={currentUserSquaresSet}
               theme={sweepstakesGridTheme}
               onSquareClick={handleMiniGridSquareClick}
-              isTourDemo={typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev'}
            />
       </div>
       <style jsx>{`
@@ -561,7 +485,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
       `}</style>
     </div>
   );
-}
+} 
 
 SweepstakesBoardCardComponent.displayName = 'SweepstakesBoardCard';
 export default memo(SweepstakesBoardCardComponent);

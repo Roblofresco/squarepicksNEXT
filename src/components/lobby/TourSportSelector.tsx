@@ -38,8 +38,14 @@ const TourSportSelector = memo(function TourSportSelector({
     exit: { opacity: 0, transition: { duration: 0.1 } },
   };
 
-  const onMore = () => setSportSelectorView('allRegularSports');
-  const onSweepstakes = () => setSportSelectorView('sweepstakes');
+  const onMore = () => {
+    setSportSelectorView('allRegularSports');
+    try { window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'more' } })); } catch {}
+  };
+  const onSweepstakes = () => {
+    setSportSelectorView('sweepstakes');
+    try { window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'sweepstakes' } })); } catch {}
+  };
 
   return (
     <div className="mb-2 w-full min-h-[64px]">

@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-type Step = { id: string; anchor: string; title: string; description: string; side?: 'top'|'bottom'; scroll?: 'bottom' | 'center' };
+type Step = { id: string; anchor: string; title: string; description: string; side?: 'top'|'bottom'; scroll?: 'bottom' | 'center'; arrowTarget?: string };
 
 interface TourOverlayProps {
   steps: Step[];
@@ -139,8 +139,32 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
   // spotlight overlay with four rectangles to carve a hole
   const hole = rect;
-  const popLeft = hole ? hole.left + hole.width / 2 : 80;
-  const popTop = hole ? (placement === 'top' ? hole.top - 12 : hole.bottom + 12) : 80;
+  const padding = 16;
+  const popW = popRef.current?.offsetWidth || 300;
+  const popH = popRef.current?.offsetHeight || 150;
+
+  // Determine where to point the arrow (defaults to the hole center)
+  const arrowRect = (() => {
+    if (!step?.arrowTarget) return hole;
+    const el = document.querySelector(step.arrowTarget) as HTMLElement | null;
+    return el ? el.getBoundingClientRect() : hole;
+  })();
+
+  // Position popover near the hole/arrow target with viewport clamping
+  const base = arrowRect || hole;
+  const targetCenterX = base ? base.left + base.width / 2 : 80;
+  let popLeft = targetCenterX - popW / 2;
+  popLeft = Math.max(padding, Math.min(popLeft, window.innerWidth - popW - padding));
+  let popTop = 80;
+  if (base) {
+    popTop = placement === 'top' ? base.top - (popH + padding) : base.bottom + padding;
+    popTop = Math.max(padding, Math.min(popTop, window.innerHeight - popH - padding));
+  }
+
+  // Compute arrow horizontal offset inside the popover so it points to arrow target
+  const arrowCenterX = base ? base.left + base.width / 2 : popLeft + popW / 2;
+  const rawArrowLeft = arrowCenterX - popLeft;
+  const arrowLeft = Math.max(12, Math.min(rawArrowLeft, popW - 12));
 
   return createPortal(
     <div className="fixed inset-0 z-[1000] pointer-events-none">
@@ -166,8 +190,8 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         <div
           className="absolute w-0 h-0 border-l-8 border-r-8 border-transparent"
           style={placement === 'top'
-            ? { left: '50%', transform: 'translateX(-50%)', top: '100%', borderTop: '8px solid rgba(0,0,0,0.9)' }
-            : { left: '50%', transform: 'translateX(-50%)', bottom: '100%', borderBottom: '8px solid rgba(0,0,0,0.9)' }}
+            ? { left: `${Math.round(arrowLeft)}px`, top: '100%', transform: 'translateX(-50%)', borderTop: '8px solid rgba(0,0,0,0.9)' }
+            : { left: `${Math.round(arrowLeft)}px`, bottom: '100%', transform: 'translateX(-50%)', borderBottom: '8px solid rgba(0,0,0,0.9)' }}
         />
         <div className="font-bold text-base">{step?.title}</div>
         <div className="text-white/80 text-sm mt-1 space-y-1">

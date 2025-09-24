@@ -569,8 +569,8 @@ function LobbyContent() {
     const s = [...tourSteps];
     if (tourStep === 0) {
       s[0] = tourPhase === 'A'
-        ? { ...s[0], title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports. Click More.' }
-        : { ...s[0], title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports. Click Sweepstakes.' };
+        ? { ...s[0], title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.\nClick **More**.' }
+        : { ...s[0], title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.\nClick **Sweepstakes**.' };
     }
     return s;
   }, [tourSteps, tourStep, tourPhase]);

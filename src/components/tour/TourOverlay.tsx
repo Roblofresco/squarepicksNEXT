@@ -23,6 +23,18 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const step = steps[stepIndex];
   const [placement, setPlacement] = useState<'top' | 'bottom'>('top');
   const popRef = useRef<HTMLDivElement | null>(null);
+  const descriptionLines = useMemo(() => (step?.description ? step.description.split(/\n+/) : []), [step]);
+
+  const renderBold = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, idx) => {
+      const match = part.match(/^\*\*(.+)\*\*$/);
+      if (match) {
+        return <strong key={idx} className="font-semibold text-white">{match[1]}</strong>;
+      }
+      return <span key={idx}>{part}</span>;
+    });
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -135,7 +147,13 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
             : { left: '50%', transform: 'translateX(-50%)', bottom: '100%', borderBottom: '8px solid rgba(0,0,0,0.9)' }}
         />
         <div className="font-bold text-base">{step?.title}</div>
-        <div className="text-white/80 text-sm mt-1">{step?.description}</div>
+        <div className="text-white/80 text-sm mt-1 space-y-1">
+          {descriptionLines.length > 0
+            ? descriptionLines.map((line, i) => (
+                <div key={i}>{renderBold(line)}</div>
+              ))
+            : step?.description}
+        </div>
         <div className="flex justify-end gap-2 mt-3">
           {stepIndex === steps.length - 1 ? (
             <button onClick={onClose} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Done</button>

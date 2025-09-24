@@ -568,12 +568,20 @@ function LobbyContent() {
   const stepsForRender = useMemo(() => {
     const s = [...tourSteps];
     if (tourStep === 0) {
-      s[0] = tourPhase === 'A'
-        ? { ...s[0], title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.\nClick **More**.' }
-        : { ...s[0], title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.\nClick **Sweepstakes**.' };
+      if (tourPhase === 'A') {
+        s[0] = { ...s[0], title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.\nClick **More**.' };
+      } else {
+        s[0] = { 
+          ...s[0], 
+          title: 'Choose Your View', 
+          description: sweepstakesClicked 
+            ? 'Switch between Sweepstakes and Sports.\nClick Next' 
+            : 'Switch between Sweepstakes and Sports.\nClick **Sweepstakes**.'
+        };
+      }
     }
     return s;
-  }, [tourSteps, tourStep, tourPhase]);
+  }, [tourSteps, tourStep, tourPhase, sweepstakesClicked]);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);

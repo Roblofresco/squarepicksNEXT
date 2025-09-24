@@ -193,8 +193,9 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
   // Position popover near the hole/arrow target with viewport clamping
   const base = arrowRect || hole;
-  const targetCenterX = base ? base.left + base.width / 2 : 80;
-  let popLeft = targetCenterX - popW / 2;
+  // Prefer aligning the popover's left edge to the target's left for input alignment, then clamp
+  const preferredLeft = base ? base.left : 80;
+  let popLeft = preferredLeft;
   popLeft = Math.max(padding, Math.min(popLeft, window.innerWidth - popW - padding));
   let popTop = 80;
   if (base) {
@@ -225,7 +226,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       <div
         ref={popRef}
         className="absolute max-w-sm bg-gradient-to-b from-black/90 via-black/85 to-black/90 text-white rounded-lg border border-white/10 p-4 shadow-2xl pointer-events-auto backdrop-blur-md"
-        style={{ left: Math.round(popLeft), top: Math.round(popTop), transform: 'translate(-50%, 0)' }}
+        style={{ left: Math.round(popLeft), top: Math.round(popTop) }}
       >
         {/* arrow */}
         <div

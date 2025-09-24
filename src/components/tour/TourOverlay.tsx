@@ -24,6 +24,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const [placement, setPlacement] = useState<'top' | 'bottom'>('top');
   const popRef = useRef<HTMLDivElement | null>(null);
   const descriptionLines = useMemo(() => (step?.description ? step.description.split(/\n+/) : []), [step]);
+  const [reflowTick, setReflowTick] = useState(0);
 
   const renderBold = (text: string) => {
     const parts = text.split(/(\*\*[^*]+\*\*)/g);
@@ -74,6 +75,13 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       setRect(null);
     }
   }, [open, step]);
+
+  // Reflow once after rect or step changes so popover size is measured before positioning
+  useEffect(() => {
+    if (!open) return;
+    const id = requestAnimationFrame(() => setReflowTick(t => t + 1));
+    return () => cancelAnimationFrame(id);
+  }, [open, step, rect]);
 
   useEffect(() => {
     if (!open) return;
@@ -184,7 +192,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       <div
         ref={popRef}
         className="absolute max-w-sm bg-gradient-to-b from-black/90 via-black/85 to-black/90 text-white rounded-lg border border-white/10 p-4 shadow-2xl pointer-events-auto backdrop-blur-md"
-        style={{ left: popLeft, top: popTop, transform: 'translate(-50%, 0)' }}
+        style={{ left: Math.round(popLeft), top: Math.round(popTop), transform: 'translate(-50%, 0)' }}
       >
         {/* arrow */}
         <div

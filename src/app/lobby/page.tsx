@@ -570,14 +570,26 @@ function LobbyContent() {
     const s = [...tourSteps];
     if (tourStep === 0) {
       if (tourPhase === 'A') {
-        s[0] = { ...s[0], title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.\nClick **More**.' };
+        s[0] = { 
+          ...s[0], 
+          title: 'Choose Your View', 
+          description: 'Switch between Sweepstakes and Sports.\nClick **More**.',
+          arrowTarget: '[data-tour-allow="more"]',
+          side: 'top',
+          scroll: 'popoverTop' as const,
+          holePadding: 8
+        };
       } else {
         s[0] = { 
           ...s[0], 
           title: 'Choose Your View', 
           description: (sweepstakesClicked || sportSelectorView === 'sweepstakes') 
             ? 'Switch between Sweepstakes and Sports.\nClick Next' 
-            : 'Switch between Sweepstakes and Sports.\nClick **Sweepstakes**.'
+            : 'Switch between Sweepstakes and Sports.\nClick **Sweepstakes**.',
+          arrowTarget: '[data-tour-allow="sweepstakes"]',
+          side: 'top',
+          scroll: 'popoverTop' as const,
+          holePadding: 8
         };
       }
     }

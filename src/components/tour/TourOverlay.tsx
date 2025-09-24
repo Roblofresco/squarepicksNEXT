@@ -3,7 +3,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-type Step = { id: string; anchor: string; title: string; description: string; side?: 'top'|'bottom'; scroll?: 'bottom' | 'center'; arrowTarget?: string };
+type Step = {
+  id: string;
+  anchor: string;
+  title: string;
+  description: string;
+  side?: 'top'|'bottom';
+  scroll?: 'bottom' | 'center' | 'popoverTop';
+  arrowTarget?: string;
+  holePadding?: number;
+};
 
 interface TourOverlayProps {
   steps: Step[];
@@ -83,6 +92,20 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     return () => cancelAnimationFrame(id);
   }, [open, step, rect]);
 
+  // After measurement, optionally align page scroll so popover top sits near viewport top
+  useEffect(() => {
+    if (!open || !step) return;
+    if (step.scroll !== 'popoverTop') return;
+    const baseEl = document.querySelector(step.arrowTarget || step.anchor) as HTMLElement | null;
+    if (!baseEl || !popRef.current) return;
+    const baseRect = baseEl.getBoundingClientRect();
+    const popH = popRef.current.offsetHeight || 150;
+    const padding = 16;
+    const topMargin = 16; // desired space from viewport top
+    const desiredTop = window.scrollY + baseRect.top - (popH + padding) - topMargin;
+    window.scrollTo({ top: Math.max(0, desiredTop), behavior: 'smooth' });
+  }, [open, step, reflowTick]);
+
   useEffect(() => {
     if (!open) return;
     const onRecalc = () => {
@@ -145,8 +168,18 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
   if (!open || !container) return null;
 
-  // spotlight overlay with four rectangles to carve a hole
-  const hole = rect;
+  // spotlight overlay with four rectangles to carve a hole (expanded by holePadding)
+  const hp = step?.holePadding ?? 0;
+  const hole = rect
+    ? {
+        top: Math.max(0, rect.top - hp),
+        left: Math.max(0, rect.left - hp),
+        right: Math.min(window.innerWidth, rect.right + hp),
+        bottom: Math.min(window.innerHeight, rect.bottom + hp),
+        width: Math.min(window.innerWidth, rect.right + hp) - Math.max(0, rect.left - hp),
+        height: Math.min(window.innerHeight, rect.bottom + hp) - Math.max(0, rect.top - hp),
+      } as DOMRect & { right: number; bottom: number }
+    : rect;
   const padding = 16;
   const popW = popRef.current?.offsetWidth || 300;
   const popH = popRef.current?.offsetHeight || 150;

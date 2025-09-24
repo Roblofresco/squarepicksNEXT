@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-type Step = { id: string; anchor: string; title: string; description: string; side?: 'top'|'bottom'|'left'|'right' };
+type Step = { id: string; anchor: string; title: string; description: string; side?: 'top'|'bottom'|'left'|'right'; scroll?: 'bottom' | 'center' };
 
 interface TourOverlayProps {
   steps: Step[];
@@ -45,14 +45,21 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     if (!open || !step) return;
     const target = document.querySelector(step.anchor) as HTMLElement | null;
     if (target) {
-      // Center the target in the viewport with a slight offset when popover is above
-      const r = target.getBoundingClientRect();
+      // Scroll behavior per step
       try {
-        const viewportH = window.innerHeight || 0;
-        const centerOffset = (viewportH / 2) - (r.height / 2);
-        const additionalOffset = step.side === 'top' ? 80 : 0; // leave room for popover above
-        const desiredTop = window.scrollY + r.top - centerOffset + additionalOffset;
-        window.scrollTo({ top: Math.max(0, desiredTop), behavior: 'smooth' });
+        if (step.scroll === 'bottom') {
+          const scrollEl = document.scrollingElement || document.documentElement;
+          const bottom = Math.max(scrollEl.scrollHeight - window.innerHeight, 0);
+          window.scrollTo({ top: bottom, behavior: 'smooth' });
+        } else {
+          // Center the target in the viewport with a slight offset when popover is above
+          const r = target.getBoundingClientRect();
+          const viewportH = window.innerHeight || 0;
+          const centerOffset = (viewportH / 2) - (r.height / 2);
+          const additionalOffset = step.side === 'top' ? 80 : 0; // leave room for popover above
+          const desiredTop = window.scrollY + r.top - centerOffset + additionalOffset;
+          window.scrollTo({ top: Math.max(0, desiredTop), behavior: 'smooth' });
+        }
       } catch {}
       const r = target.getBoundingClientRect();
       setRect(r);

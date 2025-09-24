@@ -559,8 +559,9 @@ function LobbyContent() {
   const [tourStep, setTourStep] = useState(0);
   const tourSteps = [
     { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.' },
-    { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose your number', description: 'Type to change (disabled in tour).' },
-    { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Your square', description: 'Click to select (disabled in tour).' },
+    // Center focus on grid and place dialogue above it for this step
+    { id: 'input', anchor: '[data-tour="sweepstakes-grid"]', title: 'Choose your number', description: 'Type to change (disabled in tour).', side: 'top' as const },
+    { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Your square', description: 'Click to select (disabled in tour).', side: 'top' as const },
   ];
   const [tourPhase, setTourPhase] = useState<'A'|'B'|'C'>('A');
   const [moreClicked, setMoreClicked] = useState(false);

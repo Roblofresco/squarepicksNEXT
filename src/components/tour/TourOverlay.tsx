@@ -48,9 +48,13 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       target.scrollIntoView({ block: 'center', behavior: 'smooth' });
       const r = target.getBoundingClientRect();
       setRect(r);
-      // simple flip based on available space
-      const needBottom = r.top < 160;
-      setPlacement(needBottom ? 'bottom' : 'top');
+      // honor explicit side if provided; otherwise simple flip based on available space
+      if (step.side) {
+        setPlacement(step.side);
+      } else {
+        const needBottom = r.top < 160;
+        setPlacement(needBottom ? 'bottom' : 'top');
+      }
     } else {
       setRect(null);
     }
@@ -64,8 +68,12 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       if (!target) return;
       const r = target.getBoundingClientRect();
       setRect(r);
-      const needBottom = r.top < 160;
-      setPlacement(needBottom ? 'bottom' : 'top');
+      if (step.side) {
+        setPlacement(step.side);
+      } else {
+        const needBottom = r.top < 160;
+        setPlacement(needBottom ? 'bottom' : 'top');
+      }
     };
     window.addEventListener('resize', onRecalc);
     window.addEventListener('scroll', onRecalc, true);

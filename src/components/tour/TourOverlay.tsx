@@ -80,19 +80,19 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     const blockClick = (e: Event) => {
       const t = e.target as Node | null;
       if (popRef.current && t && popRef.current.contains(t)) return; // allow clicks inside popover
-      // allow clicks on whitelisted selectors
       if (t instanceof HTMLElement) {
-        for (const sel of allowClickSelectors) {
-          if (t.closest(sel)) return;
-        }
-        // emit specific events for known selectors
+        // First, handle our explicit tour-allow buttons so phase flags update
         if (t.closest('[data-tour-allow="more"]')) {
           window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'more' } }));
-          return;
+          return; // allow click through
         }
         if (t.closest('[data-tour-allow="sweepstakes"]')) {
           window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'sweepstakes' } }));
-          return;
+          return; // allow click through
+        }
+        // Then allow any other explicit whitelist selectors (if provided)
+        for (const sel of allowClickSelectors) {
+          if (t.closest(sel)) return;
         }
       }
       e.preventDefault();

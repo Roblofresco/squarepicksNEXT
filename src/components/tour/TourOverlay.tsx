@@ -45,7 +45,15 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     if (!open || !step) return;
     const target = document.querySelector(step.anchor) as HTMLElement | null;
     if (target) {
-      target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      // Center the target in the viewport with a slight offset when popover is above
+      const r = target.getBoundingClientRect();
+      try {
+        const viewportH = window.innerHeight || 0;
+        const centerOffset = (viewportH / 2) - (r.height / 2);
+        const additionalOffset = step.side === 'top' ? 80 : 0; // leave room for popover above
+        const desiredTop = window.scrollY + r.top - centerOffset + additionalOffset;
+        window.scrollTo({ top: Math.max(0, desiredTop), behavior: 'smooth' });
+      } catch {}
       const r = target.getBoundingClientRect();
       setRect(r);
       // honor explicit side if provided; otherwise simple flip based on available space

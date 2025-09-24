@@ -575,14 +575,14 @@ function LobbyContent() {
         s[0] = { 
           ...s[0], 
           title: 'Choose Your View', 
-          description: sweepstakesClicked 
+          description: (sweepstakesClicked || sportSelectorView === 'sweepstakes') 
             ? 'Switch between Sweepstakes and Sports.\nClick Next' 
             : 'Switch between Sweepstakes and Sports.\nClick **Sweepstakes**.'
         };
       }
     }
     return s;
-  }, [tourSteps, tourStep, tourPhase, sweepstakesClicked]);
+  }, [tourSteps, tourStep, tourPhase, sweepstakesClicked, sportSelectorView]);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -1001,11 +1001,11 @@ function LobbyContent() {
           steps={stepsForRender}
           open={tourOpen}
           stepIndex={tourStep}
-          nextEnabled={tourStep === 0 ? (tourPhase === 'A' ? moreClicked : sweepstakesClicked) : true}
+          nextEnabled={tourStep === 0 ? (tourPhase === 'A' ? moreClicked : (sweepstakesClicked || sportSelectorView === 'sweepstakes')) : true}
           onNext={() => {
             if (tourStep === 0) {
               if (tourPhase === 'A' && moreClicked) { setTourPhase('B'); return; }
-              if (tourPhase === 'B' && sweepstakesClicked) {
+              if (tourPhase === 'B' && (sweepstakesClicked || sportSelectorView === 'sweepstakes')) {
                 setTourStep(1);
                 return;
               }

@@ -15,7 +15,28 @@ export default function TourSweepstakesBoardCard() {
         'p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20'
       )}
       style={{ background: `linear-gradient(to bottom, rgb(var(--color-background-primary)) 0%, #B8860B 15%, #B8860B 100%)` }}
+      data-tour="tour-sweepstakes-card"
     >
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-white/80 text-xs uppercase tracking-[0.18em]">Live Sweepstakes</div>
+          <div className="text-white text-lg font-semibold mt-0.5" data-tour="tour-sweepstakes-header">Win the $250 Prize Pot</div>
+        </div>
+        <div className="text-right">
+          <div className="text-white/80 text-xs">Entries Left</div>
+          <div className="text-white text-lg font-semibold">14 / 100</div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3 text-sm text-white/80 mb-4">
+        <div className="p-3 rounded-lg bg-black/15 backdrop-blur-sm">
+          <div className="text-xs uppercase tracking-wide text-white/60">Entry Closes In</div>
+          <div className="text-lg font-semibold text-white">03:24</div>
+        </div>
+        <div className="p-3 rounded-lg bg-black/15 backdrop-blur-sm">
+          <div className="text-xs uppercase tracking-wide text-white/60">Entry Fee</div>
+          <div className="text-lg font-semibold text-white">Free</div>
+        </div>
+      </div>
       <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
         <span className="text-sm sm:text-base text-white font-semibold select-none min-w-0">
           Choose Your Pick 0-99:

@@ -570,8 +570,9 @@ function LobbyContent() {
   };
   const tourSteps: LobbyTourStep[] = [
     { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', holePadding: 12 },
-    { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose your number', description: 'Type to change (disabled in tour).', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-input"]', holePadding: 14, popoverOffsetY: 16 },
-    { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Your square', description: 'See the square you selected.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
+    { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose Your Square', description: 'Type your number.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-input"]', holePadding: 14, popoverOffsetY: 16 },
+    { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Choose Your Square', description: 'Tap your number.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
+    { id: 'card', anchor: '[data-tour="tour-sweepstakes-card"]', title: 'Explore the Board', description: 'Review countdown and prize details.\nOnly tour controls work right now.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="tour-sweepstakes-header"]', holePadding: 32, popoverOffsetY: 32 },
   ];
   const [tourPhase, setTourPhase] = useState<'A'|'B'|'C'>('A');
   const [moreClicked, setMoreClicked] = useState(false);
@@ -589,7 +590,7 @@ function LobbyContent() {
           scroll: 'center',
           popoverOffsetY: 12
         };
-      } else {
+        } else {
         s[0] = {
           ...s[0],
           title: 'Choose Your View',
@@ -1033,7 +1034,7 @@ function LobbyContent() {
               }
               return;
             }
-            setTourStep(prev => Math.min(prev + 1, tourSteps.length - 1));
+      setTourStep(prev => Math.min(prev + 1, tourSteps.length - 1));
           }}
           onNextBlocked={() => {
             // flash the relevant button

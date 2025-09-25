@@ -1,0 +1,50 @@
+warning: in the working copy of 'src/components/lobby/sweepstakes/SweepstakesBoardCard.tsx', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/src/components/lobby/sweepstakes/SweepstakesBoardCard.tsx b/src/components/lobby/sweepstakes/SweepstakesBoardCard.tsx[m
+[1mindex 1db1ac0..bc44548 100644[m
+[1m--- a/src/components/lobby/sweepstakes/SweepstakesBoardCard.tsx[m
+[1m+++ b/src/components/lobby/sweepstakes/SweepstakesBoardCard.tsx[m
+[36m@@ -184,6 +184,44 @@[m [mconst SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {[m
+ [m
+   const allTakenSet = useMemo(() => new Set((board?.selected_indexes as number[] | undefined) || []), [board?.selected_indexes]);[m
+ [m
+[32m+[m[32m  // Check if the authenticated user has already entered the sweepstakes linked to this board[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    let isCancelled = false;[m
+[32m+[m
+[32m+[m[32m    const run = async () => {[m
+[32m+[m[32m      // If no user or no sweepstakes association, don't block UI[m
+[32m+[m[32m      const sweepId = typeof (board as any)?.sweepstakesID === 'string'[m
+[32m+[m[32m        ? (board as any).sweepstakesID[m
+[32m+[m[32m        : (typeof (board as any)?.sweepstakesID?.id === 'string' ? (board as any).sweepstakesID.id : null);[m
+[32m+[m
+[32m+[m[32m      if (!user?.uid || !sweepId) {[m
+[32m+[m[32m        if (!isCancelled) {[m
+[32m+[m[32m          setIsCurrentUserParticipant(false);[m
+[32m+[m[32m          setIsLoadingParticipantStatus(false);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return;[m
+[32m+[m[32m      }[m
+[32m+[m
+[32m+[m[32m      try {[m
+[32m+[m[32m        setIsLoadingParticipantStatus(true);[m
+[32m+[m[32m        const functions = getFunctions(undefined, "us-east1");[m
+[32m+[m[32m        const checkFn = httpsCallable(functions, 'checkSweepstakesParticipation');[m
+[32m+[m[32m        const result = await checkFn({ sweepstakesID: sweepId });[m
+[32m+[m[32m        const isParticipant = Boolean((result?.data as any)?.isParticipant);[m
+[32m+[m[32m        if (!isCancelled) {[m
+[32m+[m[32m          setIsCurrentUserParticipant(isParticipant);[m
+[32m+[m[32m        }[m
+[32m+[m[32m      } catch (_err) {[m
+[32m+[m[32m        // Fail-open: allow entering; just stop loading state[m
+[32m+[m[32m      } finally {[m
+[32m+[m[32m        if (!isCancelled) setIsLoadingParticipantStatus(false);[m
+[32m+[m[32m      }[m
+[32m+[m[32m    };[m
+[32m+[m
+[32m+[m[32m    run();[m
+[32m+[m[32m    return () => { isCancelled = true; };[m
+[32m+[m[32m  }, [board?.sweepstakesID, user?.uid]);[m
+[32m+[m
+   useEffect(() => {[m
+     if (!board?.id || !user?.uid) {[m
+       setCurrentUserSquaresSet(new Set()); [m

@@ -2,10 +2,14 @@
 
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { Ticket } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type TourSweepstakesBoardCardProps = {
   tourStepId?: string;
 };
+
+const stageOrder = ['selector','input','grid','enter','confirm','response','guidelines','wallet'];
 
 export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakesBoardCardProps) {
   const accentGlowRgb = '184, 134, 11';
@@ -15,6 +19,11 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
 
   const currentStage = typeof tourStepId === 'string' ? tourStepId : undefined;
   const isStage = (stage: string) => currentStage === stage;
+  const isStageAfter = (stage: string) => {
+    const idx = stageOrder.indexOf(stage);
+    const currentIdx = stageOrder.indexOf(currentStage ?? 'selector');
+    return currentIdx >= idx && idx !== -1;
+  };
 
   return (
     <div
@@ -25,29 +34,68 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
     >
       <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
         <span className="text-sm sm:text-base text-white font-semibold select-none min-w-0">
-          Choose Your Pick 0-99:
+          {isStage('confirm') || isStageAfter('confirm')
+            ? `Selected Pick: ${String(highlighted).padStart(2, '0')}`
+            : 'Choose Your Pick 0-99:'}
         </span>
-        <div className="relative w-20 h-10 flex-shrink-0" data-tour="sweepstakes-input">
-          <input
-            type="text"
-            value={String(highlighted).padStart(2, '0')}
-            disabled
-            className="w-full h-full text-center bg-black/10 text-[#B8860B] font-mono text-2xl rounded-md border-none placeholder:text-[#B8860B]/70 focus:ring-2 focus:ring-[#B8860B] outline-none transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed shadow-inner"
-          />
-        </div>
-        <div data-tour="sweepstakes-enter">
-          <button
-            type="button"
-            disabled={!isStage('enter')}
-            className={cn(
-              'px-4 py-2 text-sm font-semibold rounded-md border transition-colors h-10',
-              'text-white border-yellow-700',
-              'bg-gradient-to-br from-yellow-600 via-yellow-700 to-yellow-800',
-              'disabled:bg-gradient-to-br disabled:from-yellow-800/50 disabled:via-yellow-900/50 disabled:to-yellow-950/50 disabled:border-yellow-900/60 disabled:text-yellow-300/60 disabled:cursor-not-allowed'
-            )}
-          >
-            ENTER
-          </button>
+        {isStage('confirm') ? (
+          <div className="w-0 h-10 flex-shrink-0" />
+        ) : (
+          <div className="relative w-20 h-10 flex-shrink-0" data-tour="sweepstakes-input">
+            <input
+              type="text"
+              value={String(highlighted).padStart(2, '0')}
+              disabled
+              className="w-full h-full text-center bg-black/10 text-[#B8860B] font-mono text-2xl rounded-md border-none placeholder:text-[#B8860B]/70 focus:ring-2 focus:ring-[#B8860B] outline-none transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed shadow-inner"
+            />
+          </div>
+        )}
+        <div
+          data-tour={isStage('confirm') ? 'sweepstakes-confirm' : undefined}
+          className={cn(
+            'flex items-center',
+            isStage('confirm') ? 'flex-grow justify-evenly space-x-2' : 'flex-shrink-0 justify-end gap-2'
+          )}
+        >
+          {isStage('confirm') ? (
+            <>
+              <Button
+                type="button"
+                onClick={(e) => e.preventDefault()}
+                className="px-3 py-2 text-sm font-semibold rounded-md border h-auto bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors flex-1 min-w-0"
+              >
+                CONFIRM
+              </Button>
+              <Button
+                type="button"
+                onClick={(e) => e.preventDefault()}
+                variant="outline"
+                className="px-3 py-2 text-sm font-semibold rounded-md border h-auto border-[#B8860B]/70 text-[#B8860B] hover:bg-[#B8860B]/20 hover:text-yellow-300 transition-colors flex-1 min-w-0"
+              >
+                CANCEL
+              </Button>
+            </>
+          ) : isStageAfter('response') ? (
+            <div className="flex items-center gap-2">
+              <Ticket className="h-6 w-6 text-green-400" />
+              <span className="text-sm font-semibold text-green-300">Good luck!</span>
+            </div>
+          ) : (
+            <div data-tour="sweepstakes-enter">
+              <button
+                type="button"
+                disabled={!isStage('enter')}
+                className={cn(
+                  'px-4 py-2 text-sm font-semibold rounded-md border transition-colors h-10',
+                  'text-white border-yellow-700',
+                  'bg-gradient-to-br from-yellow-600 via-yellow-700 to-yellow-800',
+                  'disabled:bg-gradient-to-br disabled:from-yellow-800/50 disabled:via-yellow-900/50 disabled:to-yellow-950/50 disabled:border-yellow-900/60 disabled:text-yellow-300/60 disabled:cursor-not-allowed'
+                )}
+              >
+                ENTER
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -75,31 +123,6 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
       </div>
 
       {/* Step 3+ staged panels */}
-      {isStage('confirm') && (
-        <div
-          data-tour="sweepstakes-confirm"
-          className="mt-4 rounded-lg bg-black/25 border border-white/10 p-4 flex flex-col gap-3"
-        >
-          <div className="text-sm text-white/80">Confirm your entry for number <span className="font-semibold text-accent-1">{String(highlighted).padStart(2, '0')}</span>.</div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              disabled
-              className="flex-1 px-3 py-2 rounded-md border border-white/10 text-white/60 bg-white/5 cursor-not-allowed"
-            >
-              Back
-            </button>
-            <button
-              type="button"
-              disabled
-              className="flex-1 px-3 py-2 rounded-md bg-gradient-to-r from-[#1bb0f2] to-[#6366f1] text-white font-semibold opacity-90 cursor-not-allowed"
-            >
-              Confirm Entry
-            </button>
-          </div>
-        </div>
-      )}
-
       {isStage('response') && (
         <div
           data-tour="sweepstakes-response"

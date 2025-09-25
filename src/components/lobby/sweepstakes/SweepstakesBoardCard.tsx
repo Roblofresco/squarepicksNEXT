@@ -184,6 +184,44 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
 
   const allTakenSet = useMemo(() => new Set((board?.selected_indexes as number[] | undefined) || []), [board?.selected_indexes]);
 
+  // Check if the authenticated user has already entered the sweepstakes linked to this board
+  useEffect(() => {
+    let isCancelled = false;
+
+    const run = async () => {
+      // If no user or no sweepstakes association, don't block UI
+      const sweepId = typeof (board as any)?.sweepstakesID === 'string'
+        ? (board as any).sweepstakesID
+        : (typeof (board as any)?.sweepstakesID?.id === 'string' ? (board as any).sweepstakesID.id : null);
+
+      if (!user?.uid || !sweepId) {
+        if (!isCancelled) {
+          setIsCurrentUserParticipant(false);
+          setIsLoadingParticipantStatus(false);
+        }
+        return;
+      }
+
+      try {
+        setIsLoadingParticipantStatus(true);
+        const functions = getFunctions(undefined, "us-east1");
+        const checkFn = httpsCallable(functions, 'checkSweepstakesParticipation');
+        const result = await checkFn({ sweepstakesID: sweepId });
+        const isParticipant = Boolean((result?.data as any)?.isParticipant);
+        if (!isCancelled) {
+          setIsCurrentUserParticipant(isParticipant);
+        }
+      } catch (_err) {
+        // Fail-open: allow entering; just stop loading state
+      } finally {
+        if (!isCancelled) setIsLoadingParticipantStatus(false);
+      }
+    };
+
+    run();
+    return () => { isCancelled = true; };
+  }, [board?.sweepstakesID, user?.uid]);
+
   useEffect(() => {
     if (!board?.id || !user?.uid) {
       setCurrentUserSquaresSet(new Set()); 

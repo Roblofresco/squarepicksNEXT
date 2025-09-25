@@ -557,11 +557,21 @@ function LobbyContent() {
   // App-driven tour state (dev only for now)
   const [tourOpen, setTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
-  const tourSteps = [
-    { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.' },
-    // Center focus on grid and place dialogue above it for this step; force scroll to bottom
-    { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose your number', description: 'Type to change (disabled in tour).', side: 'top' as const, scroll: 'popoverTop' as const, arrowTarget: '[data-tour="sweepstakes-input"]', holePadding: 8 },
-    { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Your square', description: 'Click to select (disabled in tour).', side: 'top' as const },
+  type LobbyTourStep = {
+    id: string;
+    anchor: string;
+    title: string;
+    description: string;
+    side?: 'top' | 'bottom';
+    scroll?: 'bottom' | 'center' | 'popoverTop';
+    arrowTarget?: string;
+    holePadding?: number;
+    popoverOffsetY?: number;
+  };
+  const tourSteps: LobbyTourStep[] = [
+    { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', holePadding: 12 },
+    { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose your number', description: 'Type to change (disabled in tour).', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-input"]', holePadding: 14, popoverOffsetY: 16 },
+    { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Your square', description: 'See the square you selected.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
   ];
   const [tourPhase, setTourPhase] = useState<'A'|'B'|'C'>('A');
   const [moreClicked, setMoreClicked] = useState(false);
@@ -570,26 +580,26 @@ function LobbyContent() {
     const s = [...tourSteps];
     if (tourStep === 0) {
       if (tourPhase === 'A') {
-        s[0] = { 
-          ...s[0], 
-          title: 'Choose Your View', 
+        s[0] = {
+          ...s[0],
+          title: 'Choose Your View',
           description: 'Switch between Sweepstakes and Sports.\nClick **More**.',
           arrowTarget: '[data-tour-allow="more"]',
-          side: 'top',
-          scroll: 'popoverTop' as const,
-          holePadding: 8
+          side: 'bottom',
+          scroll: 'center',
+          popoverOffsetY: 12
         };
       } else {
-        s[0] = { 
-          ...s[0], 
-          title: 'Choose Your View', 
-          description: (sweepstakesClicked || sportSelectorView === 'sweepstakes') 
-            ? 'Switch between Sweepstakes and Sports.\nClick Next' 
+        s[0] = {
+          ...s[0],
+          title: 'Choose Your View',
+          description: (sweepstakesClicked || sportSelectorView === 'sweepstakes')
+            ? 'Switch between Sweepstakes and Sports.\nClick Next'
             : 'Switch between Sweepstakes and Sports.\nClick **Sweepstakes**.',
           arrowTarget: '[data-tour-allow="sweepstakes"]',
-          side: 'top',
-          scroll: 'popoverTop' as const,
-          holePadding: 8
+          side: 'bottom',
+          scroll: 'center',
+          popoverOffsetY: 12
         };
       }
     }

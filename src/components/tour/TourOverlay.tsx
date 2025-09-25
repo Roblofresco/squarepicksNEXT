@@ -12,6 +12,7 @@ type Step = {
   scroll?: 'bottom' | 'center' | 'popoverTop';
   arrowTarget?: string;
   holePadding?: number;
+  popoverOffsetY?: number;
 };
 
 interface TourOverlayProps {
@@ -178,7 +179,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         bottom: Math.min(window.innerHeight, rect.bottom + hp),
         width: Math.min(window.innerWidth, rect.right + hp) - Math.max(0, rect.left - hp),
         height: Math.min(window.innerHeight, rect.bottom + hp) - Math.max(0, rect.top - hp),
-      } as DOMRect & { right: number; bottom: number }
+      }
     : rect;
   const padding = 16;
   const popW = popRef.current?.offsetWidth || 300;
@@ -200,6 +201,8 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   let popTop = 80;
   if (base) {
     popTop = placement === 'top' ? base.top - (popH + padding) : base.bottom + padding;
+    const offsetY = step?.popoverOffsetY ?? 0;
+    popTop = placement === 'top' ? popTop - offsetY : popTop + offsetY;
     popTop = Math.max(padding, Math.min(popTop, window.innerHeight - popH - padding));
   }
 

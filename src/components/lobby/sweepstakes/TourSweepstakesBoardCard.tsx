@@ -3,11 +3,18 @@
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
-export default function TourSweepstakesBoardCard() {
+type TourSweepstakesBoardCardProps = {
+  tourStepId?: string;
+};
+
+export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakesBoardCardProps) {
   const accentGlowRgb = '184, 134, 11';
   const highlighted = 37; // demo value
 
   const squares = useMemo(() => Array.from({ length: 100 }, (_, i) => i), []);
+
+  const currentStage = typeof tourStepId === 'string' ? tourStepId : undefined;
+  const isStage = (stage: string) => currentStage === stage;
 
   return (
     <div
@@ -15,28 +22,7 @@ export default function TourSweepstakesBoardCard() {
         'p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20'
       )}
       style={{ background: `linear-gradient(to bottom, rgb(var(--color-background-primary)) 0%, #B8860B 15%, #B8860B 100%)` }}
-      data-tour="tour-sweepstakes-card"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <div className="text-white/80 text-xs uppercase tracking-[0.18em]">Live Sweepstakes</div>
-          <div className="text-white text-lg font-semibold mt-0.5" data-tour="tour-sweepstakes-header">Win the $250 Prize Pot</div>
-        </div>
-        <div className="text-right">
-          <div className="text-white/80 text-xs">Entries Left</div>
-          <div className="text-white text-lg font-semibold">14 / 100</div>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3 text-sm text-white/80 mb-4">
-        <div className="p-3 rounded-lg bg-black/15 backdrop-blur-sm">
-          <div className="text-xs uppercase tracking-wide text-white/60">Entry Closes In</div>
-          <div className="text-lg font-semibold text-white">03:24</div>
-        </div>
-        <div className="p-3 rounded-lg bg-black/15 backdrop-blur-sm">
-          <div className="text-xs uppercase tracking-wide text-white/60">Entry Fee</div>
-          <div className="text-lg font-semibold text-white">Free</div>
-        </div>
-      </div>
       <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
         <span className="text-sm sm:text-base text-white font-semibold select-none min-w-0">
           Choose Your Pick 0-99:
@@ -49,10 +35,10 @@ export default function TourSweepstakesBoardCard() {
             className="w-full h-full text-center bg-black/10 text-[#B8860B] font-mono text-2xl rounded-md border-none placeholder:text-[#B8860B]/70 focus:ring-2 focus:ring-[#B8860B] outline-none transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed shadow-inner"
           />
         </div>
-        <div>
+        <div data-tour="sweepstakes-enter">
           <button
             type="button"
-            disabled
+            disabled={!isStage('enter')}
             className={cn(
               'px-4 py-2 text-sm font-semibold rounded-md border transition-colors h-10',
               'text-white border-yellow-700',
@@ -87,6 +73,82 @@ export default function TourSweepstakesBoardCard() {
           })}
         </div>
       </div>
+
+      {/* Step 3+ staged panels */}
+      {isStage('confirm') && (
+        <div
+          data-tour="sweepstakes-confirm"
+          className="mt-4 rounded-lg bg-black/25 border border-white/10 p-4 flex flex-col gap-3"
+        >
+          <div className="text-sm text-white/80">Confirm your entry for number <span className="font-semibold text-accent-1">{String(highlighted).padStart(2, '0')}</span>.</div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled
+              className="flex-1 px-3 py-2 rounded-md border border-white/10 text-white/60 bg-white/5 cursor-not-allowed"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              disabled
+              className="flex-1 px-3 py-2 rounded-md bg-gradient-to-r from-[#1bb0f2] to-[#6366f1] text-white font-semibold opacity-90 cursor-not-allowed"
+            >
+              Confirm Entry
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isStage('response') && (
+        <div
+          data-tour="sweepstakes-response"
+          className="mt-4 rounded-lg bg-emerald-600/20 border border-emerald-400/30 p-4"
+        >
+          <div className="text-sm font-semibold text-emerald-200">You're entered!</div>
+          <div className="text-xs text-emerald-100/80 mt-1">Watch for results after the game kicks off. We'll email your entry receipt.</div>
+        </div>
+      )}
+
+      {isStage('guidelines') && (
+        <div
+          data-tour="sweepstakes-guidelines"
+          className="mt-4 rounded-lg bg-black/25 border border-white/10 p-4 space-y-2"
+        >
+          <div className="text-sm font-semibold text-white">Sweepstakes Guidelines</div>
+          <ul className="text-xs text-white/70 list-disc list-inside space-y-1">
+            <li>One free entry per user, per event.</li>
+            <li>Entries lock 30 minutes before kickoff.</li>
+            <li>Winners contacted via verified email.</li>
+          </ul>
+          <div className="text-xs text-white/70 pt-1">To enter future sweepstakes, verify your identity and set up your SquarePicks wallet.</div>
+        </div>
+      )}
+
+      {isStage('wallet') && (
+        <div
+          data-tour="sweepstakes-wallet-cta"
+          className="mt-4 rounded-lg bg-black/25 border border-white/10 p-4"
+        >
+          <div className="text-sm text-white font-semibold mb-3">Finish setup to keep entering</div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              disabled
+              className="w-full px-3 py-2 rounded-md border border-white/15 text-white/70 bg-white/5 cursor-not-allowed"
+            >
+              Skip for now
+            </button>
+            <button
+              type="button"
+              disabled
+              className="w-full px-3 py-2 rounded-md bg-gradient-to-r from-[#1bb0f2] to-[#6366f1] text-white font-semibold opacity-90 cursor-not-allowed"
+            >
+              Go to Wallet Setup
+            </button>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .glow-border-gold { box-shadow: 0 8px 20px 4px rgba(${accentGlowRgb}, 0.55); }

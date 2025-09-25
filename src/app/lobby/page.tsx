@@ -572,9 +572,13 @@ function LobbyContent() {
     { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', holePadding: 12 },
     { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose Your Square', description: 'Type your number.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-input"]', holePadding: 14, popoverOffsetY: 16 },
     { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Choose Your Square', description: 'Tap your number.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
-    { id: 'card', anchor: '[data-tour="tour-sweepstakes-card"]', title: 'Explore the Board', description: 'Review countdown and prize details.\nOnly tour controls work right now.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="tour-sweepstakes-header"]', holePadding: 32, popoverOffsetY: 32 },
+    { id: 'enter', anchor: '[data-tour="sweepstakes-enter"]', title: 'Enter Sweepstakes', description: 'Click Enter.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-enter"]', holePadding: 16, popoverOffsetY: 18 },
+    { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
+    { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 },
+    { id: 'guidelines', anchor: '[data-tour="sweepstakes-guidelines"]', title: 'Sweepstakes Guidelines', description: 'Review guidelines and verification steps.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-guidelines"]', holePadding: 16, popoverOffsetY: 18 },
+    { id: 'wallet', anchor: '[data-tour="sweepstakes-wallet-cta"]', title: 'Verify Identity', description: 'Skip for now or open wallet setup.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-wallet-cta"]', holePadding: 16, popoverOffsetY: 18 },
   ];
-  const [tourPhase, setTourPhase] = useState<'A'|'B'|'C'>('A');
+  const [tourPhase, setTourPhase] = useState<'A'|'B'>('A');
   const [moreClicked, setMoreClicked] = useState(false);
   const [sweepstakesClicked, setSweepstakesClicked] = useState(false);
   const stepsForRender = useMemo(() => {
@@ -899,7 +903,7 @@ function LobbyContent() {
                                 homeScore={sweepstakesGame.home_score}
                               />
                               {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev' ? (
-                                <TourSweepstakesBoardCard />
+                                <TourSweepstakesBoardCard tourStepId={tourSteps[tourStep]?.id} />
                               ) : (
                               <SweepstakesBoardCard 
                                 key={sweepstakesBoard.id}
@@ -1034,7 +1038,7 @@ function LobbyContent() {
               }
               return;
             }
-      setTourStep(prev => Math.min(prev + 1, tourSteps.length - 1));
+            setTourStep(prev => Math.min(prev + 1, tourSteps.length - 1));
           }}
           onNextBlocked={() => {
             // flash the relevant button

@@ -1,10 +1,12 @@
 'use client'
 
 import React, { useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+const StarfieldBackground = dynamic(() => import('@/components/effects/StarfieldBackground'), { ssr: false });
 
 type TourSweepstakesBoardCardProps = {
   tourStepId?: string;
@@ -164,10 +166,12 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
       </div>
 
       {isStage('guidelines') && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-sm" data-tour-overlay="sweepstakes-guidelines">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" data-tour-overlay="sweepstakes-guidelines">
+          <StarfieldBackground className="absolute inset-0 z-40 opacity-80" />
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-40" />
           <div
             data-tour="sweepstakes-guidelines"
-            className="pointer-events-auto w-full sm:max-w-md rounded-2xl bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150 p-6"
+            className="relative z-50 pointer-events-auto w-full sm:max-w-md rounded-2xl bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150 p-6"
           >
             <div className="text-center space-y-2">
               <h3 className="text-2xl font-semibold tracking-tight">Sweepstakes Guidelines</h3>

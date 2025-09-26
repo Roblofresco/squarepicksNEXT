@@ -31,7 +31,7 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
   return (
     <div
       data-tour={isStage('response') ? 'sweepstakes-response' : undefined}
-      className="p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20"
+      className="p-4 rounded-xl shadow-lg max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20"
       style={{ background: `linear-gradient(to bottom, rgb(var(--color-background-primary)) 0%, #B8860B 15%, #B8860B 100%)` }}
     >
       <div className={cn('relative z-10 transition-all duration-300', isGuidelinesStage ? 'opacity-15 blur-sm pointer-events-none select-none' : 'opacity-100')}>
@@ -219,9 +219,7 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
         </div>
       )}
 
-      <style jsx>{`
-        .glow-border-gold { box-shadow: 0 8px 20px 4px rgba(${accentGlowRgb}, 0.55); }
-      `}</style>
+      {/* removed styled-jsx block to avoid build issues */}
     </div>
   );
 }

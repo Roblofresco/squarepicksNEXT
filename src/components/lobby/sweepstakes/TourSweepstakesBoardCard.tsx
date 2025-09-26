@@ -152,18 +152,28 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
       )}
 
       {isStage('guidelines') && (
-        <div className="absolute inset-0 z-30 flex flex-col justify-end p-4 bg-gradient-to-b from-[#F8E1A6]/90 via-[#E4BB55]/92 to-[#B8860B]/95 backdrop-blur-sm pointer-events-none">
+        <div
+          className="absolute inset-0 z-30 flex items-center justify-center p-5 bg-gradient-to-b from-[#F8E1A6]/90 via-[#E4BB55]/92 to-[#B8860B]/95 backdrop-blur-sm"
+          data-tour-overlay="sweepstakes-guidelines"
+        >
           <div
             data-tour="sweepstakes-guidelines"
-            className="pointer-events-auto rounded-lg bg-[#120B01]/80 border border-[#FFE4a6]/30 p-4 space-y-2 shadow-[0_18px_45px_rgba(0,0,0,0.55)]"
+            className="pointer-events-auto w-full max-w-md rounded-2xl bg-[#120B01]/85 border border-[#FFE4A6]/35 p-5 shadow-[0_22px_55px_rgba(0,0,0,0.55)] space-y-3 text-left"
           >
-            <div className="text-sm font-semibold text-[#FFE7AD]">Sweepstakes Guidelines</div>
-            <ul className="text-xs text-white/80 list-disc list-inside space-y-1">
-              <li>One free entry per user, per event.</li>
-              <li>Entries lock 30 minutes before kickoff.</li>
-              <li>Winners contacted via verified email.</li>
+            <div className="flex items-center gap-3">
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#FFE7AD]/20 border border-[#FFE7AD]/40 text-[#FFE7AD] font-semibold">ⓘ</span>
+              <div>
+                <div className="text-base font-semibold text-[#FFE7AD]">Sweepstakes Guidelines</div>
+                <p className="text-xs text-white/75 mt-1">SquarePicks contests are promotional sweepstakes. No purchase is necessary and every method of entry has the same chance to win.</p>
+              </div>
+            </div>
+            <ul className="text-xs text-white/80 list-disc list-inside space-y-2">
+              <li>One free weekly entry is available on the featured $1 board. Extra squares require paid entry.</li>
+              <li>Unclaimed squares at kickoff become house squares and are not eligible to win.</li>
+              <li>Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the pot each.</li>
+              <li>Make sure your profile and wallet information are verified so we can deliver prizes promptly.</li>
             </ul>
-            <div className="text-xs text-white/70 pt-1">To enter future sweepstakes, verify your identity and set up your SquarePicks wallet.</div>
+            <div className="text-xs text-white/70">Need more details? Review the full rules in the Help Center before entering.</div>
           </div>
         </div>
       )}

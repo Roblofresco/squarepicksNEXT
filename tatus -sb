@@ -1,0 +1,36 @@
+warning: in the working copy of 'src/components/lobby/sweepstakes/SweepstakesBoardCard.tsx', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/src/components/lobby/sweepstakes/SweepstakesBoardCard.tsx b/src/components/lobby/sweepstakes/SweepstakesBoardCard.tsx[m
+[1mindex 8c9c67e..bc44548 100644[m
+[1m--- a/src/components/lobby/sweepstakes/SweepstakesBoardCard.tsx[m
+[1m+++ b/src/components/lobby/sweepstakes/SweepstakesBoardCard.tsx[m
+[36m@@ -461,27 +461,19 @@[m [mconst SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {[m
+         </div>[m
+         )}[m
+ [m
+[31m-        <div[m
+[31m-          data-tour={(isActive && currentStage === 'confirming' && !isCurrentUserParticipant && !isLoadingParticipantStatus) ? 'sweepstakes-confirm' : undefined}[m
+[31m-          className={cn([m
+[32m+[m[32m        <div className={cn([m
+             'flex items-center',[m
+             (isActive && currentStage === 'confirming' && !isCurrentUserParticipant && !isLoadingParticipantStatus)[m
+                 ? 'flex-grow justify-evenly space-x-2' // Adjusted space-x-1 to space-x-2 for consistency[m
+                 : 'flex-shrink-0 justify-end'[m
+[31m-          )}[m
+[31m-        >[m
+[32m+[m[32m        )}>[m
+             {!isLoadingParticipantStatus && !isCurrentUserParticipant && ([m
+                 (currentStage === 'confirming' && isActive) ? ([m
+                     <>[m
+                         <Button[m
+                             onClick={processEnterOrConfirm}[m
+                             disabled={walletIsLoading || isLoadingSelections}[m
+[31m-                            autoFocus[m
+[31m-                            className={cn([m
+[31m-                              "px-3 py-2 text-sm font-semibold rounded-md border h-auto bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors flex-1 min-w-0",[m
+[31m-                              // Emphasize confirm action in second state[m
+[31m-                              'ring-2 ring-[#DAA520] shadow-[0_0_16px_4px_rgba(184,134,11,0.55)] animate-pulse'[m
+[31m-                            )}[m
+[32m+[m[32m                            className="px-3 py-2 text-sm font-semibold rounded-md border h-auto bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors flex-1 min-w-0"[m
+                         >[m
+                             {(walletIsLoading || isLoadingSelections) && <Loader2 className="h-4 w-4 animate-spin mr-1 inline-block" />}CONFIRM[m
+                         </Button>[m

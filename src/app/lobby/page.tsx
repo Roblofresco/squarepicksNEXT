@@ -575,8 +575,7 @@ function LobbyContent() {
     { id: 'enter', anchor: '[data-tour="sweepstakes-enter"]', title: 'Enter Sweepstakes', description: 'Click Enter.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-enter"]', holePadding: 16, popoverOffsetY: 18 },
     { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
     { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 },
-    { id: 'guidelines', anchor: '[data-tour="sweepstakes-guidelines"]', title: 'Sweepstakes Guidelines', description: 'Review guidelines and verification steps.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-guidelines"]', holePadding: 16, popoverOffsetY: 18 },
-    { id: 'wallet', anchor: '[data-tour="sweepstakes-wallet-cta"]', title: 'Verify Identity', description: 'Skip for now or open wallet setup.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-wallet-cta"]', holePadding: 16, popoverOffsetY: 18 },
+    { id: 'guidelines', anchor: '[data-tour="sweepstakes-guidelines"]', title: 'Sweepstakes Guidelines', description: 'Review guidelines and verification steps.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-guidelines"]', holePadding: 16, popoverOffsetY: 18 }
   ];
   const [tourPhase, setTourPhase] = useState<'A'|'B'>('A');
   const [moreClicked, setMoreClicked] = useState(false);

@@ -12,7 +12,7 @@ type TourSweepstakesBoardCardProps = {
   tourStepId?: string;
 };
 
-const stageOrder = ['selector','input','grid','enter','confirm','response','guidelines','wallet'];
+const stageOrder = ['selector','input','grid','enter','confirm','response','guidelines'];
 
 export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakesBoardCardProps) {
   const accentGlowRgb = '184, 134, 11';
@@ -223,30 +223,7 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
         </div>
       )}
 
-      {isStage('wallet') && (
-        <div
-          data-tour="sweepstakes-wallet-cta"
-          className="mt-4 rounded-lg bg-black/25 border border-white/10 p-4"
-        >
-          <div className="text-sm text-white font-semibold mb-3">Finish setup to keep entering</div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <button
-              type="button"
-              disabled
-              className="w-full px-3 py-2 rounded-md border border-white/15 text-white/70 bg-white/5 cursor-not-allowed"
-            >
-              Skip for now
-            </button>
-            <button
-              type="button"
-              disabled
-              className="w-full px-3 py-2 rounded-md bg-gradient-to-r from-[#1bb0f2] to-[#6366f1] text-white font-semibold opacity-90 cursor-not-allowed"
-            >
-              Go to Wallet Setup
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Wallet stage removed; guidelines now final step */}
     </>
   );
 }

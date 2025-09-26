@@ -51,7 +51,6 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
           </div>
         )}
         <div
-          data-tour={isStage('confirm') ? 'sweepstakes-confirm' : undefined}
           className={cn(
             'flex items-center',
             isStage('confirm') ? 'flex-grow justify-evenly space-x-2' : 'flex-shrink-0 justify-end gap-2'
@@ -60,9 +59,15 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
           {isStage('confirm') ? (
             <>
               <Button
+                data-tour="sweepstakes-confirm"
                 type="button"
                 onClick={(e) => e.preventDefault()}
-                className="px-3 py-2 text-sm font-semibold rounded-md border h-auto bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors flex-1 min-w-0"
+                className={cn(
+                  'px-3 py-2 text-sm font-semibold rounded-md border h-auto flex-1 min-w-0',
+                  'bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors',
+                  // Emphasize for tour confirm state to mirror real second-state emphasis
+                  'shadow-[0_0_16px_3px_rgba(184,134,11,0.75)] ring-2 ring-[#B8860B]/60'
+                )}
               >
                 CONFIRM
               </Button>

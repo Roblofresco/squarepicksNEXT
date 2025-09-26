@@ -157,17 +157,19 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
       )}
 
       {isStage('guidelines') && (
-        <div
-          data-tour="sweepstakes-guidelines"
-          className="mt-4 rounded-lg bg-black/25 border border-white/10 p-4 space-y-2"
-        >
-          <div className="text-sm font-semibold text-white">Sweepstakes Guidelines</div>
-          <ul className="text-xs text-white/70 list-disc list-inside space-y-1">
-            <li>One free entry per user, per event.</li>
-            <li>Entries lock 30 minutes before kickoff.</li>
-            <li>Winners contacted via verified email.</li>
-          </ul>
-          <div className="text-xs text-white/70 pt-1">To enter future sweepstakes, verify your identity and set up your SquarePicks wallet.</div>
+        <div className="absolute inset-0 z-30 flex flex-col justify-end p-4 bg-black/70 backdrop-blur-sm pointer-events-none">
+          <div
+            data-tour="sweepstakes-guidelines"
+            className="pointer-events-auto rounded-lg bg-black/80 border border-white/15 p-4 space-y-2 shadow-[0_12px_35px_rgba(0,0,0,0.45)]"
+          >
+            <div className="text-sm font-semibold text-white">Sweepstakes Guidelines</div>
+            <ul className="text-xs text-white/70 list-disc list-inside space-y-1">
+              <li>One free entry per user, per event.</li>
+              <li>Entries lock 30 minutes before kickoff.</li>
+              <li>Winners contacted via verified email.</li>
+            </ul>
+            <div className="text-xs text-white/70 pt-1">To enter future sweepstakes, verify your identity and set up your SquarePicks wallet.</div>
+          </div>
         </div>
       )}
 

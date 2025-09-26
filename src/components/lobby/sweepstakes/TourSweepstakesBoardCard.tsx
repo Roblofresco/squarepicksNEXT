@@ -30,12 +30,7 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
   return (
     <div
       data-tour={isStage('response') ? 'sweepstakes-response' : undefined}
-      className={cn(
-        'p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20',
-        isResponseOrLater
-          ? 'ring-4 ring-emerald-400/50 shadow-[0_12px_35px_0_rgba(16,185,129,0.35)] backdrop-blur'
-          : undefined
-      )}
+      className="p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20"
       style={{ background: `linear-gradient(to bottom, rgb(var(--color-background-primary)) 0%, #B8860B 15%, #B8860B 100%)` }}
     >
       <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
@@ -150,20 +145,20 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
 
       {/* Step 3+ staged panels */}
       {isStage('response') && (
-        <div className="mt-4 rounded-lg bg-emerald-600/20 border border-emerald-400/30 p-4 text-emerald-100">
+        <div className="mt-4 rounded-lg bg-emerald-600/20 border border-emerald-400/30 p-4 text-emerald-100 shadow-[0_6px_18px_rgba(16,185,129,0.35)]">
           <div className="text-sm font-semibold text-emerald-200">Entry successful! Good luck!</div>
           <div className="text-xs text-emerald-100/80 mt-1">Watch for results after the game kicks off. We'll email your entry receipt.</div>
         </div>
       )}
 
       {isStage('guidelines') && (
-        <div className="absolute inset-0 z-30 flex flex-col justify-end p-4 bg-black/70 backdrop-blur-sm pointer-events-none">
+        <div className="absolute inset-0 z-30 flex flex-col justify-end p-4 bg-gradient-to-b from-[#F8E1A6]/90 via-[#E4BB55]/92 to-[#B8860B]/95 backdrop-blur-sm pointer-events-none">
           <div
             data-tour="sweepstakes-guidelines"
-            className="pointer-events-auto rounded-lg bg-black/80 border border-white/15 p-4 space-y-2 shadow-[0_12px_35px_rgba(0,0,0,0.45)]"
+            className="pointer-events-auto rounded-lg bg-[#120B01]/80 border border-[#FFE4a6]/30 p-4 space-y-2 shadow-[0_18px_45px_rgba(0,0,0,0.55)]"
           >
-            <div className="text-sm font-semibold text-white">Sweepstakes Guidelines</div>
-            <ul className="text-xs text-white/70 list-disc list-inside space-y-1">
+            <div className="text-sm font-semibold text-[#FFE7AD]">Sweepstakes Guidelines</div>
+            <ul className="text-xs text-white/80 list-disc list-inside space-y-1">
               <li>One free entry per user, per event.</li>
               <li>Entries lock 30 minutes before kickoff.</li>
               <li>Winners contacted via verified email.</li>

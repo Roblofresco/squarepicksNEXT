@@ -26,6 +26,7 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
   };
 
   const isResponseOrLater = isStage('response') || isStageAfter('response');
+  const isGuidelinesStage = isStage('guidelines');
 
   return (
     <div
@@ -33,7 +34,8 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
       className="p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20"
       style={{ background: `linear-gradient(to bottom, rgb(var(--color-background-primary)) 0%, #B8860B 15%, #B8860B 100%)` }}
     >
-      <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
+      <div className={cn('relative z-10 transition-all duration-300', isGuidelinesStage ? 'opacity-15 blur-sm pointer-events-none select-none' : 'opacity-100')}>
+        <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
         <span className={cn(
           'text-sm sm:text-base text-white font-semibold select-none min-w-0',
           isResponseOrLater ? 'flex-1 text-left text-emerald-200' : undefined
@@ -152,28 +154,42 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
       )}
 
       {isStage('guidelines') && (
-        <div
-          className="absolute inset-0 z-30 flex items-center justify-center p-5 bg-gradient-to-b from-[#F8E1A6]/90 via-[#E4BB55]/92 to-[#B8860B]/95 backdrop-blur-sm"
-          data-tour-overlay="sweepstakes-guidelines"
-        >
+        <div className="absolute inset-0 z-30 flex items-center justify-center p-3 sm:p-6" data-tour-overlay="sweepstakes-guidelines">
           <div
             data-tour="sweepstakes-guidelines"
-            className="pointer-events-auto w-full max-w-md rounded-2xl bg-[#120B01]/85 border border-[#FFE4A6]/35 p-5 shadow-[0_22px_55px_rgba(0,0,0,0.55)] space-y-3 text-left"
+            className="pointer-events-auto w-full sm:max-w-md rounded-2xl bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150 p-6"
           >
-            <div className="flex items-center gap-3">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#FFE7AD]/20 border border-[#FFE7AD]/40 text-[#FFE7AD] font-semibold">ⓘ</span>
-              <div>
-                <div className="text-base font-semibold text-[#FFE7AD]">Sweepstakes Guidelines</div>
-                <p className="text-xs text-white/75 mt-1">SquarePicks contests are promotional sweepstakes. No purchase is necessary and every method of entry has the same chance to win.</p>
+            <div className="flex flex-col space-y-5">
+              <div className="text-center space-y-2">
+                <h3 className="text-2xl font-semibold tracking-tight">Sweepstakes Guidelines</h3>
+                <p className="text-sm text-white/70">
+                  SquarePicks contests are promotional sweepstakes. No purchase is required, an alternate free entry is always available, and every player—paid or free—receives the same chance to win.
+                </p>
               </div>
+
+              <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-white/85 space-y-3 text-left">
+                <ul className="space-y-2 list-disc list-inside">
+                  <li>
+                    One free weekly entry is available on the featured $1 board. Additional squares require paid entry, but the free pick can only be
+                    used once per weekly period.
+                  </li>
+                  <li>
+                    Unclaimed squares at kickoff convert to house squares and are not eligible to win.
+                  </li>
+                  <li>
+                    Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the credited pot each.
+                  </li>
+                  <li>
+                    Confirm your profile and wallet details so winnings can be credited immediately. Review the full sweepstakes rules and alternate
+                    entry methods in the Help Center before entering.
+                  </li>
+                </ul>
+              </div>
+
+              <p className="text-xs text-white/60 text-center">
+                Questions? Visit the Help Center for complete sweepstakes rules and alternate entry instructions.
+              </p>
             </div>
-            <ul className="text-xs text-white/80 list-disc list-inside space-y-2">
-              <li>One free weekly entry is available on the featured $1 board. Extra squares require paid entry.</li>
-              <li>Unclaimed squares at kickoff become house squares and are not eligible to win.</li>
-              <li>Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the pot each.</li>
-              <li>Make sure your profile and wallet information are verified so we can deliver prizes promptly.</li>
-            </ul>
-            <div className="text-xs text-white/70">Need more details? Review the full rules in the Help Center before entering.</div>
           </div>
         </div>
       )}

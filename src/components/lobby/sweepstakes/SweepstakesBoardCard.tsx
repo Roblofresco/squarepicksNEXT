@@ -461,19 +461,27 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
         </div>
         )}
 
-        <div className={cn(
+        <div
+          data-tour={(isActive && currentStage === 'confirming' && !isCurrentUserParticipant && !isLoadingParticipantStatus) ? 'sweepstakes-confirm' : undefined}
+          className={cn(
             'flex items-center',
             (isActive && currentStage === 'confirming' && !isCurrentUserParticipant && !isLoadingParticipantStatus)
                 ? 'flex-grow justify-evenly space-x-2' // Adjusted space-x-1 to space-x-2 for consistency
                 : 'flex-shrink-0 justify-end'
-        )}>
+          )}
+        >
             {!isLoadingParticipantStatus && !isCurrentUserParticipant && (
                 (currentStage === 'confirming' && isActive) ? (
                     <>
                         <Button
                             onClick={processEnterOrConfirm}
                             disabled={walletIsLoading || isLoadingSelections}
-                            className="px-3 py-2 text-sm font-semibold rounded-md border h-auto bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors flex-1 min-w-0"
+                            autoFocus
+                            className={cn(
+                              "px-3 py-2 text-sm font-semibold rounded-md border h-auto bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors flex-1 min-w-0",
+                              // Emphasize confirm action in second state
+                              'ring-2 ring-[#DAA520] shadow-[0_0_16px_4px_rgba(184,134,11,0.55)] animate-pulse'
+                            )}
                         >
                             {(walletIsLoading || isLoadingSelections) && <Loader2 className="h-4 w-4 animate-spin mr-1 inline-block" />}CONFIRM
                         </Button>

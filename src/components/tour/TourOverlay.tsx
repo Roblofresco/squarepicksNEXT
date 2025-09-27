@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -45,17 +46,64 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const popRef = useRef<HTMLDivElement | null>(null);
   const descriptionLines = useMemo(() => (step?.description ? step.description.split(/\n+/) : []), [step]);
   const [reflowTick, setReflowTick] = useState(0);
+  const router = useRouter();
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
+  const [showHomePrompt, setShowHomePrompt] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'skip' | 'agree' | null>(null);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
 
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
       setFinalOverlayOpen(false);
+      setShowHomePrompt(false);
+      setPendingAction(null);
     }
   }, [stepIndex, steps.length]);
 
   const closeFinalOverlay = () => {
     setFinalOverlayOpen(false);
+    setShowHomePrompt(false);
+    setPendingAction(null);
     onClose();
+  };
+
+  useEffect(() => {
+    const detectMobile = () => {
+      if (typeof window === 'undefined') return false;
+      const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+      const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      return /android|iphone|ipad|ipod|iemobile|mobile/i.test(ua) || (touch && window.innerWidth <= 820);
+    };
+    const update = () => setIsMobileDevice(detectMobile());
+    update();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', update);
+      return () => window.removeEventListener('resize', update);
+    }
+  }, []);
+
+  const executeAction = (action: 'skip' | 'agree') => {
+    closeFinalOverlay();
+    if (action === 'agree') {
+      router.push('/wallet-setup/location');
+    }
+  };
+
+  const handleGuidelinesAction = (action: 'skip' | 'agree') => {
+    if (isMobileDevice) {
+      setPendingAction(action);
+      setShowHomePrompt(true);
+    } else {
+      executeAction(action);
+    }
+  };
+
+  const handleHomePromptContinue = () => {
+    if (pendingAction) {
+      executeAction(pendingAction);
+    } else {
+      closeFinalOverlay();
+    }
   };
 
   const renderBold = (text: string) => {
@@ -270,7 +318,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         </div>
         <div className="flex justify-end gap-2 mt-3">
           {stepIndex === steps.length - 1 ? (
-            <button onClick={() => { setFinalOverlayOpen(true); onClose(); }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
+            <button onClick={() => { setFinalOverlayOpen(true); setShowHomePrompt(false); setPendingAction(null); onClose(); }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
           ) : (
             <button
               onClick={() => (nextEnabled ? onNext() : (onNextBlocked && onNextBlocked()))}
@@ -288,39 +336,87 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
           <StarfieldBackground className="fixed inset-0 z-[1200] opacity-90" />
         )}
         <DialogContent className="z-[1201] sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
-          <DialogHeader className="text-center space-y-2">
-            <DialogTitle className="text-2xl font-bold">Sweepstakes Guidelines</DialogTitle>
-            <DialogDescription className="text-white/70">
-              SquarePicks contests are promotional sweepstakes. Review the guidelines before continuing.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-5 max-h-64 overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-4 text-left text-sm text-white/85 space-y-3">
-            <ul className="space-y-2 list-disc list-inside">
-              <li>One free weekly entry is available on the featured $1 board. Use it once per weekly period.</li>
-              <li>Unclaimed squares at kickoff convert to house squares and are not eligible to win.</li>
-              <li>Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the credited pot each.</li>
-              <li>Confirm profile and wallet details so winnings can be credited immediately. Review full rules and alternate entry methods in the Help Center.</li>
-            </ul>
-            <p className="text-xs text-white/60">
-              By agreeing, you acknowledge eligibility and consent to location verification during wallet setup.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 mt-6">
-            <button
-              type="button"
-              onClick={closeFinalOverlay}
-              className="flex-1 rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
-            >
-              Skip for now
-            </button>
-            <button
-              type="button"
-              onClick={closeFinalOverlay}
-              className="flex-1 rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              Agree & Continue
-            </button>
-          </div>
+          {showHomePrompt ? (
+            <>
+              <DialogHeader className="text-center space-y-2">
+                <DialogTitle className="text-2xl font-bold">Add SquarePicks to Your Home Screen</DialogTitle>
+                <DialogDescription className="text-white/70">
+                  Install the web app for quick access to sweepstakes and weekly free entries.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-5 space-y-4 text-left text-sm text-white/85">
+                <div>
+                  <h4 className="font-semibold text-white">Why add it?</h4>
+                  <ul className="mt-2 space-y-1 list-disc list-inside text-white/85">
+                    <li>Launch contests instantly from your phone.</li>
+                    <li>Stay signed in and ready for new boards.</li>
+                    <li>Enjoy a fullscreen, distraction-free experience.</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-white">How to add (iOS Safari)</h4>
+                  <ol className="mt-2 space-y-1 list-decimal list-inside text-white/80">
+                    <li>Tap the share icon.</li>
+                    <li>Choose “Add to Home Screen”.</li>
+                    <li>Tap “Add” to finish.</li>
+                  </ol>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-white">How to add (Android Chrome)</h4>
+                  <ol className="mt-2 space-y-1 list-decimal list-inside text-white/80">
+                    <li>Open the browser menu (⋮).</li>
+                    <li>Tap “Add to Home screen”.</li>
+                    <li>Confirm “Add”.</li>
+                  </ol>
+                </div>
+              </div>
+              <div className="flex justify-end mt-6">
+                <button
+                  type="button"
+                  onClick={handleHomePromptContinue}
+                  className="w-full sm:w-auto rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  Continue
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <DialogHeader className="text-center space-y-2">
+                <DialogTitle className="text-2xl font-bold">Sweepstakes Guidelines</DialogTitle>
+                <DialogDescription className="text-white/70">
+                  SquarePicks contests are promotional sweepstakes. Review the guidelines before continuing.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-5 max-h-64 overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-4 text-left text-sm text-white/85 space-y-3">
+                <ul className="space-y-2 list-disc list-inside">
+                  <li>One free weekly entry is available on the featured $1 board. Use it once per weekly period.</li>
+                  <li>Unclaimed squares at kickoff convert to house squares and are not eligible to win.</li>
+                  <li>Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the credited pot each.</li>
+                  <li>Confirm profile and wallet details so winnings can be credited immediately. Review full rules and alternate entry methods in the Help Center.</li>
+                </ul>
+                <p className="text-xs text-white/60">
+                  By agreeing, you acknowledge eligibility and consent to location verification during wallet setup.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => handleGuidelinesAction('skip')}
+                  className="flex-1 rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Skip for now
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGuidelinesAction('agree')}
+                  className="flex-1 rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  Agree & Continue
+                </button>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>,

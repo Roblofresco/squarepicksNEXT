@@ -251,7 +251,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       <div
         ref={popRef}
         className="absolute max-w-sm bg-gradient-to-b from-black/90 via-black/85 to-black/90 text-white rounded-lg border border-white/10 p-4 shadow-2xl pointer-events-auto backdrop-blur-md"
-        style={{ left: Math.round(popLeft), top: Math.round(popTop) }}
+        style={{ left: Math.round(popLeft), top: Math.round(popTop), display: finalOverlayOpen ? 'none' : undefined }}
       >
         {/* arrow */}
         <div
@@ -270,7 +270,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         </div>
         <div className="flex justify-end gap-2 mt-3">
           {stepIndex === steps.length - 1 ? (
-            <button onClick={() => setFinalOverlayOpen(true)} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
+            <button onClick={() => { setFinalOverlayOpen(true); onClose(); }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
           ) : (
             <button
               onClick={() => (nextEnabled ? onNext() : (onNextBlocked && onNextBlocked()))}

@@ -574,8 +574,7 @@ function LobbyContent() {
     { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Choose Your Square', description: 'Tap your number.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
     { id: 'enter', anchor: '[data-tour="sweepstakes-enter"]', title: 'Enter Sweepstakes', description: 'Click Enter.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-enter"]', holePadding: 16, popoverOffsetY: 18 },
     { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
-    { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 },
-    { id: 'guidelines', anchor: '[data-tour="sweepstakes-guidelines"]', title: 'Sweepstakes Guidelines', description: 'Review guidelines and verification steps.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-guidelines"]', holePadding: 16, popoverOffsetY: 18 }
+    { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 }
   ];
   const [tourPhase, setTourPhase] = useState<'A'|'B'>('A');
   const [moreClicked, setMoreClicked] = useState(false);
@@ -767,19 +766,6 @@ function LobbyContent() {
     const t = setTimeout(run, 500);
         return () => clearTimeout(t);
   }, []);
-
-  useEffect(() => {
-    if (!tourOpen) return;
-    const onClose = () => {
-      setTourStep(tourSteps.length - 1);
-      setTourOpen(false);
-      document.body.classList.remove('tour-lock');
-    };
-    window.addEventListener('tour:close', onClose);
-    return () => window.removeEventListener('tour:close', onClose);
-  }, [tourOpen, tourSteps.length]);
-
-  
 
   if (showPrimaryLoadingScreen()) {
     console.log("[LobbyPage] Rendering LoadingScreen. isWalletLoading:", isWalletLoading, "userId:", userId, "emailVerified:", emailVerified, "selectedSport:", selectedSport);

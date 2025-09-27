@@ -166,58 +166,60 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
       </div>
 
       {isStage('guidelines') && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" data-tour-overlay="sweepstakes-guidelines">
-          <StarfieldBackground className="absolute inset-0 z-40 opacity-80" />
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-40" />
-          <div
-            data-tour="sweepstakes-guidelines"
-            className="relative z-50 pointer-events-auto w-full sm:max-w-md rounded-2xl bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150 p-6"
-          >
-            <div className="text-center space-y-2">
-              <h3 className="text-2xl font-semibold tracking-tight">Sweepstakes Guidelines</h3>
-              <p className="text-sm text-white/70">
-                Review the sweepstakes requirements before continuing. Agreeing will take you to wallet setup to verify eligibility.
-              </p>
-            </div>
+        <div className="fixed inset-0 z-[1100]" data-tour-overlay="sweepstakes-guidelines">
+          <StarfieldBackground className="!z-[1040] opacity-90" />
+          <div className="fixed inset-0 z-[1050] bg-black/50 backdrop-blur-sm" />
+          <div className="fixed inset-0 z-[1060] flex items-center justify-center p-4 sm:p-6">
+            <div
+              data-tour="sweepstakes-guidelines"
+              className="w-full max-w-[calc(100%-2rem)] sm:max-w-md rounded-2xl border border-white/10 bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 text-white shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-xl backdrop-saturate-150 p-6"
+            >
+              <div className="text-center space-y-2">
+                <h3 className="text-2xl font-bold">Sweepstakes Guidelines</h3>
+                <p className="text-sm text-white/70">
+                  Review the sweepstakes details before continuing. Agreeing confirms you  will complete wallet verification next.
+                </p>
+              </div>
 
-            <div className="mt-5 max-h-72 overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-white/85 space-y-3 text-left">
-              <ul className="space-y-2 list-disc list-inside">
-                <li>
-                  One free weekly entry is available on the featured $1 board. Additional squares require paid entry, but the free pick can only be
-                  used once per weekly period.
-                </li>
-                <li>
-                  Unclaimed squares at kickoff convert to house squares and are not eligible to win.
-                </li>
-                <li>
-                  Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the credited pot each.
-                </li>
-                <li>
-                  Confirm your profile and wallet details so winnings can be credited immediately. Review the full sweepstakes rules and alternate entry
-                  methods in the Help Center before entering.
-                </li>
-              </ul>
-              <p className="text-xs text-white/60">
-                By agreeing, you acknowledge that you meet eligibility requirements and consent to location verification within wallet setup.
-              </p>
-            </div>
+              <div className="mt-5 max-h-72 overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-4 text-left text-sm text-white/85 space-y-3">
+                <ul className="space-y-2 list-disc list-inside">
+                  <li>
+                    One free weekly entry is available on the featured $1 board. Additional squares require paid entry, but the free pick can only be
+                    used once per weekly period.
+                  </li>
+                  <li>
+                    Unclaimed squares at kickoff convert to house squares and are not eligible to win.
+                  </li>
+                  <li>
+                    Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the credited pot each.
+                  </li>
+                  <li>
+                    Confirm your profile and wallet details so winnings can be credited immediately. Review the full sweepstakes rules and alternate
+                    entry methods in the Help Center before entering.
+                  </li>
+                </ul>
+                <p className="text-xs text-white/60">
+                  By agreeing, you acknowledge eligibility and consent to location verification during wallet setup.
+                </p>
+              </div>
 
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={(e) => e.preventDefault()}
-                className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
-              >
-                Skip for now
-              </Button>
-              <Button
-                type="button"
-                onClick={() => router.push('/wallet-setup/location')}
-                className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90"
-              >
-                Agree & Continue
-              </Button>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={(e) => e.preventDefault()}
+                  className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
+                >
+                  Skip for now
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => router.push('/wallet-setup/location')}
+                  className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90"
+                >
+                  Agree & Continue
+                </Button>
+              </div>
             </div>
           </div>
         </div>

@@ -2,6 +2,9 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import dynamic from 'next/dynamic';
+
+const StarfieldBackground = dynamic(() => import('@/components/effects/StarfieldBackground'), { ssr: false });
 
 type Step = {
   id: string;
@@ -35,6 +38,18 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const popRef = useRef<HTMLDivElement | null>(null);
   const descriptionLines = useMemo(() => (step?.description ? step.description.split(/\n+/) : []), [step]);
   const [reflowTick, setReflowTick] = useState(0);
+  const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
+
+  useEffect(() => {
+    if (stepIndex !== steps.length - 1) {
+      setFinalOverlayOpen(false);
+    }
+  }, [stepIndex, steps.length]);
+
+  const closeFinalOverlay = () => {
+    setFinalOverlayOpen(false);
+    onClose();
+  };
 
   const renderBold = (text: string) => {
     const parts = text.split(/(\*\*[^*]+\*\*)/g);
@@ -248,7 +263,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         </div>
         <div className="flex justify-end gap-2 mt-3">
           {stepIndex === steps.length - 1 ? (
-            <button onClick={onClose} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Done</button>
+            <button onClick={() => setFinalOverlayOpen(true)} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
           ) : (
             <button
               onClick={() => (nextEnabled ? onNext() : (onNextBlocked && onNextBlocked()))}
@@ -259,6 +274,38 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
           )}
         </div>
       </div>
+      {finalOverlayOpen && (
+        <div className="fixed inset-0 z-[1200] pointer-events-auto">
+          <StarfieldBackground className="fixed inset-0 z-[1200] opacity-90" />
+          <div className="fixed inset-0 z-[1201] bg-black/70 backdrop-blur-sm" />
+          <div className="fixed inset-0 z-[1202] flex items-center justify-center p-4 sm:p-6">
+            <div className="w-full max-w-[calc(100%-2rem)] sm:max-w-md rounded-2xl border border-white/10 bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 text-white shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-xl backdrop-saturate-150 p-6">
+              <div className="text-center space-y-2">
+                <h3 className="text-2xl font-bold">Verify Identity</h3>
+                <p className="text-white/70">
+                  Complete wallet verification so we can credit winnings instantly. You can start now or come back later.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={closeFinalOverlay}
+                  className="flex-1 rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Skip for now
+                </button>
+                <button
+                  type="button"
+                  onClick={closeFinalOverlay}
+                  className="flex-1 rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  Go to Wallet Setup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>,
     container
   );

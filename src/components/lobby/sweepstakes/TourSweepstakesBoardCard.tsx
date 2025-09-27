@@ -45,20 +45,9 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
       >
         <div className="relative z-10 transition-all duration-300">
           <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
-            <span className={cn(
-              'text-sm sm:text-base text-white font-semibold select-none min-w-0',
-              isResponseOrLater ? 'flex-1 text-left text-emerald-200' : undefined
-            )}>
+            <span className="text-sm sm:text-base text-white font-semibold select-none min-w-0">
               {isResponseOrLater
-                ? (
-                    <span className="flex items-center gap-3">
-                      <span>You're already entered!</span>
-                      <span className="flex items-center gap-2 text-emerald-300">
-                        <Ticket className="h-5 w-5" />
-                        <span>Good Luck!</span>
-                      </span>
-                    </span>
-                  )
+                ? "You're already entered!"
                 : isStage('confirm') || isStageAfter('confirm')
                   ? `Selected Pick: ${String(highlighted).padStart(2, '0')}`
                   : 'Choose Your Pick 0-99:'}
@@ -80,7 +69,9 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
             <div
               className={cn(
                 'flex items-center',
-                isStage('confirm') ? 'flex-grow justify-evenly space-x-2' : 'flex-shrink-0 justify-end gap-2'
+                isStage('confirm')
+                  ? 'flex-grow justify-evenly space-x-2'
+                  : 'flex-shrink-0 justify-end'
               )}
             >
               {isStage('confirm') && !isResponseOrLater ? (
@@ -108,9 +99,9 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
                   </Button>
                 </>
               ) : isResponseOrLater ? (
-                <div className="flex items-center gap-2 text-emerald-300 font-semibold">
-                  <Ticket className="h-6 w-6" />
-                  <span>Entry locked in.</span>
+                <div className="flex-1 flex justify-center items-center">
+                  <Ticket className="h-7 w-7 text-green-400" />
+                  <span className="ml-2 text-green-400 font-semibold">Good Luck!</span>
                 </div>
               ) : (
                 <div data-tour="sweepstakes-enter">
@@ -154,13 +145,7 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
             </div>
           </div>
 
-          {/* Step 3+ staged panels */}
-          {isStage('response') && (
-            <div className="mt-4 rounded-lg bg-emerald-600/20 border border-emerald-400/30 p-4 text-emerald-100 shadow-[0_6px_18px_rgba(16,185,129,0.35)]">
-              <div className="text-sm font-semibold text-emerald-200">Entry successful! Good luck!</div>
-              <div className="text-xs text-emerald-100/80 mt-1">Watch for results after the game kicks off. We'll email your entry receipt.</div>
-            </div>
-          )}
+          {/* No additional panel in response stage so the layout mirrors the live card */}
         </div>
       </div>
 

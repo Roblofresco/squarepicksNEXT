@@ -20,6 +20,11 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
 
   const squares = useMemo(() => Array.from({ length: 100 }, (_, i) => i), []);
   const router = useRouter();
+  const emitTourClose = () => {
+    try {
+      window.dispatchEvent(new CustomEvent('tour:close'));
+    } catch {}
+  };
 
   const currentStage = typeof tourStepId === 'string' ? tourStepId : undefined;
   const isStage = (stage: string) => currentStage === stage;
@@ -166,10 +171,10 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
       </div>
 
       {isStage('guidelines') && (
-        <div className="fixed inset-0 z-[1100]" data-tour-overlay="sweepstakes-guidelines">
-          <StarfieldBackground className="!z-[1040] opacity-90" />
-          <div className="fixed inset-0 z-[1050] bg-black/50 backdrop-blur-sm" />
-          <div className="fixed inset-0 z-[1060] flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-[1200]" data-tour-overlay="sweepstakes-guidelines">
+          <StarfieldBackground className="!z-[1210] opacity-90" />
+          <div className="fixed inset-0 z-[1220] bg-black/50 backdrop-blur-sm" />
+          <div className="fixed inset-0 z-[1230] flex items-center justify-center p-4 sm:p-6">
             <div
               data-tour="sweepstakes-guidelines"
               className="w-full max-w-[calc(100%-2rem)] sm:max-w-md rounded-2xl border border-white/10 bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 text-white shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-xl backdrop-saturate-150 p-6"
@@ -207,14 +212,20 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    emitTourClose();
+                  }}
                   className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
                 >
                   Skip for now
                 </Button>
                 <Button
                   type="button"
-                  onClick={() => router.push('/wallet-setup/location')}
+                  onClick={() => {
+                    emitTourClose();
+                    router.push('/wallet-setup/location');
+                  }}
                   className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90"
                 >
                   Agree & Continue

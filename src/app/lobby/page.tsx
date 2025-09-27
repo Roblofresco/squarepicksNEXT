@@ -768,6 +768,17 @@ function LobbyContent() {
         return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    if (!tourOpen) return;
+    const onClose = () => {
+      setTourStep(tourSteps.length - 1);
+      setTourOpen(false);
+      document.body.classList.remove('tour-lock');
+    };
+    window.addEventListener('tour:close', onClose);
+    return () => window.removeEventListener('tour:close', onClose);
+  }, [tourOpen, tourSteps.length]);
+
   
 
   if (showPrimaryLoadingScreen()) {

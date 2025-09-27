@@ -3,6 +3,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const StarfieldBackground = dynamic(() => import('@/components/effects/StarfieldBackground'), { ssr: false });
 
@@ -274,38 +281,48 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
           )}
         </div>
       </div>
-      {finalOverlayOpen && (
-        <div className="fixed inset-0 z-[1200] pointer-events-auto">
+      <Dialog open={finalOverlayOpen} onOpenChange={(open) => {
+        if (!open && finalOverlayOpen) closeFinalOverlay();
+      }}>
+        {finalOverlayOpen && (
           <StarfieldBackground className="fixed inset-0 z-[1200] opacity-90" />
-          <div className="fixed inset-0 z-[1201] bg-black/70 backdrop-blur-sm" />
-          <div className="fixed inset-0 z-[1202] flex items-center justify-center p-4 sm:p-6">
-            <div className="w-full max-w-[calc(100%-2rem)] sm:max-w-md rounded-2xl border border-white/10 bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 text-white shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-xl backdrop-saturate-150 p-6">
-              <div className="text-center space-y-2">
-                <h3 className="text-2xl font-bold">Verify Identity</h3>
-                <p className="text-white/70">
-                  Complete wallet verification so we can credit winnings instantly. You can start now or come back later.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={closeFinalOverlay}
-                  className="flex-1 rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  Skip for now
-                </button>
-                <button
-                  type="button"
-                  onClick={closeFinalOverlay}
-                  className="flex-1 rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                >
-                  Go to Wallet Setup
-                </button>
-              </div>
-            </div>
+        )}
+        <DialogContent className="z-[1201] sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
+          <DialogHeader className="text-center space-y-2">
+            <DialogTitle className="text-2xl font-bold">Sweepstakes Guidelines</DialogTitle>
+            <DialogDescription className="text-white/70">
+              SquarePicks contests are promotional sweepstakes. Review the guidelines before continuing.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-5 max-h-64 overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-4 text-left text-sm text-white/85 space-y-3">
+            <ul className="space-y-2 list-disc list-inside">
+              <li>One free weekly entry is available on the featured $1 board. Use it once per weekly period.</li>
+              <li>Unclaimed squares at kickoff convert to house squares and are not eligible to win.</li>
+              <li>Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the credited pot each.</li>
+              <li>Confirm profile and wallet details so winnings can be credited immediately. Review full rules and alternate entry methods in the Help Center.</li>
+            </ul>
+            <p className="text-xs text-white/60">
+              By agreeing, you acknowledge eligibility and consent to location verification during wallet setup.
+            </p>
           </div>
-        </div>
-      )}
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <button
+              type="button"
+              onClick={closeFinalOverlay}
+              className="flex-1 rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
+            >
+              Skip for now
+            </button>
+            <button
+              type="button"
+              onClick={closeFinalOverlay}
+              className="flex-1 rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              Agree & Continue
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>,
     container
   );

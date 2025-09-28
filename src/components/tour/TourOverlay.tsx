@@ -192,6 +192,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   useEffect(() => {
     if (!open) return;
     const blockClick = (e: Event) => {
+      if (finalOverlayOpen) return;
       const t = e.target as Node | null;
       if (popRef.current && t && popRef.current.contains(t)) return; // allow clicks inside popover
       if (t instanceof HTMLElement) {
@@ -213,6 +214,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       e.stopPropagation();
     };
     const blockKeys = (e: KeyboardEvent) => {
+      if (finalOverlayOpen) return;
       const active = document.activeElement as HTMLElement | null;
       if (popRef.current && active && popRef.current.contains(active)) return; // allow keys in popover
       e.preventDefault();
@@ -224,7 +226,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       document.removeEventListener('click', blockClick, true);
       document.removeEventListener('keydown', blockKeys, true);
     };
-  }, [open]);
+  }, [open, finalOverlayOpen, allowClickSelectors]);
 
   if (!open || !container) return null;
 

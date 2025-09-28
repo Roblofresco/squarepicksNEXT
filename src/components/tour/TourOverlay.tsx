@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -50,21 +50,19 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
   const [showHomePrompt, setShowHomePrompt] = useState(false);
   const [pendingAction, setPendingAction] = useState<'skip' | 'agree' | null>(null);
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
 
-  const detectMobile = useCallback(() => {
+  const prefersMousePointer = () => {
     if (typeof window === 'undefined') return false;
-    const ua = navigator.userAgent || navigator.vendor || (window as any).opera || '';
-    const coarse = window.matchMedia ? window.matchMedia('(pointer: coarse)').matches : false;
-    const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.maxTouchPoints > 0;
-    return /android|iphone|ipad|ipod|iemobile|mobile/i.test(ua) || coarse || (touch && window.innerWidth <= 900);
-  }, []);
+    const pointerFine = window.matchMedia ? window.matchMedia('(pointer: fine)').matches : false;
+    const hover = window.matchMedia ? window.matchMedia('(hover: hover)').matches : false;
+    const touchPoints = navigator.maxTouchPoints || 0;
+    return pointerFine && hover && touchPoints === 0;
+  };
 
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
       setFinalOverlayOpen(false);
       setShowHomePrompt(false);
-      setPendingAction(null);
     }
   }, [stepIndex, steps.length]);
 
@@ -75,15 +73,6 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     if (shouldCloseTour) onClose();
   };
 
-  useEffect(() => {
-    const update = () => setIsMobileDevice(detectMobile());
-    update();
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', update);
-      return () => window.removeEventListener('resize', update);
-    }
-  }, [detectMobile]);
-
   const executeAction = (action: 'skip' | 'agree') => {
     closeFinalOverlay(true);
     if (action === 'agree') {
@@ -92,21 +81,20 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   };
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
-    const mobile = isMobileDevice || detectMobile();
-    if (mobile) {
+    if (!prefersMousePointer()) {
       setPendingAction(action);
       setShowHomePrompt(true);
-    } else {
-      executeAction(action);
+      return;
     }
+    executeAction(action);
   };
 
   const handleHomePromptContinue = () => {
     if (pendingAction) {
       executeAction(pendingAction);
-    } else {
-      closeFinalOverlay(true);
+      return;
     }
+    setShowHomePrompt(false);
   };
 
   const renderBold = (text: string) => {
@@ -321,7 +309,11 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         </div>
         <div className="flex justify-end gap-2 mt-3">
           {stepIndex === steps.length - 1 ? (
-            <button onClick={() => { setFinalOverlayOpen(true); setShowHomePrompt(false); setPendingAction(null); }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
+            <button onClick={() => {
+              setFinalOverlayOpen(true);
+              setShowHomePrompt(false);
+              setPendingAction(null);
+            }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
           ) : (
             <button
               onClick={() => (nextEnabled ? onNext() : (onNextBlocked && onNextBlocked()))}

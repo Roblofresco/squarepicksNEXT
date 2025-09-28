@@ -328,7 +328,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         {finalOverlayOpen && (
           <StarfieldBackground className="fixed inset-0 z-[1200] opacity-90" />
         )}
-        <DialogContent className="z-[1201] sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150" hideCloseButton>
+        <DialogContent className="z-[1201] sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
           {showHomePrompt ? (
             <>
               <DialogHeader className="text-center space-y-2">

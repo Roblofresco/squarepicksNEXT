@@ -1048,6 +1048,7 @@ function LobbyContent() {
           }}
           allowClickSelectors={['[data-tour-allow="more"]','[data-tour-allow="sweepstakes"]']}
           onClose={() => setTourOpen(false)}
+          hasWallet={!!hasWallet}
         />
       )}
       {/* Login Dialog */}

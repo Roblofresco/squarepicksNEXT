@@ -53,10 +53,11 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
   const prefersMousePointer = () => {
     if (typeof window === 'undefined') return false;
-    const pointerFine = window.matchMedia ? window.matchMedia('(pointer: fine)').matches : false;
-    const hover = window.matchMedia ? window.matchMedia('(hover: hover)').matches : false;
-    const touchPoints = navigator.maxTouchPoints || 0;
-    return pointerFine && hover && touchPoints === 0;
+    const pointerFine = window.matchMedia?.('(pointer: fine)')?.matches ?? false;
+    const hover = window.matchMedia?.('(hover: hover)')?.matches ?? false;
+    const touchPoints = typeof navigator !== 'undefined' ? navigator.maxTouchPoints ?? 0 : 0;
+    const hasTouch = 'ontouchstart' in window || touchPoints > 0;
+    return pointerFine && hover && !hasTouch;
   };
 
   useEffect(() => {

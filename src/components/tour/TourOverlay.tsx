@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -52,6 +52,14 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const [pendingAction, setPendingAction] = useState<'skip' | 'agree' | null>(null);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
 
+  const detectMobile = useCallback(() => {
+    if (typeof window === 'undefined') return false;
+    const ua = navigator.userAgent || navigator.vendor || (window as any).opera || '';
+    const coarse = window.matchMedia ? window.matchMedia('(pointer: coarse)').matches : false;
+    const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.maxTouchPoints > 0;
+    return /android|iphone|ipad|ipod|iemobile|mobile/i.test(ua) || coarse || (touch && window.innerWidth <= 900);
+  }, []);
+
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
       setFinalOverlayOpen(false);
@@ -68,19 +76,13 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   };
 
   useEffect(() => {
-    const detectMobile = () => {
-      if (typeof window === 'undefined') return false;
-      const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
-      const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      return /android|iphone|ipad|ipod|iemobile|mobile/i.test(ua) || (touch && window.innerWidth <= 820);
-    };
     const update = () => setIsMobileDevice(detectMobile());
     update();
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', update);
       return () => window.removeEventListener('resize', update);
     }
-  }, []);
+  }, [detectMobile]);
 
   const executeAction = (action: 'skip' | 'agree') => {
     closeFinalOverlay(true);
@@ -90,7 +92,8 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   };
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
-    if (isMobileDevice) {
+    const mobile = isMobileDevice || detectMobile();
+    if (mobile) {
       setPendingAction(action);
       setShowHomePrompt(true);
     } else {

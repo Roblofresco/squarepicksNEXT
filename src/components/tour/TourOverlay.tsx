@@ -50,33 +50,22 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
   const [showHomePrompt, setShowHomePrompt] = useState(false);
   const [pendingAction, setPendingAction] = useState<'skip' | 'agree' | null>(null);
-  const prefersMouseRef = useRef(false);
-
-  const detectMouseOnly = () => {
-    if (typeof window === 'undefined') return false;
-    const nav = typeof navigator !== 'undefined' ? navigator : ({} as Navigator);
-    const ua = (nav.userAgent || (nav as any).vendor || '').toLowerCase();
-    const uaDataMobile = (nav as any).userAgentData?.mobile ?? false;
-    const mobileRegex = /android|iphone|ipad|ipod|iemobile|mobile/;
-    const maxTouch = nav.maxTouchPoints ?? 0;
-    const hasTouchEvent = 'ontouchstart' in window || 'ontouchend' in window;
-    const anyCoarse = window.matchMedia?.('(any-pointer: coarse)')?.matches ?? false;
-    const pointerFine = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(pointer: fine)').matches : false;
-    const hoverCapable = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(hover: hover)').matches : false;
-
-    const identifiedMobile = uaDataMobile || mobileRegex.test(ua);
-    const hasTouch = identifiedMobile || maxTouch > 0 || hasTouchEvent || anyCoarse;
-    return !hasTouch && pointerFine && hoverCapable;
-  };
+  const firstActionRef = useRef<'skip' | 'agree' | null>(null);
 
   useEffect(() => {
-    prefersMouseRef.current = detectMouseOnly();
-  }, []);
+    if (stepIndex !== steps.length - 1) {
+      setFinalOverlayOpen(false);
+      setShowHomePrompt(false);
+      setPendingAction(null);
+      firstActionRef.current = null;
+    }
+  }, [stepIndex, steps.length]);
 
   const closeFinalOverlay = (shouldCloseTour = true) => {
     setFinalOverlayOpen(false);
     setShowHomePrompt(false);
     setPendingAction(null);
+    firstActionRef.current = null;
     if (shouldCloseTour) onClose();
   };
 
@@ -88,14 +77,9 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   };
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
-    const mouseOnly = detectMouseOnly();
-    prefersMouseRef.current = mouseOnly;
-    if (!mouseOnly) {
-      setPendingAction(action);
-      setShowHomePrompt(true);
-      return;
-    }
-    executeAction(action);
+    setPendingAction(action);
+    if (!firstActionRef.current) firstActionRef.current = action;
+    setShowHomePrompt(true);
   };
 
   const handleHomePromptContinue = () => {
@@ -322,6 +306,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
               setFinalOverlayOpen(true);
               setShowHomePrompt(false);
               setPendingAction(null);
+              firstActionRef.current = null;
             }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
           ) : (
             <button
@@ -345,16 +330,16 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
               <DialogHeader className="text-center space-y-2">
                 <DialogTitle className="text-2xl font-bold">Add SquarePicks to Your Home Screen</DialogTitle>
                 <DialogDescription className="text-white/70">
-                  Install the web app for quick access to sweepstakes and weekly free entries.
+                  On mobile, add the app to your home screen for one-tap access. On desktop you can continue without installing.
                 </DialogDescription>
               </DialogHeader>
               <div className="mt-5 space-y-4 text-left text-sm text-white/85">
                 <div>
                   <h4 className="font-semibold text-white">Why add it?</h4>
                   <ul className="mt-2 space-y-1 list-disc list-inside text-white/85">
-                    <li>Launch contests instantly from your phone.</li>
-                    <li>Stay signed in and ready for new boards.</li>
-                    <li>Enjoy a fullscreen, distraction-free experience.</li>
+                    <li>Launch sweepstakes instantly from your phone.</li>
+                    <li>Stay signed in and ready when new boards drop.</li>
+                    <li>Enjoy a fullscreen experience without browser chrome.</li>
                   </ul>
                 </div>
                 <div>

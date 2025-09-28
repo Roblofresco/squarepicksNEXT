@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -77,17 +77,20 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   };
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
-    if (!firstActionRef.current) firstActionRef.current = action;
     setPendingAction(action);
     setShowHomePrompt(true);
   };
 
   const handleHomePromptContinue = () => {
-    if (pendingAction) {
-      executeAction(pendingAction);
-      return;
-    }
+    const action = pendingAction ?? 'skip';
     setShowHomePrompt(false);
+    setPendingAction(null);
+    if (action === 'agree') {
+      closeFinalOverlay(true);
+      router.push('/wallet-setup/location');
+    } else {
+      closeFinalOverlay(true);
+    }
   };
 
   const renderBold = (text: string) => {
@@ -108,6 +111,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
   useEffect(() => {
     if (!open || !step) return;
+    if (step.id === 'response') return;
     const target = document.querySelector(step.anchor) as HTMLElement | null;
     if (target) {
       // Scroll behavior per step
@@ -150,6 +154,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   // After measurement, optionally align page scroll so popover top sits near viewport top
   useEffect(() => {
     if (!open || !step) return;
+    if (step.id === 'response') return;
     if (step.scroll !== 'popoverTop') return;
     const baseEl = document.querySelector(step.arrowTarget || step.anchor) as HTMLElement | null;
     if (!baseEl || !popRef.current) return;
@@ -306,7 +311,6 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
               setFinalOverlayOpen(true);
               setShowHomePrompt(false);
               setPendingAction(null);
-              firstActionRef.current = null;
             }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
           ) : (
             <button

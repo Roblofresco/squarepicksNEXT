@@ -793,6 +793,12 @@ function LobbyContent() {
     visible: { opacity: 1, transition: { duration: 0.2 } },
   };
 
+  const sweptHasWallet = !!hasWallet;
+  const sweptAgreeFlag = useMemo(() => {
+    const tourFlag = localStorage?.getItem('tour-agree-sweepstakes');
+    return tourFlag === 'true';
+  }, [tourOpen]);
+
   return (
     <div className="relative w-full min-h-screen flex flex-col bg-background-primary">
       <Toaster position="top-center" />
@@ -1048,7 +1054,8 @@ function LobbyContent() {
           }}
           allowClickSelectors={['[data-tour-allow="more"]','[data-tour-allow="sweepstakes"]']}
           onClose={() => setTourOpen(false)}
-          hasWallet={!!hasWallet}
+          hasWallet={sweptHasWallet}
+          agreeToSweepstakes={sweptAgreeFlag}
         />
       )}
       {/* Login Dialog */}

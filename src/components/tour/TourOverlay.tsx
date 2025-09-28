@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
@@ -37,9 +38,11 @@ interface TourOverlayProps {
   onNextBlocked?: () => void;
   allowClickSelectors?: string[];
   hasWallet: boolean;
+  agreeToSweepstakes: boolean | null;
+  onSweepstakesAgreeChange: (value: boolean) => void;
 }
 
-export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet }: TourOverlayProps) {
+export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet, agreeToSweepstakes, onSweepstakesAgreeChange }: TourOverlayProps) {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = steps[stepIndex];
@@ -51,6 +54,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
   const [showHomePrompt, setShowHomePrompt] = useState(false);
   const [pendingAction, setPendingAction] = useState<'skip' | 'agree' | null>(null);
+  const [showWalletModal, setShowWalletModal] = useState(false);
 
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
@@ -77,6 +81,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   };
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
+    onSweepstakesAgreeChange(action === 'agree');
     setPendingAction(action);
     setShowHomePrompt(true);
   };
@@ -86,8 +91,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     setShowHomePrompt(false);
     setPendingAction(null);
     if (action === 'agree') {
-      closeFinalOverlay(true);
-      router.push('/wallet-setup/location');
+      setShowWalletModal(true);
     } else {
       closeFinalOverlay(true);
     }
@@ -232,7 +236,21 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
   // spotlight overlay with four rectangles to carve a hole (expanded by holePadding)
   const hp = step?.holePadding ?? 0;
-  const hole = rect
+  const hole = step?.id === 'response'
+    ? (() => {
+        const card = document.querySelector('[data-tour="sweepstakes-response-card"]') as HTMLElement | null;
+        if (!card) return rect;
+        const r = card.getBoundingClientRect();
+        return {
+          top: Math.max(0, r.top - hp),
+          left: Math.max(0, r.left - hp),
+          right: Math.min(window.innerWidth, r.right + hp),
+          bottom: Math.min(window.innerHeight, r.bottom + hp),
+          width: Math.min(window.innerWidth, r.right + hp) - Math.max(0, r.left - hp),
+          height: Math.min(window.innerHeight, r.bottom + hp) - Math.max(0, r.top - hp),
+        } as const;
+      })()
+    : rect
     ? {
         top: Math.max(0, rect.top - hp),
         left: Math.max(0, rect.left - hp),
@@ -330,90 +348,135 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         {finalOverlayOpen && (
           <StarfieldBackground className="fixed inset-0 z-[1200] opacity-90" />
         )}
-        <DialogContent className="z-[1201] sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
-          {showHomePrompt ? (
-            <>
-              <DialogHeader className="text-center space-y-2">
-                <DialogTitle className="text-2xl font-bold">Add SquarePicks to Your Home Screen</DialogTitle>
-                <DialogDescription className="text-white/70">
-                  On mobile, add the app to your home screen for one-tap access. On desktop you can continue without installing.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="mt-5 space-y-4 text-left text-sm text-white/85">
-                <div>
-                  <h4 className="font-semibold text-white">Why add it?</h4>
-                  <ul className="mt-2 space-y-1 list-disc list-inside text-white/85">
-                    <li>Launch sweepstakes instantly from your phone.</li>
-                    <li>Stay signed in and ready when new boards drop.</li>
-                    <li>Enjoy a fullscreen experience without browser chrome.</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-white">How to add (iOS Safari)</h4>
-                  <ol className="mt-2 space-y-1 list-decimal list-inside text-white/80">
-                    <li>Tap the share icon.</li>
-                    <li>Choose “Add to Home Screen”.</li>
-                    <li>Tap “Add” to finish.</li>
-                  </ol>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-white">How to add (Android Chrome)</h4>
-                  <ol className="mt-2 space-y-1 list-decimal list-inside text-white/80">
-                    <li>Open the browser menu (⋮).</li>
-                    <li>Tap “Add to Home screen”.</li>
-                    <li>Confirm “Add”.</li>
-                  </ol>
-                </div>
-              </div>
-              <div className="flex justify-end mt-6">
-                <button
-                  type="button"
-                  onClick={handleHomePromptContinue}
-                  className="w-full sm:w-auto rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                >
-                  Continue
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <DialogHeader className="text-center space-y-2">
-                <DialogTitle className="text-2xl font-bold">Sweepstakes Guidelines</DialogTitle>
-                <DialogDescription className="text-white/70">
-                  SquarePicks contests are promotional sweepstakes. Review the guidelines before continuing.
-                </DialogDescription>
-              </DialogHeader>
-              <div
-                className="mt-5 max-h-64 overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-4 text-left text-sm text-white/85 space-y-3"
+        <DialogContent className="z-[1201] sm:max-w-md overflow-hidden bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
+          <AnimatePresence mode="wait">
+            {showWalletModal ? (
+              <motion.div
+                key="wallet-modal"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.18 }}
+                className="space-y-5"
               >
-                <ul className="space-y-2 list-disc list-inside">
-                  <li>One free weekly entry is available on the featured $1 board. Use it once per weekly period.</li>
-                  <li>Unclaimed squares at kickoff convert to house squares and are not eligible to win.</li>
-                  <li>Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the credited pot each.</li>
-                  <li>Confirm profile and wallet details so winnings can be credited immediately. Review full rules and alternate entry methods in the Help Center.</li>
-                </ul>
-                <p className="text-xs text-white/60">
-                  By agreeing, you acknowledge eligibility and consent to location verification during wallet setup.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => handleGuidelinesAction('skip')}
-                  className="flex-1 rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  Skip
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleGuidelinesAction('agree')}
-                  className="flex-1 rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                >
-                  Agree
-                </button>
-              </div>
-            </>
-          )}
+                <DialogHeader className="text-center space-y-2">
+                  <DialogTitle className="text-2xl font-bold flex items-center justify-center gap-2">
+                    Finish Wallet Setup
+                  </DialogTitle>
+                  <DialogDescription className="text-white/70">
+                    Complete wallet verification so we can credit sweepstakes winnings immediately.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                  <button
+                    onClick={() => {
+                      setShowWalletModal(false);
+                      closeFinalOverlay(true);
+                    }}
+                    className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90 py-6 text-lg rounded-md text-white font-semibold"
+                  >
+                    Go to Wallet Setup
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowWalletModal(false);
+                      closeFinalOverlay(true);
+                    }}
+                    className="flex-1 bg-white/5 border border-white/20 text-white hover:bg-white/10 hover:text-white rounded-md py-3 text-sm font-semibold"
+                  >
+                    Skip
+                  </button>
+                </div>
+              </motion.div>
+            ) : showHomePrompt ? (
+              <motion.div
+                key="add-home"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.18 }}
+                className="space-y-5"
+              >
+                <DialogHeader className="text-center space-y-2">
+                  <DialogTitle className="text-2xl font-bold">Add SquarePicks to Your Home Screen</DialogTitle>
+                  <DialogDescription className="text-white/70">
+                    For quick mobile access, add the app to your home screen. Desktop users can continue without installing.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 text-left text-sm text-white/85">
+                  <div>
+                    <h4 className="font-semibold text-white">How to add (iOS Safari)</h4>
+                    <ol className="mt-2 space-y-1 list-decimal list-inside text-white/80">
+                      <li>Tap the share icon.</li>
+                      <li>Choose “Add to Home Screen”.</li>
+                      <li>Tap “Add” to finish.</li>
+                    </ol>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-white">How to add (Android Chrome)</h4>
+                    <ol className="mt-2 space-y-1 list-decimal list-inside text-white/80">
+                      <li>Open the browser menu (⋮).</li>
+                      <li>Tap “Add to Home screen”.</li>
+                      <li>Confirm “Add”.</li>
+                    </ol>
+                  </div>
+                </div>
+                <div className="flex justify-end mt-6">
+                  <button
+                    type="button"
+                    onClick={handleHomePromptContinue}
+                    className="w-full sm:w-auto rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="guidelines"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.18 }}
+                className="space-y-5"
+              >
+                <DialogHeader className="text-center space-y-2">
+                  <DialogTitle className="text-2xl font-bold">Sweepstakes Guidelines</DialogTitle>
+                  <DialogDescription className="text-white/70">
+                    SquarePicks contests are promotional sweepstakes. Review the guidelines before continuing.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-5 max-h-64 overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-4 text-left text-sm text-white/85 space-y-3">
+                  <ul className="space-y-2 list-disc list-inside">
+                    <li>One free weekly entry is available on the featured $1 board. Use it once per weekly period.</li>
+                    <li>Unclaimed squares at kickoff convert to house squares and are not eligible to win.</li>
+                    <li>Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the credited pot each.</li>
+                    <li>Confirm profile and wallet details so winnings can be credited immediately. Review full rules and alternate entry methods in the Help Center.</li>
+                  </ul>
+                  <p className="text-xs text-white/60">
+                    By agreeing, you acknowledge eligibility and consent to location verification during wallet setup.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => handleGuidelinesAction('skip')}
+                    className="flex-1 rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    Skip
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGuidelinesAction('agree')}
+                    className="flex-1 rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  >
+                    Agree
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </DialogContent>
       </Dialog>
     </div>,

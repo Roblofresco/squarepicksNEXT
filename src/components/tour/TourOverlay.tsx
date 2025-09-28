@@ -36,9 +36,10 @@ interface TourOverlayProps {
   nextEnabled?: boolean;
   onNextBlocked?: () => void;
   allowClickSelectors?: string[];
+  hasWallet: boolean;
 }
 
-export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [] }: TourOverlayProps) {
+export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet }: TourOverlayProps) {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = steps[stepIndex];
@@ -50,14 +51,12 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
   const [showHomePrompt, setShowHomePrompt] = useState(false);
   const [pendingAction, setPendingAction] = useState<'skip' | 'agree' | null>(null);
-  const firstActionRef = useRef<'skip' | 'agree' | null>(null);
 
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
       setFinalOverlayOpen(false);
       setShowHomePrompt(false);
       setPendingAction(null);
-      firstActionRef.current = null;
     }
   }, [stepIndex, steps.length]);
 
@@ -65,14 +64,15 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     setFinalOverlayOpen(false);
     setShowHomePrompt(false);
     setPendingAction(null);
-    firstActionRef.current = null;
     if (shouldCloseTour) onClose();
   };
 
   const executeAction = (action: 'skip' | 'agree') => {
     closeFinalOverlay(true);
     if (action === 'agree') {
-      router.push('/wallet-setup/location');
+      if (!hasWallet) {
+        router.push('/wallet-setup/location');
+      }
     }
   };
 
@@ -328,7 +328,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         {finalOverlayOpen && (
           <StarfieldBackground className="fixed inset-0 z-[1200] opacity-90" />
         )}
-        <DialogContent className="z-[1201] sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
+        <DialogContent className="z-[1201] sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150" hideCloseButton>
           {showHomePrompt ? (
             <>
               <DialogHeader className="text-center space-y-2">
@@ -381,7 +381,9 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
                   SquarePicks contests are promotional sweepstakes. Review the guidelines before continuing.
                 </DialogDescription>
               </DialogHeader>
-              <div className="mt-5 max-h-64 overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-4 text-left text-sm text-white/85 space-y-3">
+              <div
+                className="mt-5 max-h-64 overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-4 text-left text-sm text-white/85 space-y-3"
+              >
                 <ul className="space-y-2 list-disc list-inside">
                   <li>One free weekly entry is available on the featured $1 board. Use it once per weekly period.</li>
                   <li>Unclaimed squares at kickoff convert to house squares and are not eligible to win.</li>
@@ -398,14 +400,14 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
                   onClick={() => handleGuidelinesAction('skip')}
                   className="flex-1 rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
                 >
-                  Skip for now
+                  Skip
                 </button>
                 <button
                   type="button"
                   onClick={() => handleGuidelinesAction('agree')}
                   className="flex-1 rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 >
-                  Agree & Continue
+                  Agree
                 </button>
               </div>
             </>

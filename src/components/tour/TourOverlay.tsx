@@ -88,7 +88,9 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   };
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
-    if (!prefersMouseRef.current) {
+    const mouseOnly = detectMouseOnly();
+    prefersMouseRef.current = mouseOnly;
+    if (!mouseOnly) {
       setPendingAction(action);
       setShowHomePrompt(true);
       return;

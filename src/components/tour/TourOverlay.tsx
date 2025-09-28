@@ -50,22 +50,28 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
   const [showHomePrompt, setShowHomePrompt] = useState(false);
   const [pendingAction, setPendingAction] = useState<'skip' | 'agree' | null>(null);
+  const prefersMouseRef = useRef(false);
 
-  const prefersMousePointer = () => {
+  const detectMouseOnly = () => {
     if (typeof window === 'undefined') return false;
-    const pointerFine = window.matchMedia?.('(pointer: fine)')?.matches ?? false;
-    const hover = window.matchMedia?.('(hover: hover)')?.matches ?? false;
-    const touchPoints = typeof navigator !== 'undefined' ? navigator.maxTouchPoints ?? 0 : 0;
-    const hasTouch = 'ontouchstart' in window || touchPoints > 0;
-    return pointerFine && hover && !hasTouch;
+    const nav = typeof navigator !== 'undefined' ? navigator : ({} as Navigator);
+    const ua = (nav.userAgent || (nav as any).vendor || '').toLowerCase();
+    const uaDataMobile = (nav as any).userAgentData?.mobile ?? false;
+    const mobileRegex = /android|iphone|ipad|ipod|iemobile|mobile/;
+    const maxTouch = nav.maxTouchPoints ?? 0;
+    const hasTouchEvent = 'ontouchstart' in window || 'ontouchend' in window;
+    const anyCoarse = window.matchMedia?.('(any-pointer: coarse)')?.matches ?? false;
+    const pointerFine = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(pointer: fine)').matches : false;
+    const hoverCapable = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(hover: hover)').matches : false;
+
+    const identifiedMobile = uaDataMobile || mobileRegex.test(ua);
+    const hasTouch = identifiedMobile || maxTouch > 0 || hasTouchEvent || anyCoarse;
+    return !hasTouch && pointerFine && hoverCapable;
   };
 
   useEffect(() => {
-    if (stepIndex !== steps.length - 1) {
-      setFinalOverlayOpen(false);
-      setShowHomePrompt(false);
-    }
-  }, [stepIndex, steps.length]);
+    prefersMouseRef.current = detectMouseOnly();
+  }, []);
 
   const closeFinalOverlay = (shouldCloseTour = true) => {
     setFinalOverlayOpen(false);
@@ -82,7 +88,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   };
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
-    if (!prefersMousePointer()) {
+    if (!prefersMouseRef.current) {
       setPendingAction(action);
       setShowHomePrompt(true);
       return;

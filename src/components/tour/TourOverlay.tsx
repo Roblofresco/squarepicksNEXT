@@ -77,8 +77,8 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   };
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
-    setPendingAction(action);
     if (!firstActionRef.current) firstActionRef.current = action;
+    setPendingAction(action);
     setShowHomePrompt(true);
   };
 

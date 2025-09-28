@@ -60,11 +60,11 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     }
   }, [stepIndex, steps.length]);
 
-  const closeFinalOverlay = () => {
+  const closeFinalOverlay = (shouldCloseTour = true) => {
     setFinalOverlayOpen(false);
     setShowHomePrompt(false);
     setPendingAction(null);
-    onClose();
+    if (shouldCloseTour) onClose();
   };
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   }, []);
 
   const executeAction = (action: 'skip' | 'agree') => {
-    closeFinalOverlay();
+    closeFinalOverlay(true);
     if (action === 'agree') {
       router.push('/wallet-setup/location');
     }
@@ -102,7 +102,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     if (pendingAction) {
       executeAction(pendingAction);
     } else {
-      closeFinalOverlay();
+      closeFinalOverlay(true);
     }
   };
 
@@ -318,7 +318,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         </div>
         <div className="flex justify-end gap-2 mt-3">
           {stepIndex === steps.length - 1 ? (
-            <button onClick={() => { setFinalOverlayOpen(true); setShowHomePrompt(false); setPendingAction(null); onClose(); }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
+            <button onClick={() => { setFinalOverlayOpen(true); setShowHomePrompt(false); setPendingAction(null); }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
           ) : (
             <button
               onClick={() => (nextEnabled ? onNext() : (onNextBlocked && onNextBlocked()))}
@@ -330,7 +330,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         </div>
       </div>
       <Dialog open={finalOverlayOpen} onOpenChange={(open) => {
-        if (!open && finalOverlayOpen) closeFinalOverlay();
+        if (!open && finalOverlayOpen) closeFinalOverlay(true);
       }}>
         {finalOverlayOpen && (
           <StarfieldBackground className="fixed inset-0 z-[1200] opacity-90" />

@@ -53,41 +53,31 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const router = useRouter();
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
   const [showHomePrompt, setShowHomePrompt] = useState(false);
-  const [pendingAction, setPendingAction] = useState<'skip' | 'agree' | null>(null);
 
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
       setFinalOverlayOpen(false);
       setShowHomePrompt(false);
-      setPendingAction(null);
     }
   }, [stepIndex, steps.length]);
 
   const closeFinalOverlay = (shouldCloseTour = true) => {
     setFinalOverlayOpen(false);
     setShowHomePrompt(false);
-    setPendingAction(null);
     if (shouldCloseTour) onClose();
-  };
-
-  const executeAction = (action: 'skip' | 'agree') => {
-    closeFinalOverlay(true);
-    if (action === 'agree') {
-      onShowWallet?.();
-    }
   };
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
     onSweepstakesAgreement?.(action === 'agree');
-    setPendingAction(action);
     setShowHomePrompt(true);
   };
 
   const handleHomePromptContinue = () => {
-    const action = pendingAction ?? 'skip';
     setShowHomePrompt(false);
-    setPendingAction(null);
-    executeAction(action);
+    closeFinalOverlay(true);
+    if (!hasWallet) {
+      onShowWallet?.();
+    }
   };
 
   const renderBold = (text: string) => {
@@ -328,7 +318,6 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
             <button onClick={() => {
               setFinalOverlayOpen(true);
               setShowHomePrompt(false);
-              setPendingAction(null);
             }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
           ) : (
             <button

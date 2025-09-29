@@ -52,6 +52,27 @@ interface EntryInteractionState {
   selectedNumber: number | string | null;
 }
 
+type LobbyTourStep = {
+  id: string;
+  anchor: string;
+  title: string;
+  description: string;
+  side?: 'top' | 'bottom';
+  scroll?: 'bottom' | 'center' | 'popoverTop';
+  arrowTarget?: string;
+  holePadding?: number;
+  popoverOffsetY?: number;
+};
+
+const BASE_TOUR_STEPS: LobbyTourStep[] = [
+  { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', holePadding: 12 },
+  { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose Your Square', description: 'Type your number.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-input"]', holePadding: 14, popoverOffsetY: 16 },
+  { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Choose Your Square', description: 'Tap your number.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
+  { id: 'enter', anchor: '[data-tour="sweepstakes-enter"]', title: 'Enter Sweepstakes', description: 'Click Enter.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-enter"]', holePadding: 16, popoverOffsetY: 18 },
+  { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
+  { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 },
+];
+
 // Helper to fetch multiple team documents by their DocumentReferences
 // Adjusted to take DocumentReferences and return a map with TeamInfo
 const fetchMultipleTeams = async (teamRefs: DocumentReference[]): Promise<Record<string, TeamInfo>> => {
@@ -556,30 +577,11 @@ function LobbyContent() {
   // App-driven tour state (dev only for now)
   const [tourOpen, setTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
-  type LobbyTourStep = {
-    id: string;
-    anchor: string;
-    title: string;
-    description: string;
-    side?: 'top' | 'bottom';
-    scroll?: 'bottom' | 'center' | 'popoverTop';
-    arrowTarget?: string;
-    holePadding?: number;
-    popoverOffsetY?: number;
-  };
-  const tourSteps: LobbyTourStep[] = [
-    { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', holePadding: 12 },
-    { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose Your Square', description: 'Type your number.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-input"]', holePadding: 14, popoverOffsetY: 16 },
-    { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Choose Your Square', description: 'Tap your number.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
-    { id: 'enter', anchor: '[data-tour="sweepstakes-enter"]', title: 'Enter Sweepstakes', description: 'Click Enter.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-enter"]', holePadding: 16, popoverOffsetY: 18 },
-    { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
-    { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 }
-  ];
   const [tourPhase, setTourPhase] = useState<'A'|'B'>('A');
   const [moreClicked, setMoreClicked] = useState(false);
   const [sweepstakesClicked, setSweepstakesClicked] = useState(false);
   const stepsForRender = useMemo(() => {
-    const s = [...tourSteps];
+    const s = [...BASE_TOUR_STEPS];
     if (tourStep === 0) {
       if (tourPhase === 'A') {
         s[0] = {
@@ -606,7 +608,7 @@ function LobbyContent() {
       }
     }
     return s;
-  }, [tourSteps, tourStep, tourPhase, sweepstakesClicked, sportSelectorView]);
+  }, [tourStep, tourPhase, sweepstakesClicked, sportSelectorView]);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -915,7 +917,7 @@ function LobbyContent() {
                                 homeScore={sweepstakesGame.home_score}
                               />
                               {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev' ? (
-                                <TourSweepstakesBoardCard tourStepId={tourSteps[tourStep]?.id} />
+                                <TourSweepstakesBoardCard tourStepId={stepsForRender[tourStep]?.id} />
                               ) : (
                               <SweepstakesBoardCard 
                                 key={sweepstakesBoard.id}
@@ -1050,7 +1052,7 @@ function LobbyContent() {
               }
               return;
             }
-            setTourStep(prev => Math.min(prev + 1, tourSteps.length - 1));
+            setTourStep(prev => Math.min(prev + 1, BASE_TOUR_STEPS.length - 1));
           }}
           onNextBlocked={() => {
             // flash the relevant button

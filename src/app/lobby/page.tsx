@@ -2,8 +2,7 @@
 
 export const runtime = 'edge';
 
-import { useState, useEffect, useCallback, useRef, Suspense, useMemo } from 'react';
-// driver removed
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast, Toaster } from 'react-hot-toast';
@@ -794,11 +793,12 @@ function LobbyContent() {
   };
 
   const sweptHasWallet = !!hasWallet;
-  const sweptAgreeFlag = useMemo(() => {
-    if (typeof window === 'undefined') return false;
+  const [sweptAgreeFlag, setSweptAgreeFlag] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     const tourFlag = localStorage.getItem('tour-agree-sweepstakes');
-    return tourFlag === 'true';
-  }, [tourOpen]);
+    setSweptAgreeFlag(tourFlag === 'true');
+  }, []);
 
   const handleSweepstakesAgreeChange = useCallback((value: boolean) => {
     try {
@@ -806,6 +806,7 @@ function LobbyContent() {
         localStorage.setItem('tour-agree-sweepstakes', String(value));
       }
     } catch {}
+    setSweptAgreeFlag(value);
   }, []);
 
   return (

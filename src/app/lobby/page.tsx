@@ -795,9 +795,18 @@ function LobbyContent() {
 
   const sweptHasWallet = !!hasWallet;
   const sweptAgreeFlag = useMemo(() => {
-    const tourFlag = localStorage?.getItem('tour-agree-sweepstakes');
+    if (typeof window === 'undefined') return false;
+    const tourFlag = localStorage.getItem('tour-agree-sweepstakes');
     return tourFlag === 'true';
   }, [tourOpen]);
+
+  const handleSweepstakesAgreeChange = useCallback((value: boolean) => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('tour-agree-sweepstakes', String(value));
+      }
+    } catch {}
+  }, []);
 
   return (
     <div className="relative w-full min-h-screen flex flex-col bg-background-primary">
@@ -1056,6 +1065,7 @@ function LobbyContent() {
           onClose={() => setTourOpen(false)}
           hasWallet={sweptHasWallet}
           agreeToSweepstakes={sweptAgreeFlag}
+          onSweepstakesAgreeChange={handleSweepstakesAgreeChange}
         />
       )}
       {/* Login Dialog */}

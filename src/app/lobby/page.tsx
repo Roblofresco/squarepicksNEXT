@@ -2,7 +2,8 @@
 
 export const runtime = 'edge';
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense, useMemo } from 'react';
+// driver removed
 import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast, Toaster } from 'react-hot-toast';
@@ -51,27 +52,6 @@ interface EntryInteractionState {
   stage: 'idle' | 'selecting' | 'confirming'; // Removed 'completed' stage
   selectedNumber: number | string | null;
 }
-
-type LobbyTourStep = {
-  id: string;
-  anchor: string;
-  title: string;
-  description: string;
-  side?: 'top' | 'bottom';
-  scroll?: 'bottom' | 'center' | 'popoverTop';
-  arrowTarget?: string;
-  holePadding?: number;
-  popoverOffsetY?: number;
-};
-
-const BASE_TOUR_STEPS: LobbyTourStep[] = [
-  { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', holePadding: 12 },
-  { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose Your Square', description: 'Type your number.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-input"]', holePadding: 14, popoverOffsetY: 16 },
-  { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Choose Your Square', description: 'Tap your number.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
-  { id: 'enter', anchor: '[data-tour="sweepstakes-enter"]', title: 'Enter Sweepstakes', description: 'Click Enter.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-enter"]', holePadding: 16, popoverOffsetY: 18 },
-  { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
-  { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 },
-];
 
 // Helper to fetch multiple team documents by their DocumentReferences
 // Adjusted to take DocumentReferences and return a map with TeamInfo
@@ -577,11 +557,30 @@ function LobbyContent() {
   // App-driven tour state (dev only for now)
   const [tourOpen, setTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
+  type LobbyTourStep = {
+    id: string;
+    anchor: string;
+    title: string;
+    description: string;
+    side?: 'top' | 'bottom';
+    scroll?: 'bottom' | 'center' | 'popoverTop';
+    arrowTarget?: string;
+    holePadding?: number;
+    popoverOffsetY?: number;
+  };
+  const tourSteps: LobbyTourStep[] = [
+    { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', holePadding: 12 },
+    { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose Your Square', description: 'Type your number.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-input"]', holePadding: 14, popoverOffsetY: 16 },
+    { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Choose Your Square', description: 'Tap your number.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
+    { id: 'enter', anchor: '[data-tour="sweepstakes-enter"]', title: 'Enter Sweepstakes', description: 'Click Enter.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-enter"]', holePadding: 16, popoverOffsetY: 18 },
+    { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
+    { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 }
+  ];
   const [tourPhase, setTourPhase] = useState<'A'|'B'>('A');
   const [moreClicked, setMoreClicked] = useState(false);
   const [sweepstakesClicked, setSweepstakesClicked] = useState(false);
   const stepsForRender = useMemo(() => {
-    const s = [...BASE_TOUR_STEPS];
+    const s = [...tourSteps];
     if (tourStep === 0) {
       if (tourPhase === 'A') {
         s[0] = {
@@ -608,7 +607,7 @@ function LobbyContent() {
       }
     }
     return s;
-  }, [tourStep, tourPhase, sweepstakesClicked, sportSelectorView]);
+  }, [tourSteps, tourStep, tourPhase, sweepstakesClicked, sportSelectorView]);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -794,23 +793,6 @@ function LobbyContent() {
     visible: { opacity: 1, transition: { duration: 0.2 } },
   };
 
-  const sweptHasWallet = !!hasWallet;
-  const [sweptAgreeFlag, setSweptAgreeFlag] = useState(false);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const tourFlag = localStorage.getItem('tour-agree-sweepstakes');
-    setSweptAgreeFlag(tourFlag === 'true');
-  }, []);
-
-  const handleSweepstakesAgreeChange = useCallback((value: boolean) => {
-    try {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('tour-agree-sweepstakes', String(value));
-      }
-    } catch {}
-    setSweptAgreeFlag(value);
-  }, []);
-
   return (
     <div className="relative w-full min-h-screen flex flex-col bg-background-primary">
       <Toaster position="top-center" />
@@ -917,7 +899,7 @@ function LobbyContent() {
                                 homeScore={sweepstakesGame.home_score}
                               />
                               {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev' ? (
-                                <TourSweepstakesBoardCard tourStepId={stepsForRender[tourStep]?.id} />
+                                <TourSweepstakesBoardCard tourStepId={tourSteps[tourStep]?.id} />
                               ) : (
                               <SweepstakesBoardCard 
                                 key={sweepstakesBoard.id}
@@ -1052,7 +1034,7 @@ function LobbyContent() {
               }
               return;
             }
-            setTourStep(prev => Math.min(prev + 1, BASE_TOUR_STEPS.length - 1));
+            setTourStep(prev => Math.min(prev + 1, tourSteps.length - 1));
           }}
           onNextBlocked={() => {
             // flash the relevant button
@@ -1066,9 +1048,7 @@ function LobbyContent() {
           }}
           allowClickSelectors={['[data-tour-allow="more"]','[data-tour-allow="sweepstakes"]']}
           onClose={() => setTourOpen(false)}
-          hasWallet={sweptHasWallet}
-          agreeToSweepstakes={sweptAgreeFlag}
-          onSweepstakesAgreeChange={handleSweepstakesAgreeChange}
+          hasWallet={!!hasWallet}
         />
       )}
       {/* Login Dialog */}

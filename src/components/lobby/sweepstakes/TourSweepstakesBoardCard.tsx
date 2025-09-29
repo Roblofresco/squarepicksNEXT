@@ -39,7 +39,7 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
   return (
     <>
       <div
-        data-tour={isStage('response') ? 'sweepstakes-response-card' : undefined}
+        data-tour={isStage('response') ? 'sweepstakes-response' : undefined}
         className="p-4 rounded-xl shadow-lg max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20"
         style={containerStyle}
       >

@@ -10,13 +10,14 @@ const StarfieldBackground = dynamic(() => import('@/components/effects/Starfield
 
 type TourSweepstakesBoardCardProps = {
   tourStepId?: string;
+  highlightedSquare?: number | null;
 };
 
 const stageOrder = ['selector','input','grid','enter','confirm','response'];
 
-export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakesBoardCardProps) {
+export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare }: TourSweepstakesBoardCardProps) {
   const accentGlowRgb = '184, 134, 11';
-  const highlighted = 37; // demo value
+  const highlighted = highlightedSquare ?? 37;
 
   const squares = useMemo(() => Array.from({ length: 100 }, (_, i) => i), []);
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function TourSweepstakesBoardCard({ tourStepId }: TourSweepstakes
   return (
     <>
       <div
+        data-tour-card="sweepstakes"
         data-tour={isStage('response') ? 'sweepstakes-response' : undefined}
         className="p-4 rounded-xl shadow-lg max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20"
         style={containerStyle}

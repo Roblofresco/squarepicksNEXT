@@ -175,6 +175,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [isCurrentUserParticipant, setIsCurrentUserParticipant] = useState<boolean>(false);
   const [isLoadingParticipantStatus, setIsLoadingParticipantStatus] = useState<boolean>(true);
+  const [agreeToSweepstakes, setAgreeToSweepstakes] = useState<boolean | null>(null);
 
   const isActive = entryInteraction.boardId === board.id;
   const currentStage = isActive ? entryInteraction.stage : 'idle';

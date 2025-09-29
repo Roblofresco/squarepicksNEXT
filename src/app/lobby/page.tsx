@@ -143,7 +143,7 @@ function LobbyContent() {
   const [entryInteraction, setEntryInteraction] = useState<EntryInteractionState>({ 
     boardId: null, stage: 'idle', selectedNumber: null
   });
-  
+  const [agreeToSweepstakes, setAgreeToSweepstakes] = useState<boolean | null>(null);
 
   // Use useWallet for auth and wallet status
   const { userId, emailVerified, isLoading: isWalletLoading, balance, hasWallet } = useWallet();
@@ -899,7 +899,7 @@ function LobbyContent() {
                                 homeScore={sweepstakesGame.home_score}
                               />
                               {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev' ? (
-                                <TourSweepstakesBoardCard tourStepId={tourSteps[tourStep]?.id} />
+                                <TourSweepstakesBoardCard tourStepId={tourSteps[tourStep]?.id} highlightedSquare={entryInteraction.selectedNumber ?? 37} />
                               ) : (
                               <SweepstakesBoardCard 
                                 key={sweepstakesBoard.id}
@@ -1049,6 +1049,8 @@ function LobbyContent() {
           allowClickSelectors={['[data-tour-allow="more"]','[data-tour-allow="sweepstakes"]']}
           onClose={() => setTourOpen(false)}
           hasWallet={!!hasWallet}
+          onShowWallet={() => setIsWalletSetupDialogOpen(true)}
+          onSweepstakesAgreement={setAgreeToSweepstakes}
         />
       )}
       {/* Login Dialog */}

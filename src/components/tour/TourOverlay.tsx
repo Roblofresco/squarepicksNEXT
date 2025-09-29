@@ -232,6 +232,18 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     };
   }, [open, finalOverlayOpen, allowClickSelectors]);
 
+  const isGuidelineStep = step?.id === 'guidelines';
+  const isFinalStep = stepIndex === steps.length - 1;
+
+  useEffect(() => {
+    if (!open) return;
+    if (stepIndex === steps.length - 1) {
+      setFinalOverlayOpen(true);
+      setShowHomePrompt(false);
+      setPendingAction(null);
+    }
+  }, [open, stepIndex, steps.length]);
+
   if (!open || !container) return null;
 
   // spotlight overlay with four rectangles to carve a hole (expanded by holePadding)
@@ -326,12 +338,17 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
             : step?.description}
         </div>
         <div className="flex justify-end gap-2 mt-3">
-          {stepIndex === steps.length - 1 ? (
-            <button onClick={() => {
-              setFinalOverlayOpen(true);
-              setShowHomePrompt(false);
-              setPendingAction(null);
-            }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
+          {isFinalStep ? (
+            <button
+              onClick={() => {
+                setFinalOverlayOpen(true);
+                setShowHomePrompt(false);
+                setPendingAction(null);
+              }}
+              className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]"
+            >
+              {!isGuidelineStep ? 'Next' : 'Review'}
+            </button>
           ) : (
             <button
               onClick={() => (nextEnabled ? onNext() : (onNextBlocked && onNextBlocked()))}

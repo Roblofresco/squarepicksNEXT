@@ -40,11 +40,6 @@ if (typeof window !== 'undefined') {
 // Initialize App Check in the browser to satisfy Firestore/AppCheck enforcement
 if (typeof window !== 'undefined') {
   try {
-    // Enable debug token on localhost if configured
-    if (process.env.NEXT_PUBLIC_APPCHECK_DEBUG === 'true') {
-      // @ts-ignore
-      self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-    }
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY;
     if (siteKey) {
       initializeAppCheck(app, {

@@ -50,7 +50,7 @@ const StarfieldBackground = dynamic(() => import('@/components/effects/Starfield
 interface EntryInteractionState {
   boardId: string | null;
   stage: 'idle' | 'selecting' | 'confirming'; // Removed 'completed' stage
-  selectedNumber: number | string | null;
+  selectedNumber: number | null;
 }
 
 // Helper to fetch multiple team documents by their DocumentReferences
@@ -899,7 +899,7 @@ function LobbyContent() {
                                 homeScore={sweepstakesGame.home_score}
                               />
                               {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev' ? (
-                                <TourSweepstakesBoardCard tourStepId={tourSteps[tourStep]?.id} highlightedSquare={entryInteraction.selectedNumber ?? 37} />
+                                <TourSweepstakesBoardCard tourStepId={tourSteps[tourStep]?.id} highlightedSquare={typeof entryInteraction.selectedNumber === 'number' ? entryInteraction.selectedNumber : undefined} />
                               ) : (
                               <SweepstakesBoardCard 
                                 key={sweepstakesBoard.id}

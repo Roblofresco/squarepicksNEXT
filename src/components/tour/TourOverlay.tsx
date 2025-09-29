@@ -40,9 +40,10 @@ interface TourOverlayProps {
   hasWallet: boolean;
   onShowWallet?: () => void;
   onSweepstakesAgreement?: (agreed: boolean) => void;
+  highlightSelectors?: { selector: string; label?: string }[];
 }
 
-export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet, onShowWallet, onSweepstakesAgreement }: TourOverlayProps) {
+export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet, onShowWallet, onSweepstakesAgreement, highlightSelectors = [] }: TourOverlayProps) {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = steps[stepIndex];
@@ -224,6 +225,41 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       document.removeEventListener('keydown', blockKeys, true);
     };
   }, [open, finalOverlayOpen, allowClickSelectors]);
+
+  const highlightRefs = useRef<HTMLElement[]>([]);
+
+  useEffect(() => {
+    highlightRefs.current.forEach((el) => {
+      el.classList.remove('tour-flash-strong');
+      if (el.dataset.tourLabel) {
+        delete el.dataset.tourLabel;
+      }
+    });
+    highlightRefs.current = [];
+    if (!open) return;
+    if (!highlightSelectors.length) return;
+    highlightSelectors.forEach(({ selector, label }) => {
+      const matches = Array.from(document.querySelectorAll<HTMLElement>(selector));
+      matches.forEach((el) => {
+        el.classList.add('tour-flash-strong');
+        if (label) {
+          el.dataset.tourLabel = label;
+        } else if (!el.dataset.tourLabel) {
+          el.dataset.tourLabel = '';
+        }
+        highlightRefs.current.push(el);
+      });
+    });
+    return () => {
+      highlightRefs.current.forEach((el) => {
+        el.classList.remove('tour-flash-strong');
+        if (el.dataset.tourLabel !== undefined) {
+          delete el.dataset.tourLabel;
+        }
+      });
+      highlightRefs.current = [];
+    };
+  }, [open, highlightSelectors, stepIndex]);
 
   if (!open || !container) return null;
 

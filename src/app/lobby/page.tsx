@@ -28,7 +28,7 @@ import SweepstakesBoardCard from '@/components/lobby/sweepstakes/SweepstakesBoar
 import TourSweepstakesBoardCard from '@/components/lobby/sweepstakes/TourSweepstakesBoardCard';
 import {
   collection, query, where, onSnapshot, doc, getDoc, getDocs,
-  Timestamp, DocumentReference, DocumentData, documentId, orderBy, limit,
+  Timestamp, DocumentReference, DocumentData, documentId, orderBy, limit, updateDoc, setDoc,
   // FieldPath // Not used in this version
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from "firebase/functions";
@@ -52,6 +52,13 @@ interface EntryInteractionState {
   stage: 'idle' | 'selecting' | 'confirming'; // Removed 'completed' stage
   selectedNumber: number | null;
 }
+
+interface UserTourState {
+  done: boolean;
+  loading: boolean;
+}
+
+const userDocRef = (uid: string) => doc(db, 'users', uid);
 
 // Helper to fetch multiple team documents by their DocumentReferences
 // Adjusted to take DocumentReferences and return a map with TeamInfo
@@ -557,6 +564,9 @@ function LobbyContent() {
   // App-driven tour state (dev only for now)
   const [tourOpen, setTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
+  const [tourPhase, setTourPhase] = useState<'A' | 'B'>('A');
+  const [tourSeen, setTourSeen] = useState<UserTourState>({ done: false, loading: true });
+  const [tourAutoTriggered, setTourAutoTriggered] = useState(false);
   type LobbyTourStep = {
     id: string;
     anchor: string;
@@ -576,7 +586,6 @@ function LobbyContent() {
     { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
     { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 }
   ];
-  const [tourPhase, setTourPhase] = useState<'A'|'B'>('A');
   const [moreClicked, setMoreClicked] = useState(false);
   const [sweepstakesClicked, setSweepstakesClicked] = useState(false);
   const stepsForRender = useMemo(() => {
@@ -609,16 +618,59 @@ function LobbyContent() {
     return s;
   }, [tourSteps, tourStep, tourPhase, sweepstakesClicked, sportSelectorView]);
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    const dev = params.get('tour') === 'dev';
-    if (!dev) return;
+    if (!userId) {
+      setTourSeen({ done: false, loading: false });
+      return;
+    }
+    let active = true;
+    setTourSeen(prev => ({ ...prev, loading: true }));
+    const load = async () => {
+      try {
+        const ref = userDocRef(userId);
+        const snap = await getDoc(ref);
+        const done = !!snap.data()?.tourDone;
+        if (active) {
+          setTourSeen({ done, loading: false });
+        }
+      } catch (err) {
+        console.error('[LobbyPage] Failed to load tour status', err);
+        if (active) setTourSeen({ done: false, loading: false });
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
+  const boardReadyForTour = useMemo(() => (
+    !!(sweepstakesBoard && sweepstakesGame && sweepstakesGame.teamA && sweepstakesGame.teamB && sweepstakesTeams[sweepstakesGame.teamA.id] && sweepstakesTeams[sweepstakesGame.teamB.id])
+  ), [sweepstakesBoard, sweepstakesGame, sweepstakesTeams]);
+
+  useEffect(() => {
+    if (tourAutoTriggered) return;
+    if (!userId) return;
+    if (tourSeen.loading) return;
+    if (tourSeen.done) return;
+    if (!boardReadyForTour) return;
     setTourOpen(true);
     setTourStep(0);
     setTourPhase('A');
     setMoreClicked(false);
     setSweepstakesClicked(false);
-  }, []);
+    setTourAutoTriggered(true);
+  }, [userId, tourSeen, tourAutoTriggered, boardReadyForTour]);
+
+  useEffect(() => {
+    if (!tourOpen) {
+      document.body.classList.remove('tour-lock');
+      return;
+    }
+    document.body.classList.add('tour-lock');
+    return () => {
+      document.body.classList.remove('tour-lock');
+    };
+  }, [tourOpen]);
 
   // Allow clicks on tour selector buttons to set flags
   useEffect(() => {
@@ -632,140 +684,6 @@ function LobbyContent() {
     window.addEventListener('tour-allow', onAllow as any);
     return () => window.removeEventListener('tour-allow', onAllow as any);
   }, [tourOpen]);
-
-  // Dev-only Step 1 tour (sport-selector) when ?tour=dev
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    if (!params.has('tour') || params.get('tour') !== 'dev') return;
-    const run = async () => {
-      try {
-        // driver removed
-        // Wait briefly for the restricted selector anchor to be present
-        const anchor = '[data-tour="sport-selector"]';
-        let present = !!document.querySelector(anchor);
-        for (let i = 0; i < 10 && !present; i++) {
-          await new Promise(r => setTimeout(r, 300));
-          present = !!document.querySelector(anchor);
-        }
-        if (!present) return;
-        // Ensure subsequent step anchors are also present to avoid disappearing between steps
-        const required = ['[data-tour="sweepstakes-input"]','[data-tour="sweepstakes-grid-selected"]'];
-        const waitForAll = async (sels: string[], tries: number, delayMs: number) => {
-          for (let t = 0; t < tries; t++) {
-            const ok = sels.every(s => !!document.querySelector(s));
-            if (ok) return true;
-            await new Promise(r => setTimeout(r, delayMs));
-          }
-          return false;
-        };
-        await waitForAll(required, 30, 200); // up to ~6s
-        const steps = [
-          {
-            element: '[data-tour="sport-selector"]',
-            popover: { title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', side: 'bottom', align: 'center' }
-          },
-          {
-            element: '[data-tour="sweepstakes-input"]',
-            popover: { title: 'Choose your number', description: 'Type to change, then press Enter (disabled in tour).', side: 'top', align: 'center' }
-          },
-          {
-            element: '[data-tour="sweepstakes-grid-selected"]',
-            popover: { title: 'Your square', description: 'You can also click a square to select (disabled in tour).', side: 'top', align: 'center' }
-          },
-        ];
-        // Adjust/fallback and filter for present elements to avoid empty step list
-        const adjusted = steps.map((s) => {
-          if (s.element === '[data-tour="sweepstakes-grid-selected"]' && !document.querySelector('[data-tour="sweepstakes-grid-selected"]')) {
-            return { ...s, element: '[data-tour="sweepstakes-grid"]' };
-          }
-          return s;
-        });
-        const presentSteps = adjusted.filter(s => !!document.querySelector(s.element as string));
-        if (!presentSteps.length) return;
-
-        // start app-driven overlay instead
-        setTourOpen(true);
-        setTourStep(0);
-
-        // Expose view toggler for popover CTAs
-        (window as any).__setSportSelectorView = (view: 'sweepstakes' | 'allRegularSports') => {
-          try { setSportSelectorView(view); } catch {}
-        };
-
-        // Add hard lock and global guards
-        const clickGuard = (e: Event) => {
-          if (!document.body.classList.contains('tour-lock')) return;
-          const target = e.target as Node | null;
-          const pop = document.querySelector('.driver-popover');
-          const isInPopover = !!(pop && target && pop.contains(target));
-          const isWhitelisted = target instanceof HTMLElement && !!target.closest('[data-tour-allow]');
-          if (isInPopover || isWhitelisted) return;
-          e.preventDefault();
-          e.stopPropagation();
-        };
-        const keyGuard = (e: KeyboardEvent) => {
-          if (!document.body.classList.contains('tour-lock')) return;
-          const active = document.activeElement as HTMLElement | null;
-          const pop = document.querySelector('.driver-popover');
-          const inside = !!(pop && active && pop.contains(active));
-          const blocked = ['Enter',' ','Escape','Backspace','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
-          if (!inside && blocked.includes(e.key)) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        };
-        const origPush = history.pushState.bind(history);
-        const origReplace = history.replaceState.bind(history);
-        const wrappedPush = function(this: History, ...args: any[]) {
-          if (document.body.classList.contains('tour-lock')) return;
-          return origPush(...args as [any, string, string?]);
-        } as any;
-        const wrappedReplace = function(this: History, ...args: any[]) {
-          if (document.body.classList.contains('tour-lock')) return;
-          return origReplace(...args as [any, string, string?]);
-        } as any;
-        const popstateGuard = (e: Event) => {
-          if (document.body.classList.contains('tour-lock')) {
-            e.preventDefault();
-            e.stopPropagation();
-            history.pushState(null, '', window.location.href);
-          }
-        };
-
-        const attachGuards = () => {
-          document.body.classList.add('tour-lock');
-          document.addEventListener('click', clickGuard, true);
-          document.addEventListener('keydown', keyGuard, true);
-          (history as any).pushState = wrappedPush;
-          (history as any).replaceState = wrappedReplace;
-          window.addEventListener('popstate', popstateGuard, true);
-        };
-        const detachGuards = () => {
-          document.body.classList.remove('tour-lock');
-          document.removeEventListener('click', clickGuard, true);
-          document.removeEventListener('keydown', keyGuard, true);
-          (history as any).pushState = origPush;
-          (history as any).replaceState = origReplace;
-          window.removeEventListener('popstate', popstateGuard, true);
-        };
-
-        // Inject popover CTAs to switch views (Step 1) and attach guards only after popover exists
-        let guardsAttached = false;
-        // driver config removed
-
-        // Note: guards now attach in onPopoverRender to avoid interfering with tour init
-
-        const cleanup = () => { detachGuards(); };
-        // Attempt to cleanup on destroy or after some fallback
-        window.addEventListener('driver:destroy', cleanup, { once: true } as any);
-        const t = setTimeout(cleanup, 60000);
-        return () => { clearTimeout(t); cleanup(); };
-      } catch {}
-    };
-    const t = setTimeout(run, 500);
-        return () => clearTimeout(t);
-  }, []);
 
   if (showPrimaryLoadingScreen()) {
     console.log("[LobbyPage] Rendering LoadingScreen. isWalletLoading:", isWalletLoading, "userId:", userId, "emailVerified:", emailVerified, "selectedSport:", selectedSport);
@@ -898,21 +816,24 @@ function LobbyContent() {
                                 awayScore={sweepstakesGame.away_score}
                                 homeScore={sweepstakesGame.home_score}
                               />
-                              {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === 'dev' ? (
-                                <TourSweepstakesBoardCard tourStepId={tourSteps[tourStep]?.id} highlightedSquare={typeof entryInteraction.selectedNumber === 'number' ? entryInteraction.selectedNumber : undefined} />
+                              {!tourOpen ? (
+                                <SweepstakesBoardCard 
+                                  key={sweepstakesBoard.id}
+                                  board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
+                              user={user} // Pass the LobbyPage's user state
+                                  onProtectedAction={handleProtectedAction}
+                                  entryInteraction={entryInteraction}
+                                  handleBoardAction={handleBoardAction}
+                                  openWalletDialog={openWalletDialog} 
+                              walletHasWallet={hasWallet} // from useWallet
+                              walletBalance={balance}     // from useWallet
+                              walletIsLoading={isWalletLoading} // from useWallet
+                            />
                               ) : (
-                              <SweepstakesBoardCard 
-                                key={sweepstakesBoard.id}
-                                board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
-                            user={user} // Pass the LobbyPage's user state
-                                onProtectedAction={handleProtectedAction}
-                                entryInteraction={entryInteraction}
-                                handleBoardAction={handleBoardAction}
-                                openWalletDialog={openWalletDialog} 
-                            walletHasWallet={hasWallet} // from useWallet
-                            walletBalance={balance}     // from useWallet
-                            walletIsLoading={isWalletLoading} // from useWallet
-                          />
+                                <TourSweepstakesBoardCard
+                                  tourStepId={tourSteps[tourStep]?.id}
+                                  highlightedSquare={typeof entryInteraction.selectedNumber === 'number' ? entryInteraction.selectedNumber : undefined}
+                                />
                               )}
                           <p className="text-xs text-gray-400 mt-2">Free weekly entry. Numbers assigned at game time.</p>
                         </div>
@@ -1024,33 +945,43 @@ function LobbyContent() {
           steps={stepsForRender}
           open={tourOpen}
           stepIndex={tourStep}
-          nextEnabled={tourStep === 0 ? (tourPhase === 'A' ? moreClicked : (sweepstakesClicked || sportSelectorView === 'sweepstakes')) : true}
           onNext={() => {
             if (tourStep === 0) {
               if (tourPhase === 'A' && moreClicked) { setTourPhase('B'); return; }
               if (tourPhase === 'B' && (sweepstakesClicked || sportSelectorView === 'sweepstakes')) {
-                setTourStep(1);
+                setTourStep(prev => Math.min(prev + 1, stepsForRender.length - 1));
                 return;
               }
               return;
             }
-            setTourStep(prev => Math.min(prev + 1, tourSteps.length - 1));
+            setTourStep(prev => Math.min(prev + 1, stepsForRender.length - 1));
           }}
+          onClose={async () => {
+            setTourOpen(false);
+            if (userId && !tourSeen.done) {
+              try {
+                await setDoc(userDocRef(userId), { tourDone: true }, { merge: true });
+                setTourSeen({ done: true, loading: false });
+              } catch (err) {
+                console.error('[LobbyPage] Failed to mark tour as done', err);
+              }
+            }
+          }}
+          nextEnabled={tourStep === 0 ? (tourPhase === 'A' ? moreClicked : (sweepstakesClicked || sportSelectorView === 'sweepstakes')) : true}
           onNextBlocked={() => {
-            // flash the relevant button
             const sel = tourPhase === 'A' ? '[data-tour-allow="more"]' : '[data-tour-allow="sweepstakes"]';
-            const btn = document.querySelector(sel) as HTMLElement | null;
-            if (btn) {
-              btn.classList.add('ring-2','ring-accent-2','ring-offset-2');
-              setTimeout(() => btn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 400);
-              setTimeout(() => { btn.classList.add('ring-2','ring-accent-2','ring-offset-2'); setTimeout(() => btn.classList.remove('ring-2','ring-accent-2','ring-offset-2'), 400); }, 650);
+            const el = document.querySelector(sel) as HTMLElement | null;
+            if (el) {
+              el.classList.add('animate-pulse');
+              setTimeout(() => el.classList.remove('animate-pulse'), 1000);
             }
           }}
           allowClickSelectors={['[data-tour-allow="more"]','[data-tour-allow="sweepstakes"]']}
-          onClose={() => setTourOpen(false)}
           hasWallet={!!hasWallet}
-          onShowWallet={() => setIsWalletSetupDialogOpen(true)}
-          onSweepstakesAgreement={setAgreeToSweepstakes}
+          onShowWallet={() => {
+            openWalletDialog('setup');
+          }}
+          onSweepstakesAgreement={(agreed) => setAgreeToSweepstakes(agreed)}
         />
       )}
       {/* Login Dialog */}

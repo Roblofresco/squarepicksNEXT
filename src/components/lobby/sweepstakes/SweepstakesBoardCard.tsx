@@ -14,7 +14,7 @@ import { toast } from 'react-hot-toast';
 interface EntryInteractionState {
   boardId: string | null;
   stage: 'idle' | 'selecting' | 'confirming';
-  selectedNumber: number | string | null;
+  selectedNumber: number | null;
 }
 
 interface SweepstakesBoardCardProps {
@@ -45,7 +45,7 @@ interface SweepstakesMiniGridThemeProps {
 }
 
 interface SweepstakesMiniGridProps {
-  highlightedNumber?: number | string;
+  highlightedNumber?: number | null;
   allTakenSet?: Set<number>;
   takenByUserSet?: Set<number>;
   theme?: SweepstakesMiniGridThemeProps;
@@ -91,7 +91,10 @@ const SweepstakesMiniGrid = memo(({
   } = currentTheme;
 
   const squares = Array.from({ length: 100 }, (_, i) => i);
-  const highlightedSq = highlightedNumber !== undefined && highlightedNumber !== '' ? parseInt(String(highlightedNumber), 10) : null;
+  const highlightedSq =
+    typeof highlightedNumber === 'number' && Number.isFinite(highlightedNumber)
+      ? highlightedNumber
+      : null;
 
   const lineThicknessPadding = 'p-[6px]';
   const lineThicknessGap = 'gap-[6px]';

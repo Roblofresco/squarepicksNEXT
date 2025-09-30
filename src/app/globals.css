@@ -318,11 +318,9 @@ body.no-scroll {
 }
 
 @keyframes tourPulseGlow {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(184,134,11,0); }
-  20% { transform: scale(1.06); box-shadow: 0 0 28px 9px rgba(184,134,11,0.75); }
-  45% { transform: scale(1); box-shadow: 0 0 0 0 rgba(184,134,11,0); }
-  65% { transform: scale(1.06); box-shadow: 0 0 28px 9px rgba(184,134,11,0.75); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(184,134,11,0); }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(184,134,11,0.0); }
+  45% { transform: scale(1.04); box-shadow: 0 0 20px 6px rgba(184,134,11,0.55); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(184,134,11,0.0); }
 }
 
 @keyframes tourHintFloat {
@@ -333,9 +331,23 @@ body.no-scroll {
 
 .tour-flash-strong {
   position: relative;
-  animation: tourPulseGlow 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0s 1 forwards;
+  animation: tourPulseGlow 1.4s ease-in-out infinite;
   border-color: rgba(255,255,255,0.9) !important;
   z-index: 10;
+}
+
+.tour-flash-subtle {
+  position: relative;
+  animation: tourPulseGlow 4s ease-in-out infinite;
+  animation-delay: 0.4s;
+  border-color: rgba(255,255,255,0.5) !important;
+}
+
+.tour-flash-twice {
+  position: relative;
+  animation: tourPulseGlow 1.2s ease-in-out 2;
+  border-color: rgba(255,255,255,0.95) !important;
+  z-index: 12;
 }
 
 [data-tour-allow].tour-flash-strong[data-tour-label]:not([data-tour-label=""])::after {

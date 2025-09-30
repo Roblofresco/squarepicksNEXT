@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -26,6 +26,11 @@ type Step = {
   holePadding?: number;
   popoverOffsetY?: number;
 };
+
+interface OverlayTourState {
+  done: boolean;
+  loading: boolean;
+}
 
 interface TourOverlayProps {
   steps: Step[];
@@ -54,6 +59,9 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const router = useRouter();
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
   const [showHomePrompt, setShowHomePrompt] = useState(false);
+  const [tourSeen, setTourSeen] = useState<OverlayTourState>({ done: false, loading: true });
+  const [tourAutoTriggered, setTourAutoTriggered] = useState(false);
+  const [tourPhase, setTourPhase] = useState<'A' | 'B'>('A');
 
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
@@ -228,9 +236,22 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
   const highlightRefs = useRef<HTMLElement[]>([]);
 
+  const triggerFlash = useCallback(() => {
+    const targetSelector = tourPhase === 'A' ? '[data-tour-allow="more"]' : '[data-tour-allow="sweepstakes"]';
+    const els = Array.from(document.querySelectorAll<HTMLElement>(targetSelector));
+    els.forEach((el) => {
+      el.classList.remove('tour-flash-twice');
+      void el.offsetWidth; // force reflow to restart animation
+      el.classList.add('tour-flash-twice');
+      setTimeout(() => {
+        el.classList.remove('tour-flash-twice');
+      }, 1300);
+    });
+  }, [tourPhase]);
+
   useEffect(() => {
     highlightRefs.current.forEach((el) => {
-      el.classList.remove('tour-flash-strong');
+      el.classList.remove('tour-flash-strong', 'tour-flash-subtle', 'tour-flash-twice');
       if (el.dataset.tourLabel) {
         delete el.dataset.tourLabel;
       }
@@ -241,7 +262,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     highlightSelectors.forEach(({ selector, label }) => {
       const matches = Array.from(document.querySelectorAll<HTMLElement>(selector));
       matches.forEach((el) => {
-        el.classList.add('tour-flash-strong');
+        el.classList.add('tour-flash-subtle');
         if (label) {
           el.dataset.tourLabel = label;
         } else if (!el.dataset.tourLabel) {
@@ -252,7 +273,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     });
     return () => {
       highlightRefs.current.forEach((el) => {
-        el.classList.remove('tour-flash-strong');
+        el.classList.remove('tour-flash-strong', 'tour-flash-subtle', 'tour-flash-twice');
         if (el.dataset.tourLabel !== undefined) {
           delete el.dataset.tourLabel;
         }

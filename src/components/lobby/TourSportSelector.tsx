@@ -71,7 +71,7 @@ const TourSportSelector = memo(function TourSportSelector({
                   bg-gradient-to-b from-background-primary via-[#B8860B]/50 via-[12%] to-[#B8860B] 
                   shadow-[0_0_15px_0px_rgba(184,134,11,0.5)] 
                   hover:brightness-110 hover:shadow-[0_0_20px_2px_rgba(184,134,11,0.7)] hover:border-white
-                `)}
+                `, 'tour-flash-subtle')}
                 data-tour-allow="sweepstakes"
               >
                 <div className="relative z-10 flex flex-col items-center justify-center space-y-0.5">
@@ -94,7 +94,8 @@ const TourSportSelector = memo(function TourSportSelector({
                   flex-grow basis-1/4 
                 `, 
                   'border-accent-2 bg-gradient-to-b from-background-primary to-[#220248] shadow-[0_4px_12px_-4px_rgba(99,102,241,0.5)] backdrop-blur-sm',
-                  'hover:brightness-125 hover:shadow-[0_6px_15px_-3px_rgba(99,102,241,0.6)] hover:border-white'
+                  'hover:brightness-125 hover:shadow-[0_6px_15px_-3px_rgba(99,102,241,0.6)] hover:border-white',
+                  'tour-flash-subtle'
                 )}
                 data-tour-allow="more"
               >
@@ -121,7 +122,7 @@ const TourSportSelector = memo(function TourSportSelector({
                   flex-grow flex-basis-0
                   border-gray-600 bg-gradient-to-b from-gray-700 to-gray-800 text-gray-300
                   hover:shadow-[0_0_15px_0px_rgba(184,134,11,0.5)] hover:border-[#F0E68C] hover:text-[#F0E68C] hover:bg-gradient-to-b hover:from-[#B8860B]/40 hover:to-[#B8860B]/90
-                `)}
+                `, 'tour-flash-subtle')}
                 data-tour-allow="sweepstakes"
               >
                 <div className="relative z-10 flex flex-col items-center justify-center">

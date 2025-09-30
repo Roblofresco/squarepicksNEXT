@@ -1035,18 +1035,18 @@ function LobbyContent() {
           </DialogHeader>
           <div className="flex flex-col sm:flex-row gap-3 mt-6">
             <Button
-        onClick={() => { setIsWalletSetupDialogOpen(false); router.push('/wallet-setup/location'); }}
-              className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90 py-6 text-lg"
-      >
-        {setupDialogContent.buttonText}
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => setIsWalletSetupDialogOpen(false)}
-              className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
+              type="button"
+              variant="outline"
+              onClick={() => setIsWalletSetupDialogOpen(false)}
+              className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white py-6 text-lg"
             >
               Cancel
+            </Button>
+            <Button
+              onClick={() => { setIsWalletSetupDialogOpen(false); router.push('/wallet-setup/location'); }}
+              className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90 py-6 text-lg"
+            >
+              {setupDialogContent.buttonText}
             </Button>
           </div>
         </DialogContent>

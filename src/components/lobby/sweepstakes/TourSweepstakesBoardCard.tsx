@@ -1,12 +1,9 @@
 'use client'
 
 import React, { useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-const StarfieldBackground = dynamic(() => import('@/components/effects/StarfieldBackground'), { ssr: false });
 
 type TourSweepstakesBoardCardProps = {
   tourStepId?: string;
@@ -20,8 +17,6 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
   const highlighted = highlightedSquare ?? 37;
 
   const squares = useMemo(() => Array.from({ length: 100 }, (_, i) => i), []);
-  const router = useRouter();
-
   const currentStage = typeof tourStepId === 'string' ? tourStepId : undefined;
   const isStage = (stage: string) => currentStage === stage;
   const isStageAfter = (stage: string) => {
@@ -128,6 +123,8 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
             <div className={cn('grid grid-cols-10 aspect-square w-full rounded-md p-[6px] gap-[6px] bg-black/10')}>
               {squares.map((sq) => {
                 const isSelected = sq === highlighted;
+                const selectedClasses = 'bg-gradient-to-br from-[#B8860B] to-[#A0740A] text-white text-sm sm:text-base font-semibold shadow-[0_0_12px_2px_rgba(184,134,11,0.55)]';
+                const baseClasses = 'bg-gradient-to-br from-black/10 to-black/20 text-[#B8860B] text-[9px] sm:text-[10px]';
                 return (
                   <div
                     key={sq}
@@ -135,9 +132,7 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
                     className={cn(
                       'aspect-square flex items-center justify-center font-mono transition-all duration-150 ease-in-out',
                       'border border-black/20 rounded-sm',
-                      isSelected
-                        ? 'bg-gradient-to-br from-black/10 to-yellow-700/20 text-[#B8860B] text-sm sm:text-base shadow-[0_0_12px_2px_rgba(184,134,11,0.7)]'
-                        : 'bg-gradient-to-br from-black/10 to-black/20 text-[#B8860B] text-[9px] sm:text-[10px]'
+                      isResponseOrLater && isSelected ? selectedClasses : baseClasses
                     )}
                   >
                     {String(sq).padStart(2, '0')}

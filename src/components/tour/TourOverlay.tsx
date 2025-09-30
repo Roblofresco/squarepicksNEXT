@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -26,11 +25,6 @@ type Step = {
   holePadding?: number;
   popoverOffsetY?: number;
 };
-
-interface OverlayTourState {
-  done: boolean;
-  loading: boolean;
-}
 
 interface TourOverlayProps {
   steps: Step[];
@@ -56,11 +50,8 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const popRef = useRef<HTMLDivElement | null>(null);
   const descriptionLines = useMemo(() => (step?.description ? step.description.split(/\n+/) : []), [step]);
   const [reflowTick, setReflowTick] = useState(0);
-  const router = useRouter();
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
   const [showHomePrompt, setShowHomePrompt] = useState(false);
-  const [tourSeen, setTourSeen] = useState<OverlayTourState>({ done: false, loading: true });
-  const [tourAutoTriggered, setTourAutoTriggered] = useState(false);
 
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
@@ -233,62 +224,22 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     };
   }, [open, finalOverlayOpen, allowClickSelectors]);
 
-  const highlightRefs = useRef<HTMLElement[]>([]);
-
-  const selectorHints = useMemo(() => {
-    if (step?.id !== 'selector') return [];
-    if (tourPhase === 'A') {
-      return [{ selector: '[data-tour-allow="more"]', label: 'Tap More to explore sports' }];
-    }
-    return [{ selector: '[data-tour-allow="sweepstakes"]', label: 'Tap Sweepstakes to return' }];
-  }, [step?.id, tourPhase]);
-
-  const triggerFlash = useCallback(() => {
-    const targets = highlightRefs.current.length ? highlightRefs.current : [];
+  const flashActiveTab = useCallback(() => {
+    if (step?.id !== 'selector') return;
+    const selector = tourPhase === 'A' ? '[data-tour-allow="more"]' : '[data-tour-allow="sweepstakes"]';
+    const className = tourPhase === 'A' ? 'tour-hover-flash-more' : 'tour-hover-flash-sweepstakes';
+    const targets = Array.from(document.querySelectorAll<HTMLElement>(selector));
     targets.forEach((el) => {
-      el.classList.remove('tour-flash-twice');
-      void el.offsetWidth; // force reflow to restart animation
-      el.classList.add('tour-flash-twice');
-      setTimeout(() => {
-        el.classList.remove('tour-flash-twice');
-        el.classList.add('tour-flash-subtle');
-      }, 1300);
+      const applyOnce = () => {
+        el.classList.add(className);
+        setTimeout(() => {
+          el.classList.remove(className);
+        }, 160);
+      };
+      applyOnce();
+      setTimeout(applyOnce, 220);
     });
-  }, []);
-
-  useEffect(() => {
-    highlightRefs.current.forEach((el) => {
-      el.classList.remove('tour-flash-strong', 'tour-flash-subtle', 'tour-flash-twice');
-      if (el.dataset.tourLabel) {
-        delete el.dataset.tourLabel;
-      }
-    });
-    highlightRefs.current = [];
-    if (!open) return;
-    const entries = selectorHints;
-    if (!entries.length) return;
-    entries.forEach(({ selector, label }) => {
-      const matches = Array.from(document.querySelectorAll<HTMLElement>(selector));
-      matches.forEach((el) => {
-        el.classList.add('tour-flash-subtle');
-        if (label) {
-          el.dataset.tourLabel = label;
-        } else if (!el.dataset.tourLabel) {
-          el.dataset.tourLabel = '';
-        }
-        highlightRefs.current.push(el);
-      });
-    });
-    return () => {
-      highlightRefs.current.forEach((el) => {
-        el.classList.remove('tour-flash-strong', 'tour-flash-subtle', 'tour-flash-twice');
-        if (el.dataset.tourLabel !== undefined) {
-          delete el.dataset.tourLabel;
-        }
-      });
-      highlightRefs.current = [];
-    };
-  }, [open, selectorHints, stepIndex]);
+  }, [step?.id, tourPhase]);
 
   if (!open || !container) return null;
 
@@ -386,7 +337,14 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
             }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
           ) : (
             <button
-              onClick={() => (nextEnabled ? onNext() : (onNextBlocked && onNextBlocked()))}
+              onClick={() => {
+                if (nextEnabled) {
+                  onNext();
+                } else {
+                  if (onNextBlocked) onNextBlocked();
+                  flashActiveTab();
+                }
+              }}
               className={`px-3 py-1 rounded ${nextEnabled ? 'bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]' : 'bg-white/10 text-white/50 cursor-not-allowed'}`}
             >
               Next

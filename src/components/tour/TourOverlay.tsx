@@ -245,6 +245,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       el.classList.add('tour-flash-twice');
       setTimeout(() => {
         el.classList.remove('tour-flash-twice');
+        el.classList.add('tour-flash-subtle');
       }, 1300);
     });
   }, [tourPhase]);

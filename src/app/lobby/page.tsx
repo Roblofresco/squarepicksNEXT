@@ -983,6 +983,16 @@ function LobbyContent() {
           }}
           onSweepstakesAgreement={(agreed) => setAgreeToSweepstakes(agreed)}
           tourPhase={tourPhase}
+          agreeToSweepstakes={agreeToSweepstakes}
+          onMarkTourDone={async () => {
+            if (!userId) return;
+            try {
+              await setDoc(userDocRef(userId), { tourDone: true }, { merge: true });
+              setTourSeen({ done: true, loading: false });
+            } catch (err) {
+              console.error('[LobbyPage] Failed to mark tour as done', err);
+            }
+          }}
         />
       )}
       {/* Login Dialog */}

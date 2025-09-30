@@ -40,9 +40,11 @@ interface TourOverlayProps {
   onShowWallet?: () => void;
   onSweepstakesAgreement?: (agreed: boolean) => void;
   tourPhase?: 'A' | 'B';
+  agreeToSweepstakes?: boolean | null;
+  onMarkTourDone?: () => Promise<void> | void;
 }
 
-export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet, onShowWallet, onSweepstakesAgreement, tourPhase = 'A' }: TourOverlayProps) {
+export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet, onShowWallet, onSweepstakesAgreement, tourPhase = 'A', agreeToSweepstakes, onMarkTourDone }: TourOverlayProps) {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = steps[stepIndex];
@@ -74,7 +76,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const handleHomePromptContinue = () => {
     setShowHomePrompt(false);
     closeFinalOverlay(true);
-    if (!hasWallet) {
+    if (agreeToSweepstakes && !hasWallet) {
       onShowWallet?.();
     }
   };
@@ -331,10 +333,31 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         </div>
         <div className="flex justify-end gap-2 mt-3">
           {stepIndex === steps.length - 1 ? (
-            <button onClick={() => {
-              setFinalOverlayOpen(true);
-              setShowHomePrompt(false);
-            }} className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]">Next</button>
+            <button
+              onClick={async () => {
+                try {
+                  if (onMarkTourDone) {
+                    await onMarkTourDone();
+                  }
+                } catch (err) {
+                  console.error('[TourOverlay] Failed to mark tour done', err);
+                }
+
+                if (!agreeToSweepstakes) {
+                  setFinalOverlayOpen(true);
+                  setShowHomePrompt(false);
+                  return;
+                }
+
+                if (!hasWallet) {
+                  onShowWallet?.();
+                }
+                closeFinalOverlay(true);
+              }}
+              className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]"
+            >
+              Done
+            </button>
           ) : (
             <button
               onClick={() => {

@@ -45,10 +45,10 @@ interface TourOverlayProps {
   hasWallet: boolean;
   onShowWallet?: () => void;
   onSweepstakesAgreement?: (agreed: boolean) => void;
-  highlightSelectors?: { selector: string; label?: string }[];
+  tourPhase?: 'A' | 'B';
 }
 
-export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet, onShowWallet, onSweepstakesAgreement, highlightSelectors = [] }: TourOverlayProps) {
+export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet, onShowWallet, onSweepstakesAgreement, tourPhase = 'A' }: TourOverlayProps) {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = steps[stepIndex];
@@ -61,7 +61,6 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const [showHomePrompt, setShowHomePrompt] = useState(false);
   const [tourSeen, setTourSeen] = useState<OverlayTourState>({ done: false, loading: true });
   const [tourAutoTriggered, setTourAutoTriggered] = useState(false);
-  const [tourPhase, setTourPhase] = useState<'A' | 'B'>('A');
 
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
@@ -236,10 +235,17 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
   const highlightRefs = useRef<HTMLElement[]>([]);
 
+  const selectorHints = useMemo(() => {
+    if (step?.id !== 'selector') return [];
+    if (tourPhase === 'A') {
+      return [{ selector: '[data-tour-allow="more"]', label: 'Tap More to explore sports' }];
+    }
+    return [{ selector: '[data-tour-allow="sweepstakes"]', label: 'Tap Sweepstakes to return' }];
+  }, [step?.id, tourPhase]);
+
   const triggerFlash = useCallback(() => {
-    const targetSelector = tourPhase === 'A' ? '[data-tour-allow="more"]' : '[data-tour-allow="sweepstakes"]';
-    const els = Array.from(document.querySelectorAll<HTMLElement>(targetSelector));
-    els.forEach((el) => {
+    const targets = highlightRefs.current.length ? highlightRefs.current : [];
+    targets.forEach((el) => {
       el.classList.remove('tour-flash-twice');
       void el.offsetWidth; // force reflow to restart animation
       el.classList.add('tour-flash-twice');
@@ -248,7 +254,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         el.classList.add('tour-flash-subtle');
       }, 1300);
     });
-  }, [tourPhase]);
+  }, []);
 
   useEffect(() => {
     highlightRefs.current.forEach((el) => {
@@ -259,8 +265,9 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     });
     highlightRefs.current = [];
     if (!open) return;
-    if (!highlightSelectors.length) return;
-    highlightSelectors.forEach(({ selector, label }) => {
+    const entries = selectorHints;
+    if (!entries.length) return;
+    entries.forEach(({ selector, label }) => {
       const matches = Array.from(document.querySelectorAll<HTMLElement>(selector));
       matches.forEach((el) => {
         el.classList.add('tour-flash-subtle');
@@ -281,7 +288,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       });
       highlightRefs.current = [];
     };
-  }, [open, highlightSelectors, stepIndex]);
+  }, [open, selectorHints, stepIndex]);
 
   if (!open || !container) return null;
 

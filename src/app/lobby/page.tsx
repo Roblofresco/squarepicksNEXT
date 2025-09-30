@@ -982,15 +982,7 @@ function LobbyContent() {
             openWalletDialog('setup');
           }}
           onSweepstakesAgreement={(agreed) => setAgreeToSweepstakes(agreed)}
-          highlightSelectors={
-            tourStep === 0
-              ? [
-                  tourPhase === 'A'
-                    ? { selector: '[data-tour-allow="more"]', label: 'Tap More to see sports' }
-                    : { selector: '[data-tour-allow="sweepstakes"]', label: 'Return to Sweepstakes' }
-                ]
-              : []
-          }
+          tourPhase={tourPhase}
         />
       )}
       {/* Login Dialog */}

@@ -42,9 +42,11 @@ interface TourOverlayProps {
   tourPhase?: 'A' | 'B';
   agreeToSweepstakes?: boolean | null;
   onMarkTourDone?: () => Promise<void> | void;
+  enableGuidelinesFlow?: boolean;
+  onFinalComplete?: () => Promise<void> | void;
 }
 
-export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet, onShowWallet, onSweepstakesAgreement, tourPhase = 'A', agreeToSweepstakes, onMarkTourDone }: TourOverlayProps) {
+export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, nextEnabled = true, onNextBlocked, allowClickSelectors = [], hasWallet, onShowWallet, onSweepstakesAgreement, tourPhase = 'A', agreeToSweepstakes, onMarkTourDone, enableGuidelinesFlow = true, onFinalComplete }: TourOverlayProps) {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = steps[stepIndex];
@@ -76,7 +78,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const handleHomePromptContinue = () => {
     setShowHomePrompt(false);
     closeFinalOverlay(true);
-    if (agreeToSweepstakes && !hasWallet) {
+    if ((agreeToSweepstakes ?? true) && !hasWallet) {
       onShowWallet?.();
     }
   };
@@ -343,15 +345,25 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
                   console.error('[TourOverlay] Failed to mark tour done', err);
                 }
 
-                if (!agreeToSweepstakes) {
+                if (enableGuidelinesFlow && !agreeToSweepstakes) {
                   setFinalOverlayOpen(true);
                   setShowHomePrompt(false);
                   return;
                 }
 
-                if (!hasWallet) {
+                if ((agreeToSweepstakes ?? true) && !hasWallet) {
                   onShowWallet?.();
+                  if (enableGuidelinesFlow) return;
                 }
+
+                if (onFinalComplete) {
+                  try {
+                    await onFinalComplete();
+                  } catch (err) {
+                    console.error('[TourOverlay] onFinalComplete failed', err);
+                  }
+                }
+
                 closeFinalOverlay(true);
               }}
               className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]"

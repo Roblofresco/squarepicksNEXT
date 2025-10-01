@@ -977,7 +977,15 @@ function LobbyContent() {
           onShowWallet={() => {
             openWalletDialog('setup');
           }}
-          onSweepstakesAgreement={(agreed) => setAgreeToSweepstakes(agreed)}
+          onSweepstakesAgreement={async (agreed) => {
+            setAgreeToSweepstakes(agreed);
+            if (!userId) return;
+            try {
+              await setDoc(userDocRef(userId), { agreeToSweepstakes: agreed }, { merge: true });
+            } catch (err) {
+              console.error('[LobbyPage] Failed to persist sweepstakes agreement', err);
+            }
+          }}
           tourPhase={tourPhase}
           agreeToSweepstakes={agreeToSweepstakes}
           onMarkTourDone={async () => {

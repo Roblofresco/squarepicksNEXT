@@ -36,6 +36,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import TourOverlay from '@/components/tour/TourOverlay';
 import { AlertCircle } from 'lucide-react';
+import { useWallet } from '@/hooks/useWallet';
 
 // Import StarfieldBackground dynamically to prevent SSR issues
 import dynamic from 'next/dynamic';
@@ -513,7 +514,7 @@ function LobbyContent() {
             setEntryInteraction(prev => ({
                  ...prev, 
                  boardId: boardId,
-                 selectedNumber: value,
+                 selectedNumber: typeof value === 'number' ? value : (typeof value === 'string' && value.trim() !== '' ? Number(value) : null),
                  stage: 'selecting'
             }));
             break;
@@ -596,7 +597,7 @@ function LobbyContent() {
         anchor: '[data-tour="sports-game-card"]',
         title: 'Scope the Matchup',
         description: 'Check the teams, records, and kickoff.\nTap the card to open the board.',
-        side: 'bottom',
+        side: 'bottom' as const,
         holePadding: 12,
         popoverOffsetY: 10
       },
@@ -605,7 +606,7 @@ function LobbyContent() {
         anchor: '[data-tour="sports-board-card"]',
         title: 'Preview the Grid',
         description: 'See what numbers are taken and where your pick will appear.',
-        side: 'bottom',
+        side: 'bottom' as const,
         holePadding: 18,
         popoverOffsetY: 14
       },
@@ -614,7 +615,7 @@ function LobbyContent() {
         anchor: '[data-tour="sports-quick-entry"]',
         title: 'Enter Quickly',
         description: 'Use quick entry to type a number, roll random, and confirm your entry.',
-        side: 'bottom',
+        side: 'bottom' as const,
         holePadding: 14,
         popoverOffsetY: 16
       }

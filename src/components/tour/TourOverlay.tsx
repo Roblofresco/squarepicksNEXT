@@ -234,14 +234,13 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     const className = tourPhase === 'A' ? 'tour-hover-flash-more' : 'tour-hover-flash-sweepstakes';
     const targets = Array.from(document.querySelectorAll<HTMLElement>(selector));
     targets.forEach((el) => {
-      const applyOnce = () => {
-        el.classList.add(className);
+      el.classList.remove('tour-hover-flash-more', 'tour-hover-flash-sweepstakes', 'tour-flash-twice');
+      requestAnimationFrame(() => {
+        el.classList.add(className, 'tour-flash-twice');
         setTimeout(() => {
           el.classList.remove(className);
-        }, 160);
-      };
-      applyOnce();
-      setTimeout(applyOnce, 220);
+        }, 650);
+      });
     });
   }, [step?.id, tourPhase]);
 

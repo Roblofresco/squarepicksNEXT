@@ -257,7 +257,10 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
         return;
       }
 
-      const shouldAllow = Array.from(allowed).some((allowedNode) => allowedNode === node || allowedNode.contains(node));
+      const shouldAllow = Array.from(allowed).some((allowedNode) => {
+        if (!allowedNode) return false;
+        return allowedNode === node || allowedNode.contains(node) || node.contains(allowedNode);
+      });
       if (shouldAllow) {
         Array.from(node.children).forEach((child) => {
           if (child instanceof HTMLElement) processTree(child);
@@ -280,13 +283,11 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
   useEffect(() => {
     const restoreFocus = () => {
-      suppressedFocusRef.current.forEach(({ el, tabIndex, ariaHidden, inert }) => {
+      suppressedFocusRef.current.forEach(({ el, tabIndex, ariaHidden }) => {
         if (tabIndex === null) el.removeAttribute('tabindex');
         else el.setAttribute('tabindex', tabIndex);
         if (ariaHidden === null) el.removeAttribute('aria-hidden');
         else el.setAttribute('aria-hidden', ariaHidden);
-        if (!inert) el.removeAttribute('inert');
-        else el.setAttribute('inert', '');
       });
       suppressedFocusRef.current = [];
     };
@@ -305,8 +306,19 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     if (step?.anchor) allowedSelectors.add(step.anchor);
     if (step?.arrowTarget) allowedSelectors.add(step.arrowTarget);
 
+    suppressedFocusRef.current = suppressedFocusRef.current.filter(({ el }) => {
+      if (!el.parentElement) {
+        if (!suppressedFocusRef.current.length) return false;
+      }
+      const shouldKeep = !(el.matches('[data-tour-allow]') || el.closest('[data-tour-allow]'));
+      if (!shouldKeep) {
+        if (el.hasAttribute('tabindex')) el.removeAttribute('tabindex');
+        if (el.hasAttribute('aria-hidden')) el.removeAttribute('aria-hidden');
+      }
+      return shouldKeep;
+    });
+
     const focusables = Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS));
-    const suppressed: Array<{ el: HTMLElement; tabIndex: string | null; ariaHidden: string | null; inert: boolean }> = [];
 
     focusables.forEach((el) => {
       if (popRef.current && popRef.current.contains(el)) return;
@@ -315,35 +327,17 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
       const existingTabIndex = el.getAttribute('tabindex');
       const existingAriaHidden = el.getAttribute('aria-hidden');
-      const alreadyInert = el.hasAttribute('inert');
-      suppressed.push({ el, tabIndex: existingTabIndex, ariaHidden: existingAriaHidden, inert: alreadyInert });
+      suppressedFocusRef.current.push({ el, tabIndex: existingTabIndex, ariaHidden: existingAriaHidden });
       el.setAttribute('tabindex', '-1');
       el.setAttribute('aria-hidden', 'true');
-      if (!alreadyInert) {
-        el.setAttribute('inert', '');
-      }
     });
-
-    suppressedFocusRef.current = suppressed;
 
     return restoreFocus;
   }, [open, step, stepIndex, allowClickSelectors]);
 
   useEffect(() => {
-    const portalEl = document.querySelector('[data-tour-portal="true"]') as HTMLElement | null;
-    if (!open || finalOverlayOpen) {
-      if (portalEl && portalEl.hasAttribute('inert')) {
-        portalEl.removeAttribute('inert');
-      }
-      return;
-    }
-
-    if (portalEl && !portalEl.hasAttribute('inert')) {
-      portalEl.setAttribute('inert', '');
-    }
-
     const pop = popRef.current;
-    if (!pop) return;
+    if (!pop || !open || finalOverlayOpen) return;
 
     const focusables = Array.from(pop.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)).filter((el) => !el.hasAttribute('disabled'));
     const firstFocusable = focusables[0] ?? pop;
@@ -387,9 +381,6 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       const previous = previousFocusRef.current;
       if (previous && typeof previous.focus === 'function') {
         previous.focus({ preventScroll: true } as FocusOptions);
-      }
-      if (portalEl && open && portalEl.hasAttribute('inert')) {
-        portalEl.removeAttribute('inert');
       }
     };
   }, [open, stepIndex, finalOverlayOpen]);

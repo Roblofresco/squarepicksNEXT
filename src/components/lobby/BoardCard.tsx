@@ -19,7 +19,7 @@ import QuickEntrySelector from './QuickEntrySelector';
 interface EntryInteractionState {
   boardId: string | null;
   stage: 'idle' | 'selecting' | 'confirming';
-  selectedNumber: number | string | null;
+  selectedNumber: number | null;
 }
 
 interface BoardCardProps {

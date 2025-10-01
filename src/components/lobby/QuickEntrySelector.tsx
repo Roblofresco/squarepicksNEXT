@@ -17,7 +17,7 @@ interface QuickEntrySelectorProps {
   entryFee: number;
   isActiveCard: boolean;
   stage: 'idle' | 'selecting' | 'confirming'; // Use the specific stages
-  selectedNumber: number | string | null;
+  selectedNumber: number | null;
   handleBoardAction: (action: string, boardId: string, value?: any) => void;
   boardId: string;
   user: FirebaseUser | null;

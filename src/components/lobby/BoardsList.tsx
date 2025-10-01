@@ -12,7 +12,7 @@ import BoardCard from './BoardCard';
 interface EntryInteractionState {
   boardId: string | null;
   stage: 'idle' | 'selecting' | 'confirming';
-  selectedNumber: number | string | null;
+  selectedNumber: number | null;
 }
 
 // Updated BoardsListProps

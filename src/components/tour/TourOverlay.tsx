@@ -58,7 +58,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const [reflowTick, setReflowTick] = useState(0);
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
   const [showHomePrompt, setShowHomePrompt] = useState(false);
-  const suppressedFocusRef = useRef<Array<{ el: HTMLElement; tabIndex: string | null; ariaHidden: string | null; inert: boolean }>>([]);
+  const suppressedFocusRef = useRef<Array<{ el: HTMLElement; tabIndex: string | null; ariaHidden: string | null }>>([]);
   const bypassElementsRef = useRef<HTMLElement[]>([]);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const inertElementsRef = useRef<Array<{ el: HTMLElement; alreadyInert: boolean }>>([]);

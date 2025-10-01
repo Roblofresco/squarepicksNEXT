@@ -116,7 +116,6 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
       }
     }
     if (sportId === 'sweepstakes') {
-      try { window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'sweepstakes' } })); } catch {}
       onSelectSport('sweepstakes');
       return;
     }
@@ -133,15 +132,14 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
 
   // Function to handle clicking the "More" button
   const handleShowMore = () => {
+    // NEW: Set the view to allRegularSports
     setSportSelectorView('allRegularSports');
-    try { window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'more' } })); } catch {}
     // DO NOT automatically select a sport here anymore.
     // Let the user choose from the new view.
   };
 
   const handleShowSweepstakes = () => {
     setSportSelectorView('sweepstakes');
-    try { window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'sweepstakes' } })); } catch {}
     onSelectSport('sweepstakes'); // Also select sweepstakes when going back
   };
 
@@ -174,7 +172,7 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
   };
 
   return (
-    <div className="mb-2 w-full min-h-[64px]" data-tour="sport-selector" data-tour-selector="restricted">
+    <div className="mb-2 w-full min-h-[64px]" data-tour="sport-selector-restricted">
       <div className="w-full"> 
         <AnimatePresence mode="wait" initial={false}>
           {sportSelectorView === 'sweepstakes' ? (
@@ -199,7 +197,6 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                   shadow-[0_0_15px_0px_rgba(184,134,11,0.5)] 
                   hover:brightness-110 hover:shadow-[0_0_20px_2px_rgba(184,134,11,0.7)] hover:border-white
                 `)}
-                data-tour-allow="sweepstakes"
               >
                 {/* Add style for gold text shadow */}
                 <style jsx>{`

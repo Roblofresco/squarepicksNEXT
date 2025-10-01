@@ -26,9 +26,6 @@ import SweepstakesScoreboard from '@/components/lobby/sweepstakes/SweepstakesSco
 // StarfieldBackground now imported dynamically above
 import SweepstakesBoardCard from '@/components/lobby/sweepstakes/SweepstakesBoardCard';
 import TourSweepstakesBoardCard from '@/components/lobby/sweepstakes/TourSweepstakesBoardCard';
-import TourGameCard from '@/components/lobby/TourGameCard';
-import TourBoardCard from '@/components/lobby/TourBoardCard';
-import TourQuickEntrySelector from '@/components/lobby/TourQuickEntrySelector';
 import {
   collection, query, where, onSnapshot, doc, getDoc,
   Timestamp, DocumentReference, DocumentData, orderBy, limit, setDoc,
@@ -512,9 +509,9 @@ function LobbyContent() {
             break;
         case 'SET_NUMBER':
             setEntryInteraction(prev => ({
-                 ...prev, 
+                 ...prev,
                  boardId: boardId,
-                 selectedNumber: typeof value === 'number' ? value : (typeof value === 'string' && value.trim() !== '' ? Number(value) : null),
+                 selectedNumber: typeof value === 'number' ? value : value !== undefined && value !== null ? Number(value) : null,
                  stage: 'selecting'
             }));
             break;
@@ -567,10 +564,6 @@ function LobbyContent() {
   const [tourPhase, setTourPhase] = useState<'A' | 'B'>('A');
   const [sweepstakesTourSeen, setSweepstakesTourSeen] = useState<UserTourState>({ done: false, loading: true });
   const [sweepstakesTourAutoTriggered, setSweepstakesTourAutoTriggered] = useState(false);
-  const [sportsTourOpen, setSportsTourOpen] = useState(false);
-  const [sportsTourStep, setSportsTourStep] = useState(0);
-  const [sportsTourSeen, setSportsTourSeen] = useState<UserTourState>({ done: false, loading: true });
-  const [sportsTourAutoTriggered, setSportsTourAutoTriggered] = useState(false);
   type LobbyTourStep = {
     id: string;
     anchor: string;
@@ -590,37 +583,6 @@ function LobbyContent() {
     { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
     { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 }
   ]), []);
-  const sportsTourSteps = useMemo(() => (
-    [
-      {
-        id: 'game-card',
-        anchor: '[data-tour="sports-game-card"]',
-        title: 'Scope the Matchup',
-        description: 'Check the teams, records, and kickoff.\nTap the card to open the board.',
-        side: 'bottom' as const,
-        holePadding: 12,
-        popoverOffsetY: 10
-      },
-      {
-        id: 'board-card',
-        anchor: '[data-tour="sports-board-card"]',
-        title: 'Preview the Grid',
-        description: 'See what numbers are taken and where your pick will appear.',
-        side: 'bottom' as const,
-        holePadding: 18,
-        popoverOffsetY: 14
-      },
-      {
-        id: 'quick-entry',
-        anchor: '[data-tour="sports-quick-entry"]',
-        title: 'Enter Quickly',
-        description: 'Use quick entry to type a number, roll random, and confirm your entry.',
-        side: 'bottom' as const,
-        holePadding: 14,
-        popoverOffsetY: 16
-      }
-    ]
-  ), []);
   const [moreClicked, setMoreClicked] = useState(false);
   const [sweepstakesClicked, setSweepstakesClicked] = useState(false);
   const stepsForRender = useMemo(() => {
@@ -663,19 +625,13 @@ function LobbyContent() {
       try {
         const ref = userDocRef(userId);
         const snap = await getDoc(ref);
-        const data = snap.data() || {};
-        const sweepDone = !!data.sweepstakesTourDone;
-        const sportsDone = !!data.sportsTourDone;
+        const done = !!snap.data()?.sweepstakesTourDone;
         if (active) {
-          setSweepstakesTourSeen({ done: sweepDone, loading: false });
-          setSportsTourSeen({ done: sportsDone, loading: false });
+          setSweepstakesTourSeen({ done, loading: false });
         }
       } catch (err) {
-        console.error('[LobbyPage] Failed to load sweepstakes/sports tour status', err);
-        if (active) {
-          setSweepstakesTourSeen({ done: false, loading: false });
-          setSportsTourSeen({ done: false, loading: false });
-        }
+        console.error('[LobbyPage] Failed to load sweepstakes tour status', err);
+        if (active) setSweepstakesTourSeen({ done: false, loading: false });
       }
     };
     load();
@@ -703,36 +659,28 @@ function LobbyContent() {
   }, [userId, sweepstakesTourSeen, sweepstakesTourAutoTriggered, boardReadyForTour]);
 
   useEffect(() => {
-    if (tourOpen || sportsTourOpen) {
-      document.body.classList.add('tour-lock');
-      return () => document.body.classList.remove('tour-lock');
+    if (!tourOpen) {
+      document.body.classList.remove('tour-lock');
+      return;
     }
-    document.body.classList.remove('tour-lock');
-  }, [tourOpen, sportsTourOpen]);
-
-  useEffect(() => {
-    if (tourOpen) return;
-    if (sportsTourOpen) return;
-    if (!userId) return;
-    if (selectedSport === SWEEPSTAKES_SPORT_ID) return;
-    if (sportsTourAutoTriggered) return;
-    if (sportsTourSeen.loading) return;
-    if (sportsTourSeen.done) return;
-    if (!games.length) return;
-    setSportsTourOpen(true);
-    setSportsTourStep(0);
-    setSportsTourAutoTriggered(true);
-  }, [tourOpen, sportsTourOpen, userId, selectedSport, sportsTourAutoTriggered, sportsTourSeen, games]);
-
-  useEffect(() => {
-    if (!sportsTourOpen) return;
-    const onAllow = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { kind: 'sports' } | undefined;
-      if (!detail) return;
+    document.body.classList.add('tour-lock');
+    return () => {
+      document.body.classList.remove('tour-lock');
     };
-    window.addEventListener('tour-sports-allow', onAllow);
-    return () => window.removeEventListener('tour-sports-allow', onAllow);
-  }, [sportsTourOpen]);
+  }, [tourOpen]);
+
+  // Allow clicks on tour selector buttons to set flags
+  useEffect(() => {
+    if (!tourOpen) return;
+    const onAllow = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { kind: 'more' | 'sweepstakes' } | undefined;
+      if (!detail) return;
+      if (detail.kind === 'more') { setMoreClicked(true); setTourPhase('B'); }
+      if (detail.kind === 'sweepstakes') { setSweepstakesClicked(true); }
+    };
+    window.addEventListener('tour-allow', onAllow);
+    return () => window.removeEventListener('tour-allow', onAllow);
+  }, [tourOpen]);
 
   if (showPrimaryLoadingScreen()) {
     console.log("[LobbyPage] Rendering LoadingScreen. isWalletLoading:", isWalletLoading, "userId:", userId, "emailVerified:", emailVerified, "selectedSport:", selectedSport);
@@ -918,7 +866,7 @@ function LobbyContent() {
                               ))}
                             </motion.div>
                           ) : (
-                            <GamesList games={games} teams={teams} user={user} onProtectedAction={handleProtectedAction} />
+                        <GamesList games={games} teams={teams} user={user} onProtectedAction={handleProtectedAction} />
                           )}
                         </AnimatePresence>
                       </div>
@@ -945,19 +893,19 @@ function LobbyContent() {
                             exit={{ opacity: 0 }}
                             className="w-full mt-0 px-2 pb-4"
                           >
-                            <BoardsList 
-                              games={games}
-                              teams={teams}
-                              user={user} 
-                              currentUserId={userId} // from useWallet
-                              onProtectedAction={handleProtectedAction} 
-                              entryInteraction={entryInteraction}
-                              handleBoardAction={handleBoardAction}
-                              openWalletDialog={openWalletDialog}
-                              walletHasWallet={hasWallet} // from useWallet
-                              walletBalance={balance}     // from useWallet
-                              walletIsLoading={isWalletLoading} // from useWallet
-                            />
+                           <BoardsList 
+                             games={games}
+                             teams={teams}
+                             user={user} 
+                             currentUserId={userId} // from useWallet
+                             onProtectedAction={handleProtectedAction} 
+                             entryInteraction={entryInteraction}
+                             handleBoardAction={handleBoardAction}
+                             openWalletDialog={openWalletDialog}
+                             walletHasWallet={hasWallet} // from useWallet
+                             walletBalance={balance}     // from useWallet
+                             walletIsLoading={isWalletLoading} // from useWallet
+                           />
                           </motion.div>
                         ) : (
                           <motion.div
@@ -973,19 +921,10 @@ function LobbyContent() {
                                   : `No games available for ${initialSportsData.find(s => s.id === selectedSport)?.name || selectedSport.toUpperCase()}.`
                                 }
                               </p>
-                            </div>
+                         </div>
                           </motion.div>
-                        )}
-                      </AnimatePresence>
-                      {sportsTourOpen && (
-                        <div className="mt-8 space-y-6">
-                          <TourGameCard />
-                          <TourBoardCard stage={sportsTourStep === 0 ? 'idle' : sportsTourStep === 1 ? 'selecting' : sportsTourStep === 2 ? 'confirming' : 'entered'} />
-                          <div className="flex justify-center">
-                            <TourQuickEntrySelector stage={sportsTourStep === 0 ? 'idle' : sportsTourStep === 1 ? 'selecting' : 'confirming'} />
-                          </div>
-                        </div>
                       )}
+                      </AnimatePresence>
                     </>
                   )}
                 </motion.div>
@@ -1050,41 +989,6 @@ function LobbyContent() {
               console.error('[LobbyPage] Failed to mark sweepstakes tour as done', err);
             }
           }}
-        />
-      )}
-      {sportsTourOpen && (
-        <TourOverlay
-          steps={sportsTourSteps}
-          open={sportsTourOpen}
-          stepIndex={sportsTourStep}
-          onNext={() => setSportsTourStep(prev => Math.min(prev + 1, sportsTourSteps.length - 1))}
-          onClose={async () => {
-            setSportsTourOpen(false);
-            setSportsTourStep(0);
-            if (userId && !sportsTourSeen.done) {
-              try {
-                await setDoc(userDocRef(userId), { sportsTourDone: true }, { merge: true });
-                setSportsTourSeen({ done: true, loading: false });
-              } catch (err) {
-                console.error('[LobbyPage] Failed to mark sports tour as done', err);
-              }
-            }
-          }}
-          nextEnabled
-          hasWallet={!!hasWallet}
-          onShowWallet={() => openWalletDialog('setup')}
-          enableGuidelinesFlow={false}
-          onMarkTourDone={async () => {
-            if (userId) {
-              try {
-                await setDoc(userDocRef(userId), { sportsTourDone: true }, { merge: true });
-                setSportsTourSeen({ done: true, loading: false });
-              } catch (err) {
-                console.error('[LobbyPage] Failed to mark sports tour as done', err);
-              }
-            }
-          }}
-          onFinalComplete={() => Promise.resolve()}
         />
       )}
       {/* Login Dialog */}

@@ -14,6 +14,7 @@ const epilogue = Epilogue({
 })
 
 export const metadata = {
+  metadataBase: new URL('https://squarepicks.com'),
   title: 'SquarePicks - Modern Sports Squares',
   description: 'Where Every Square Has a Chance. Select squares on game boards, win when your numbers match the score, and earn real prizes in our modern sports squares platform.',
   keywords: 'sports squares, betting, games, entertainment, prizes, sports betting, squares game',

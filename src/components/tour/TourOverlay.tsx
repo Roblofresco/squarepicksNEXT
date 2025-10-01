@@ -14,6 +14,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 const StarfieldBackground = dynamic(() => import('@/components/effects/StarfieldBackground'), { ssr: false });
 
+const FOCUSABLE_SELECTORS = 'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
 type Step = {
   id: string;
   anchor: string;
@@ -56,6 +58,10 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const [reflowTick, setReflowTick] = useState(0);
   const [finalOverlayOpen, setFinalOverlayOpen] = useState(false);
   const [showHomePrompt, setShowHomePrompt] = useState(false);
+  const suppressedFocusRef = useRef<Array<{ el: HTMLElement; tabIndex: string | null; ariaHidden: string | null; inert: boolean }>>([]);
+  const bypassElementsRef = useRef<HTMLElement[]>([]);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const inertElementsRef = useRef<Array<{ el: HTMLElement; alreadyInert: boolean }>>([]);
 
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
@@ -190,43 +196,219 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   }, [open, step]);
 
   useEffect(() => {
-    if (!open) return;
-    const blockClick = (e: Event) => {
-      if (finalOverlayOpen) return;
-      const t = e.target as Node | null;
-      if (popRef.current && t && popRef.current.contains(t)) return; // allow clicks inside popover
-      if (t instanceof HTMLElement) {
-        // First, handle our explicit tour-allow buttons so phase flags update
-        if (t.closest('[data-tour-allow="more"]')) {
-          window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'more' } }));
-          return; // allow click through
+    const cleanupBypass = () => {
+      bypassElementsRef.current.forEach((el) => {
+        el.removeAttribute('data-tour-bypass');
+      });
+      bypassElementsRef.current = [];
+    };
+
+    if (!open) {
+      cleanupBypass();
+      return;
+    }
+
+    cleanupBypass();
+    const selectors = new Set<string>([...allowClickSelectors]);
+    if (step?.anchor) selectors.add(step.anchor);
+    if (step?.arrowTarget) selectors.add(step.arrowTarget);
+
+    const collected: HTMLElement[] = [];
+    selectors.forEach((sel) => {
+      if (!sel) return;
+      document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
+        el.setAttribute('data-tour-bypass', 'true');
+        collected.push(el);
+      });
+    });
+    bypassElementsRef.current = collected;
+
+    return cleanupBypass;
+  }, [open, step, stepIndex, allowClickSelectors]);
+
+  useEffect(() => {
+    const restoreInert = () => {
+      inertElementsRef.current.forEach(({ el, alreadyInert }) => {
+        if (!alreadyInert) {
+          el.removeAttribute('inert');
         }
-        if (t.closest('[data-tour-allow="sweepstakes"]')) {
-          window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind: 'sweepstakes' } }));
-          return; // allow click through
-        }
-        // Then allow any other explicit whitelist selectors (if provided)
-        for (const sel of allowClickSelectors) {
-          if (t.closest(sel)) return;
-        }
+      });
+      inertElementsRef.current = [];
+    };
+
+    if (!open) {
+      restoreInert();
+      return;
+    }
+
+    restoreInert();
+
+    const pop = popRef.current;
+    if (!pop) return;
+
+    const allowed = new Set<HTMLElement>();
+    allowed.add(pop);
+    bypassElementsRef.current.forEach((el) => {
+      if (el) allowed.add(el);
+    });
+
+    const processTree = (node: HTMLElement) => {
+      if (node === pop) {
+        return;
       }
-      e.preventDefault();
-      e.stopPropagation();
+
+      const shouldAllow = Array.from(allowed).some((allowedNode) => allowedNode === node || allowedNode.contains(node));
+      if (shouldAllow) {
+        Array.from(node.children).forEach((child) => {
+          if (child instanceof HTMLElement) processTree(child);
+        });
+        return;
+      }
+
+      const alreadyInert = node.hasAttribute('inert');
+      if (!alreadyInert) node.setAttribute('inert', '');
+      inertElementsRef.current.push({ el: node, alreadyInert });
     };
-    const blockKeys = (e: KeyboardEvent) => {
-      if (finalOverlayOpen) return;
+
+    const root = document.body;
+    Array.from(root.children).forEach((child) => {
+      if (child instanceof HTMLElement) processTree(child);
+    });
+
+    return restoreInert;
+  }, [open, step, stepIndex, allowClickSelectors]);
+
+  useEffect(() => {
+    const restoreFocus = () => {
+      suppressedFocusRef.current.forEach(({ el, tabIndex, ariaHidden, inert }) => {
+        if (tabIndex === null) el.removeAttribute('tabindex');
+        else el.setAttribute('tabindex', tabIndex);
+        if (ariaHidden === null) el.removeAttribute('aria-hidden');
+        else el.setAttribute('aria-hidden', ariaHidden);
+        if (!inert) el.removeAttribute('inert');
+        else el.setAttribute('inert', '');
+      });
+      suppressedFocusRef.current = [];
+    };
+
+    if (!open) {
+      restoreFocus();
+      return;
+    }
+
+    restoreFocus();
+
+    const root = document.getElementById('__next');
+    if (!root) return;
+
+    const allowedSelectors = new Set<string>([...allowClickSelectors]);
+    if (step?.anchor) allowedSelectors.add(step.anchor);
+    if (step?.arrowTarget) allowedSelectors.add(step.arrowTarget);
+
+    const focusables = Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS));
+    const suppressed: Array<{ el: HTMLElement; tabIndex: string | null; ariaHidden: string | null; inert: boolean }> = [];
+
+    focusables.forEach((el) => {
+      if (popRef.current && popRef.current.contains(el)) return;
+      const isAllowed = Array.from(allowedSelectors).some((sel) => sel && (el.matches(sel) || el.closest(sel)));
+      if (isAllowed) return;
+
+      const existingTabIndex = el.getAttribute('tabindex');
+      const existingAriaHidden = el.getAttribute('aria-hidden');
+      const alreadyInert = el.hasAttribute('inert');
+      suppressed.push({ el, tabIndex: existingTabIndex, ariaHidden: existingAriaHidden, inert: alreadyInert });
+      el.setAttribute('tabindex', '-1');
+      el.setAttribute('aria-hidden', 'true');
+      if (!alreadyInert) {
+        el.setAttribute('inert', '');
+      }
+    });
+
+    suppressedFocusRef.current = suppressed;
+
+    return restoreFocus;
+  }, [open, step, stepIndex, allowClickSelectors]);
+
+  useEffect(() => {
+    const portalEl = document.querySelector('[data-tour-portal="true"]') as HTMLElement | null;
+    if (!open || finalOverlayOpen) {
+      if (portalEl && portalEl.hasAttribute('inert')) {
+        portalEl.removeAttribute('inert');
+      }
+      return;
+    }
+
+    if (portalEl && !portalEl.hasAttribute('inert')) {
+      portalEl.setAttribute('inert', '');
+    }
+
+    const pop = popRef.current;
+    if (!pop) return;
+
+    const focusables = Array.from(pop.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)).filter((el) => !el.hasAttribute('disabled'));
+    const firstFocusable = focusables[0] ?? pop;
+
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+
+    const focusTarget = firstFocusable;
+    if (focusTarget) {
+      if (focusTarget === pop && !pop.hasAttribute('tabindex')) {
+        pop.setAttribute('tabindex', '-1');
+      }
+      requestAnimationFrame(() => {
+        focusTarget.focus({ preventScroll: true });
+      });
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+      const currentFocusables = Array.from(pop.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)).filter((el) => !el.hasAttribute('disabled'));
+      if (currentFocusables.length === 0) {
+        event.preventDefault();
+        pop.focus({ preventScroll: true });
+        return;
+      }
+      const first = currentFocusables[0];
+      const last = currentFocusables[currentFocusables.length - 1];
       const active = document.activeElement as HTMLElement | null;
-      if (popRef.current && active && popRef.current.contains(active)) return; // allow keys in popover
-      e.preventDefault();
-      e.stopPropagation();
+      if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus({ preventScroll: true });
+      } else if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus({ preventScroll: true });
+      }
     };
-    document.addEventListener('click', blockClick, true);
-    document.addEventListener('keydown', blockKeys, true);
+
+    document.addEventListener('keydown', handleKeyDown, true);
+
     return () => {
-      document.removeEventListener('click', blockClick, true);
-      document.removeEventListener('keydown', blockKeys, true);
+      document.removeEventListener('keydown', handleKeyDown, true);
+      const previous = previousFocusRef.current;
+      if (previous && typeof previous.focus === 'function') {
+        previous.focus({ preventScroll: true } as FocusOptions);
+      }
+      if (portalEl && open && portalEl.hasAttribute('inert')) {
+        portalEl.removeAttribute('inert');
+      }
     };
-  }, [open, finalOverlayOpen, allowClickSelectors]);
+  }, [open, stepIndex, finalOverlayOpen]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (event: Event) => {
+      const el = (event.target as HTMLElement | null)?.closest('[data-tour-allow]') as HTMLElement | null;
+      if (!el) return;
+      const kind = el.getAttribute('data-tour-allow');
+      if (!kind) return;
+      window.dispatchEvent(new CustomEvent('tour-allow', { detail: { kind } }));
+    };
+
+    document.addEventListener('click', handler, true);
+    return () => {
+      document.removeEventListener('click', handler, true);
+    };
+  }, [open]);
 
   const flashActiveTab = useCallback(() => {
     if (step?.id !== 'selector') return;
@@ -234,13 +416,14 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     const className = tourPhase === 'A' ? 'tour-hover-flash-more' : 'tour-hover-flash-sweepstakes';
     const targets = Array.from(document.querySelectorAll<HTMLElement>(selector));
     targets.forEach((el) => {
-      el.classList.remove('tour-hover-flash-more', 'tour-hover-flash-sweepstakes', 'tour-flash-twice');
-      requestAnimationFrame(() => {
-        el.classList.add(className, 'tour-flash-twice');
+      const applyOnce = () => {
+        el.classList.add(className);
         setTimeout(() => {
           el.classList.remove(className);
-        }, 650);
-      });
+        }, 160);
+      };
+      applyOnce();
+      setTimeout(applyOnce, 220);
     });
   }, [step?.id, tourPhase]);
 
@@ -298,7 +481,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const arrowLeft = Math.max(12, Math.min(rawArrowLeft, popW - 12));
 
   return createPortal(
-    <div className="fixed inset-0 z-[1000] pointer-events-none">
+    <div className="fixed inset-0 z-[1000] pointer-events-none" data-tour-portal="true">
       {/* darken around the focused rect */}
       <div className="absolute inset-0">
         {/* top mask */}
@@ -352,7 +535,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
                 if ((agreeToSweepstakes ?? true) && !hasWallet) {
                   onShowWallet?.();
-                  if (enableGuidelinesFlow) return;
+                  return;
                 }
 
                 if (onFinalComplete) {

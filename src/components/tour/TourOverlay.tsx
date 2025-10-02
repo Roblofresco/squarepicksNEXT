@@ -604,6 +604,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
                   <button
                     type="button"
                     onClick={handleHomePromptContinue}
+                    data-tour-allow="home-continue"
                     className="w-full sm:w-auto rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                   >
                     Continue
@@ -641,6 +642,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
                   <button
                     type="button"
                     onClick={() => handleGuidelinesAction('skip')}
+                    data-tour-allow="guidelines-skip"
                     className="flex-1 rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
                   >
                     Skip
@@ -648,6 +650,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
                   <button
                     type="button"
                     onClick={() => handleGuidelinesAction('agree')}
+                    data-tour-allow="guidelines-agree"
                     className="flex-1 rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                   >
                     Agree

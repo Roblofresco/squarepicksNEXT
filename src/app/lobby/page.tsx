@@ -972,7 +972,13 @@ function LobbyContent() {
               setTimeout(() => el.classList.remove('animate-pulse'), 1000);
             }
           }}
-          allowClickSelectors={['[data-tour-allow="more"]','[data-tour-allow="sweepstakes"]']}
+          allowClickSelectors={[
+            '[data-tour-allow="more"]',
+            '[data-tour-allow="sweepstakes"]',
+            '[data-tour-allow="home-continue"]',
+            '[data-tour-allow="guidelines-skip"]',
+            '[data-tour-allow="guidelines-agree"]'
+          ]}
           hasWallet={!!hasWallet}
           onShowWallet={() => {
             openWalletDialog('setup');

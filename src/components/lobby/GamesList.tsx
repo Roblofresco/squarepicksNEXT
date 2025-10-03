@@ -117,17 +117,17 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
           <Card className="relative w-[150px] sm:w-[240px] bg-gradient-to-b from-background-primary to-background-secondary border-accent-1/20">
             <Link href={`/game/${game.id}`} onClick={handleClick}>
               <CardContent className="flex items-center justify-between p-0.5 sm:p-2 h-[50px] sm:h-[90px]">
-                {(game.isLive ?? game.is_live) && (
-                  <Badge variant="destructive" className="absolute top-0.5 sm:top-1 right-0.5 sm:right-1 text-[0.45rem] sm:text-[0.5rem] uppercase">
-                    Live
-                  </Badge>
-                )}
                 {/* Left Column: Team A */}
                 <div className="w-1/4 flex items-center justify-center h-full"> 
                   <TeamDisplay team={game.teamA} />
                 </div>
                 {/* Center Column: Game Details */}
                 <div className="flex flex-col items-center justify-center w-1/2 text-center px-0.5 sm:px-1"> 
+                  {(game.isLive ?? game.is_live) && (
+                    <span className="mb-0.5 sm:mb-1 px-2 py-0.5 text-[0.55rem] sm:text-[0.6rem] font-semibold uppercase tracking-wide text-white bg-red-600 rounded-full shadow-[0_0_10px_rgba(248,113,113,0.45)] animate-pulse">
+                      Live
+                    </span>
+                  )}
                   <div className="text-xs sm:text-sm font-bold mb-0.5 sm:mb-1 text-white"> 
                     {(game.isLive ?? game.is_live) ? `${(game.awayScore ?? game.away_score) ?? 0} - ${(game.homeScore ?? game.home_score) ?? 0}` : 'VS'}
                   </div>

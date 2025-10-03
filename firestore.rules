@@ -18,6 +18,11 @@ service cloud.firestore {
       match /wallet/{document} {
         allow create, read, write, delete: if request.auth.uid == userId;
       }
+      // --- preferences Subcollection ---
+      // Stores per-user preferences such as notifications
+      match /preferences/{document} {
+        allow create, read, write, delete: if request.auth.uid == userId;
+      }
       // --- private wins Subcollection (per-user quarter/final wins) ---
       match /wins/{winId} {
         // Users can read their own wins; server (Admin SDK) writes

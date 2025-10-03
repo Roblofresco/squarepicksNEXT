@@ -40,6 +40,7 @@ const TourGamesList = memo(({ activeStepId, games = [] }: TourGamesListProps) =>
           state="scheduled"
           variant="upcoming"
           dataTour="sports-games-upcoming"
+          allowKey="sports-games-upcoming"
           highlight={activeStepId === 'sports-games-upcoming'}
           teamA={upcomingTeams.teamA as TeamInfo | undefined}
           teamB={upcomingTeams.teamB as TeamInfo | undefined}
@@ -48,6 +49,7 @@ const TourGamesList = memo(({ activeStepId, games = [] }: TourGamesListProps) =>
           state="live"
           variant="live"
           dataTour="sports-games-live"
+          allowKey="sports-games-live"
           highlight={activeStepId === 'sports-games-live'}
           teamA={liveTeams.teamA as TeamInfo | undefined}
           teamB={liveTeams.teamB as TeamInfo | undefined}

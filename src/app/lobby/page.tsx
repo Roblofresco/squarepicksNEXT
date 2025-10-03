@@ -1044,7 +1044,7 @@ function LobbyContent() {
             }
           } : undefined}
           allowClickSelectors={activeTour === 'sports'
-            ? ['[data-tour="sports-games-upcoming"]', '[data-tour="sports-games-live"]']
+            ? ['[data-tour-allow="sports-games-upcoming"]', '[data-tour-allow="sports-games-live"]']
             : [
               '[data-tour-allow="more"]',
               '[data-tour-allow="sweepstakes"]',

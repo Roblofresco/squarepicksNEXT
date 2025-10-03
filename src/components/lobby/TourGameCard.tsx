@@ -14,6 +14,7 @@ interface TourGameCardProps {
   highlight?: boolean
   teamA?: TeamInfo
   teamB?: TeamInfo
+  allowKey?: string
 }
 
 const mockTeamA: TeamInfo = {
@@ -56,7 +57,7 @@ const stateCopy: Record<NonNullable<TourGameCardProps['state']>, { badge?: strin
   }
 }
 
-export default function TourGameCard({ state = 'scheduled', variant = state === 'live' ? 'live' : 'upcoming', dataTour = 'sports-game-card', highlight = false, teamA, teamB }: TourGameCardProps) {
+export default function TourGameCard({ state = 'scheduled', variant = state === 'live' ? 'live' : 'upcoming', dataTour = 'sports-game-card', highlight = false, teamA, teamB, allowKey }: TourGameCardProps) {
   const copy = stateCopy[state]
   const displayTeamA = teamA ?? mockTeamA
   const displayTeamB = teamB ?? mockTeamB
@@ -64,6 +65,7 @@ export default function TourGameCard({ state = 'scheduled', variant = state === 
   return (
     <motion.div
       data-tour={dataTour}
+      data-tour-allow={allowKey}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 220, damping: 18 }}

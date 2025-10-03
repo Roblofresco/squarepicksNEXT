@@ -879,7 +879,7 @@ function LobbyContent() {
                             />
                               ) : (
                                 <TourSweepstakesBoardCard
-                                  tourStepId={tourSteps[tourStep]?.id}
+                                  tourStepId={stepsForRender[tourStep]?.id}
                                   highlightedSquare={typeof entryInteraction.selectedNumber === 'number' ? entryInteraction.selectedNumber : undefined}
                           />
                               )}

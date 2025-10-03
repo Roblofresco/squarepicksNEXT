@@ -676,9 +676,10 @@ function LobbyContent() {
   const boardReadyForTour = useMemo(() => (
     !!(sweepstakesBoard && sweepstakesGame && sweepstakesGame.teamA && sweepstakesGame.teamB && sweepstakesTeams[sweepstakesGame.teamA.id] && sweepstakesTeams[sweepstakesGame.teamB.id])
   ), [sweepstakesBoard, sweepstakesGame, sweepstakesTeams]);
-  const sportsReadyForTour = useMemo(() => games.length > 0, [games]);
+  const sportsReadyForTour = useMemo(() => !isLoadingGamesAndTeams || games.length > 0, [isLoadingGamesAndTeams, games]);
 
   useEffect(() => {
+    if (selectedSport !== SWEEPSTAKES_SPORT_ID) return;
     if (sweepstakesTourAutoTriggered) return;
     if (!userId) return;
     if (sweepstakesTourSeen.loading) return;

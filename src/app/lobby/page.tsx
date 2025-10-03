@@ -918,7 +918,10 @@ function LobbyContent() {
                               ))}
                             </motion.div>
                           ) : tourOpen && activeTour === 'sports' ? (
-                            <TourGamesList activeStepId={stepsForRender[tourStep]?.id} />
+                            <TourGamesList
+                              activeStepId={stepsForRender[tourStep]?.id}
+                              games={games}
+                            />
                           ) : (
                             <GamesList games={games} teams={teams} user={user} onProtectedAction={handleProtectedAction} />
                           )}

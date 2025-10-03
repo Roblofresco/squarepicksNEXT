@@ -1,11 +1,13 @@
 'use client'
 
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import TourGameCard from '@/components/lobby/TourGameCard'
+import { Game, TeamInfo } from '@/types/lobby'
 
 interface TourGamesListProps {
   activeStepId?: string
+  games?: Game[]
 }
 
 const tourCardVariants = {
@@ -13,7 +15,19 @@ const tourCardVariants = {
   animate: { opacity: 1, y: 0 },
 }
 
-const TourGamesList = memo(({ activeStepId }: TourGamesListProps) => {
+const TourGamesList = memo(({ activeStepId, games = [] }: TourGamesListProps) => {
+  const upcomingTeams = useMemo(() => {
+    const first = games.find((game) => !!game.teamA && !!game.teamB)
+    if (!first) return { teamA: undefined, teamB: undefined }
+    return { teamA: first.teamA, teamB: first.teamB }
+  }, [games])
+
+  const liveTeams = useMemo(() => {
+    const live = games.find((game) => (game.isLive ?? game.is_live) && game.teamA && game.teamB)
+    if (!live) return upcomingTeams
+    return { teamA: live.teamA, teamB: live.teamB }
+  }, [games, upcomingTeams])
+
   return (
     <div className="w-full px-0.5 sm:px-[50px]" data-tour="sports-games-list">
       <motion.div
@@ -27,12 +41,16 @@ const TourGamesList = memo(({ activeStepId }: TourGamesListProps) => {
           variant="upcoming"
           dataTour="sports-games-upcoming"
           highlight={activeStepId === 'sports-games-upcoming'}
+          teamA={upcomingTeams.teamA as TeamInfo | undefined}
+          teamB={upcomingTeams.teamB as TeamInfo | undefined}
         />
         <TourGameCard
           state="live"
           variant="live"
           dataTour="sports-games-live"
           highlight={activeStepId === 'sports-games-live'}
+          teamA={liveTeams.teamA as TeamInfo | undefined}
+          teamB={liveTeams.teamB as TeamInfo | undefined}
         />
       </motion.div>
     </div>

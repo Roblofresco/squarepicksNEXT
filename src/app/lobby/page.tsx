@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SportSelector from '@/components/lobby/SportSelector';
 import TourSportSelector from '@/components/lobby/TourSportSelector';
 import GamesList from '@/components/lobby/GamesList';
+import TourGamesList from '@/components/lobby/TourGamesList';
 import BoardsList from '@/components/lobby/BoardsList';
 import BottomNav from '@/components/lobby/BottomNav';
 import InAppHeader from '@/components/InAppHeader';
@@ -562,8 +563,11 @@ function LobbyContent() {
   const [tourOpen, setTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [tourPhase, setTourPhase] = useState<'A' | 'B'>('A');
+  const [activeTour, setActiveTour] = useState<'sweepstakes' | 'sports' | null>(null);
   const [sweepstakesTourSeen, setSweepstakesTourSeen] = useState<UserTourState>({ done: false, loading: true });
+  const [sportsTourSeen, setSportsTourSeen] = useState<UserTourState>({ done: false, loading: true });
   const [sweepstakesTourAutoTriggered, setSweepstakesTourAutoTriggered] = useState(false);
+  const [sportsTourAutoTriggered, setSportsTourAutoTriggered] = useState(false);
   type LobbyTourStep = {
     id: string;
     anchor: string;
@@ -575,7 +579,7 @@ function LobbyContent() {
     holePadding?: number;
     popoverOffsetY?: number;
   };
-  const tourSteps: LobbyTourStep[] = useMemo(() => ([
+  const sweepstakesTourSteps: LobbyTourStep[] = useMemo(() => ([
     { id: 'selector', anchor: '[data-tour="sport-selector"]', title: 'Choose Your View', description: 'Switch between Sweepstakes and Sports.', holePadding: 12 },
     { id: 'input', anchor: '[data-tour="sweepstakes-input"]', title: 'Choose Your Square', description: 'Type your number.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-input"]', holePadding: 14, popoverOffsetY: 16 },
     { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Choose Your Square', description: 'Tap your number.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
@@ -583,10 +587,31 @@ function LobbyContent() {
     { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
     { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 }
   ]), []);
+  const sportsTourSteps: LobbyTourStep[] = useMemo(() => ([
+    {
+      id: 'sports-games-upcoming',
+      anchor: '[data-tour="sports-games-upcoming"]',
+      title: 'Upcoming Matchups',
+      description: 'Each card shows kickoff time, broadcast network, and team records so you can plan entries before the game starts.',
+      scroll: 'center',
+      holePadding: 16,
+    },
+    {
+      id: 'sports-games-live',
+      anchor: '[data-tour="sports-games-live"]',
+      title: 'Live Game View',
+      description: 'Live cards update the score and game clock in real time. Tap any live game to track the board while the action unfolds.',
+      scroll: 'center',
+      holePadding: 16,
+    },
+  ]), []);
   const [moreClicked, setMoreClicked] = useState(false);
   const [sweepstakesClicked, setSweepstakesClicked] = useState(false);
   const stepsForRender = useMemo(() => {
-    const s = [...tourSteps];
+    if (activeTour === 'sports') {
+      return sportsTourSteps;
+    }
+    const s = [...sweepstakesTourSteps];
     if (tourStep === 0) {
       if (tourPhase === 'A') {
         s[0] = {
@@ -613,25 +638,33 @@ function LobbyContent() {
       }
     }
     return s;
-  }, [tourSteps, tourStep, tourPhase, sweepstakesClicked, sportSelectorView]);
+  }, [activeTour, sportsTourSteps, sweepstakesTourSteps, tourStep, tourPhase, sweepstakesClicked, sportSelectorView]);
   useEffect(() => {
     if (!userId) {
       setSweepstakesTourSeen({ done: false, loading: false });
+      setSportsTourSeen({ done: false, loading: false });
       return;
     }
     let active = true;
     setSweepstakesTourSeen(prev => ({ ...prev, loading: true }));
+    setSportsTourSeen(prev => ({ ...prev, loading: true }));
     const load = async () => {
       try {
         const ref = userDocRef(userId);
         const snap = await getDoc(ref);
-        const done = !!snap.data()?.sweepstakesTourDone;
+        const data = snap.data();
+        const sweepstakesDone = !!data?.sweepstakesTourDone;
+        const sportsDone = !!data?.sportsTourDone;
         if (active) {
-          setSweepstakesTourSeen({ done, loading: false });
+          setSweepstakesTourSeen({ done: sweepstakesDone, loading: false });
+          setSportsTourSeen({ done: sportsDone, loading: false });
         }
       } catch (err) {
-        console.error('[LobbyPage] Failed to load sweepstakes tour status', err);
-        if (active) setSweepstakesTourSeen({ done: false, loading: false });
+        console.error('[LobbyPage] Failed to load tour status', err);
+        if (active) {
+          setSweepstakesTourSeen({ done: false, loading: false });
+          setSportsTourSeen({ done: false, loading: false });
+        }
       }
     };
     load();
@@ -643,6 +676,7 @@ function LobbyContent() {
   const boardReadyForTour = useMemo(() => (
     !!(sweepstakesBoard && sweepstakesGame && sweepstakesGame.teamA && sweepstakesGame.teamB && sweepstakesTeams[sweepstakesGame.teamA.id] && sweepstakesTeams[sweepstakesGame.teamB.id])
   ), [sweepstakesBoard, sweepstakesGame, sweepstakesTeams]);
+  const sportsReadyForTour = useMemo(() => games.length > 0, [games]);
 
   useEffect(() => {
     if (sweepstakesTourAutoTriggered) return;
@@ -650,6 +684,7 @@ function LobbyContent() {
     if (sweepstakesTourSeen.loading) return;
     if (sweepstakesTourSeen.done) return;
     if (!boardReadyForTour) return;
+    setActiveTour('sweepstakes');
     setTourOpen(true);
     setTourStep(0);
     setTourPhase('A');
@@ -657,6 +692,22 @@ function LobbyContent() {
     setSweepstakesClicked(false);
     setSweepstakesTourAutoTriggered(true);
   }, [userId, sweepstakesTourSeen, sweepstakesTourAutoTriggered, boardReadyForTour]);
+
+  useEffect(() => {
+    if (selectedSport === SWEEPSTAKES_SPORT_ID) return;
+    if (sportsTourAutoTriggered) return;
+    if (!userId) return;
+    if (sportsTourSeen.loading) return;
+    if (sportsTourSeen.done) return;
+    if (!sportsReadyForTour) return;
+    setActiveTour('sports');
+    setTourOpen(true);
+    setTourStep(0);
+    setTourPhase('A');
+    setMoreClicked(false);
+    setSweepstakesClicked(false);
+    setSportsTourAutoTriggered(true);
+  }, [selectedSport, userId, sportsTourSeen, sportsTourAutoTriggered, sportsReadyForTour]);
 
   useEffect(() => {
     if (!tourOpen) {
@@ -865,8 +916,10 @@ function LobbyContent() {
                                 </div>
                               ))}
                             </motion.div>
+                          ) : tourOpen && activeTour === 'sports' ? (
+                            <TourGamesList activeStepId={stepsForRender[tourStep]?.id} />
                           ) : (
-                        <GamesList games={games} teams={teams} user={user} onProtectedAction={handleProtectedAction} />
+                            <GamesList games={games} teams={teams} user={user} onProtectedAction={handleProtectedAction} />
                           )}
                         </AnimatePresence>
                       </div>
@@ -936,13 +989,13 @@ function LobbyContent() {
       </div>
       <BottomNav user={user} onProtectedAction={handleProtectedAction} />
       {(isLoginModalOpen || isWalletSetupDialogOpen || isDepositDialogOpen) && <StarfieldBackground className="z-40" />}
-      {tourOpen && (
+      {tourOpen && activeTour && (
         <TourOverlay
           steps={stepsForRender}
           open={tourOpen}
           stepIndex={tourStep}
           onNext={() => {
-            if (tourStep === 0) {
+            if (activeTour === 'sweepstakes' && tourStep === 0) {
               if (tourPhase === 'A' && moreClicked) { setTourPhase('B'); return; }
               if (tourPhase === 'B' && (sweepstakesClicked || sportSelectorView === 'sweepstakes')) {
                 setTourStep(prev => Math.min(prev + 1, stepsForRender.length - 1));
@@ -954,7 +1007,11 @@ function LobbyContent() {
           }}
           onClose={async () => {
             setTourOpen(false);
-            if (userId && !sweepstakesTourSeen.done) {
+            const tourKind = activeTour;
+            setActiveTour(null);
+            setTourStep(0);
+            if (!userId) return;
+            if (tourKind === 'sweepstakes' && !sweepstakesTourSeen.done) {
               try {
                 await setDoc(userDocRef(userId), { sweepstakesTourDone: true }, { merge: true });
                 setSweepstakesTourSeen({ done: true, loading: false });
@@ -962,23 +1019,35 @@ function LobbyContent() {
                 console.error('[LobbyPage] Failed to mark sweepstakes tour as done', err);
               }
             }
+            if (tourKind === 'sports' && !sportsTourSeen.done) {
+              try {
+                await setDoc(userDocRef(userId), { sportsTourDone: true }, { merge: true });
+                setSportsTourSeen({ done: true, loading: false });
+              } catch (err) {
+                console.error('[LobbyPage] Failed to mark sports tour as done', err);
+              }
+            }
           }}
-          nextEnabled={tourStep === 0 ? (tourPhase === 'A' ? moreClicked : (sweepstakesClicked || sportSelectorView === 'sweepstakes')) : true}
-          onNextBlocked={() => {
+          nextEnabled={activeTour === 'sweepstakes'
+            ? (tourStep === 0 ? (tourPhase === 'A' ? moreClicked : (sweepstakesClicked || sportSelectorView === 'sweepstakes')) : true)
+            : true}
+          onNextBlocked={activeTour === 'sweepstakes' ? () => {
             const sel = tourPhase === 'A' ? '[data-tour-allow="more"]' : '[data-tour-allow="sweepstakes"]';
             const el = document.querySelector(sel) as HTMLElement | null;
             if (el) {
               el.classList.add('animate-pulse');
               setTimeout(() => el.classList.remove('animate-pulse'), 1000);
             }
-          }}
-          allowClickSelectors={[
-            '[data-tour-allow="more"]',
-            '[data-tour-allow="sweepstakes"]',
-            '[data-tour-allow="home-continue"]',
-            '[data-tour-allow="guidelines-skip"]',
-            '[data-tour-allow="guidelines-agree"]'
-          ]}
+          } : undefined}
+          allowClickSelectors={activeTour === 'sports'
+            ? ['[data-tour="sports-games-upcoming"]', '[data-tour="sports-games-live"]']
+            : [
+              '[data-tour-allow="more"]',
+              '[data-tour-allow="sweepstakes"]',
+              '[data-tour-allow="home-continue"]',
+              '[data-tour-allow="guidelines-skip"]',
+              '[data-tour-allow="guidelines-agree"]'
+            ]}
           hasWallet={!!hasWallet}
           onShowWallet={() => {
             openWalletDialog('setup');
@@ -996,13 +1065,24 @@ function LobbyContent() {
           agreeToSweepstakes={agreeToSweepstakes}
           onMarkTourDone={async () => {
             if (!userId) return;
-            try {
-              await setDoc(userDocRef(userId), { sweepstakesTourDone: true }, { merge: true });
-              setSweepstakesTourSeen({ done: true, loading: false });
-            } catch (err) {
-              console.error('[LobbyPage] Failed to mark sweepstakes tour as done', err);
+            if (activeTour === 'sweepstakes') {
+              try {
+                await setDoc(userDocRef(userId), { sweepstakesTourDone: true }, { merge: true });
+                setSweepstakesTourSeen({ done: true, loading: false });
+              } catch (err) {
+                console.error('[LobbyPage] Failed to mark sweepstakes tour as done', err);
+              }
+            }
+            if (activeTour === 'sports') {
+              try {
+                await setDoc(userDocRef(userId), { sportsTourDone: true }, { merge: true });
+                setSportsTourSeen({ done: true, loading: false });
+              } catch (err) {
+                console.error('[LobbyPage] Failed to mark sports tour as done', err);
+              }
             }
           }}
+          enableGuidelinesFlow={activeTour === 'sweepstakes'}
         />
       )}
       {/* Login Dialog */}

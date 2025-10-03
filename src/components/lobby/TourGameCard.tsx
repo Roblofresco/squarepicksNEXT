@@ -6,6 +6,9 @@ import { cn } from '@/lib/utils'
 
 interface TourGameCardProps {
   state?: 'scheduled' | 'live' | 'final'
+  variant?: 'upcoming' | 'live'
+  dataTour?: string;
+  highlight?: boolean;
 }
 
 const mockTeamA = {
@@ -44,16 +47,28 @@ const stateCopy: Record<NonNullable<TourGameCardProps['state']>, { badge?: strin
   }
 }
 
-export default function TourGameCard({ state = 'scheduled' }: TourGameCardProps) {
+export default function TourGameCard({ state = 'scheduled', variant = state === 'live' ? 'live' : 'upcoming', dataTour = 'sports-game-card', highlight = false }: TourGameCardProps) {
   const copy = stateCopy[state]
+  const footnoteCopy = variant === 'live'
+    ? [
+        { dot: 'bg-emerald-400', label: 'Score and clock update in real time' },
+        { dot: 'bg-rose-400', label: 'Tap to reopen the board mid-game' },
+      ]
+    : [
+        { dot: 'bg-emerald-400', label: 'Kickoff time, network, and matchup' },
+        { dot: 'bg-sky-400', label: 'Records help compare recent form' },
+      ];
 
   return (
     <motion.div
-      data-tour="sports-game-card"
+      data-tour={dataTour}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 220, damping: 18 }}
-      className="relative w-[240px] bg-gradient-to-b from-background-primary to-background-secondary border border-accent-1/20 rounded-2xl p-3 text-white shadow-[0_0_18px_rgba(14,165,233,0.25)]"
+      className={cn(
+        'relative w-[240px] bg-gradient-to-b from-background-primary to-background-secondary border border-accent-1/20 rounded-2xl p-3 text-white shadow-[0_0_18px_rgba(14,165,233,0.25)] transition-shadow duration-200',
+        highlight && 'ring-2 ring-offset-2 ring-offset-black/40 ring-sky-400 shadow-[0_0_24px_rgba(56,189,248,0.45)]'
+      )}
     >
       {copy.badge && (
         <span className={cn(
@@ -76,14 +91,12 @@ export default function TourGameCard({ state = 'scheduled' }: TourGameCardProps)
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-white/70">
-        <div className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-          <span>Tap card to view full board</span>
-        </div>
-        <div className="flex items-center gap-1 justify-end">
-          <span className="h-2 w-2 rounded-full bg-sky-400" />
-          <span>Entries close at kickoff</span>
-        </div>
+        {footnoteCopy.map(({ dot, label }, idx) => (
+          <div key={idx} className={cn('flex items-center gap-1', idx === 1 && 'justify-end')}>
+            <span className={cn('h-2 w-2 rounded-full', dot)} />
+            <span className="whitespace-nowrap">{label}</span>
+          </div>
+        ))}
       </div>
     </motion.div>
   )

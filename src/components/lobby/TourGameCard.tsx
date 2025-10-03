@@ -2,6 +2,8 @@
 
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 interface TourGameCardProps {
@@ -12,21 +14,21 @@ interface TourGameCardProps {
 }
 
 const mockTeamA = {
-  name: 'New York Guardians',
-  initials: 'NYG',
-  record: '6-2',
-  logo: '/images/mock-team-a.png',
-  color: '#0B1E3C',
-  seccolor: '#1C3F6E'
+  name: 'Philadelphia Eagles',
+  initials: 'PHI',
+  record: '4-0',
+  logo: null,
+  color: '#0d4b3d',
+  seccolor: '#1f7a67'
 }
 
 const mockTeamB = {
-  name: 'Seattle Surge',
-  initials: 'SEA',
-  record: '5-3',
-  logo: '/images/mock-team-b.png',
-  color: '#0F2A14',
-  seccolor: '#1E6F3B'
+  name: 'New Orleans Saints',
+  initials: 'NO',
+  record: '3-1',
+  logo: null,
+  color: '#2b1f0f',
+  seccolor: '#c9a43d'
 }
 
 const stateCopy: Record<NonNullable<TourGameCardProps['state']>, { badge?: string; centerLine: string; subLine: string }> = {
@@ -49,15 +51,6 @@ const stateCopy: Record<NonNullable<TourGameCardProps['state']>, { badge?: strin
 
 export default function TourGameCard({ state = 'scheduled', variant = state === 'live' ? 'live' : 'upcoming', dataTour = 'sports-game-card', highlight = false }: TourGameCardProps) {
   const copy = stateCopy[state]
-  const footnoteCopy = variant === 'live'
-    ? [
-        { dot: 'bg-emerald-400', label: 'Score and clock update in real time' },
-        { dot: 'bg-rose-400', label: 'Tap to reopen the board mid-game' },
-      ]
-    : [
-        { dot: 'bg-emerald-400', label: 'Kickoff time, network, and matchup' },
-        { dot: 'bg-sky-400', label: 'Records help compare recent form' },
-      ];
 
   return (
     <motion.div
@@ -65,73 +58,64 @@ export default function TourGameCard({ state = 'scheduled', variant = state === 
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 220, damping: 18 }}
-      className={cn(
-        'relative w-[240px] bg-gradient-to-b from-background-primary to-background-secondary border border-accent-1/20 rounded-2xl p-3 text-white shadow-[0_0_18px_rgba(14,165,233,0.25)] transition-shadow duration-200',
-        highlight && 'ring-2 ring-offset-2 ring-offset-black/40 ring-sky-400 shadow-[0_0_24px_rgba(56,189,248,0.45)]'
-      )}
+      className={cn(highlight && 'ring-2 ring-offset-2 ring-offset-black/30 ring-sky-400')}
     >
-      {copy.badge && (
-        <span className={cn(
-          'absolute top-3 right-3 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded-full',
-          state === 'live' ? 'bg-red-500/90' : 'bg-slate-500/80'
-        )}>
-          {copy.badge}
-        </span>
-      )}
+      <Card className="relative w-[150px] sm:w-[240px] bg-gradient-to-b from-background-primary to-background-secondary border-accent-1/20">
+        <CardContent className="flex items-center justify-between p-2 sm:p-3 h-[60px] sm:h-[90px]">
+          {variant === 'live' && (
+            <Badge variant="destructive" className="absolute top-2 sm:top-3 right-2 sm:right-3 text-[0.45rem] sm:text-[0.5rem] uppercase">
+              Live
+            </Badge>
+          )}
 
-      <div className="flex items-center justify-between">
-        <TeamColumn team={mockTeamA} align="left" />
-        <div className="flex flex-col items-center text-center">
-          <span className="text-lg sm:text-xl font-bold tracking-tight" data-tour="sports-game-center">
-            {copy.centerLine}
-          </span>
-          <span className="text-xs text-white/70 whitespace-nowrap">{copy.subLine}</span>
-        </div>
-        <TeamColumn team={mockTeamB} align="right" />
-      </div>
-
-      <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-white/70">
-        {footnoteCopy.map(({ dot, label }, idx) => (
-          <div key={idx} className={cn('flex items-center gap-1', idx === 1 && 'justify-end')}>
-            <span className={cn('h-2 w-2 rounded-full', dot)} />
-            <span className="whitespace-nowrap">{label}</span>
+          <div className="w-1/4 flex items-center justify-center h-full">
+            <TeamDisplay team={mockTeamA} />
           </div>
-        ))}
-      </div>
+
+          <div className="flex flex-col items-center justify-center w-1/2 text-center px-1">
+            <div className="text-xs sm:text-sm font-bold mb-1 text-white" data-tour="sports-game-center">
+              {copy.centerLine}
+            </div>
+            <div className="text-[10px] sm:text-xs text-white/70">
+              {copy.subLine}
+            </div>
+          </div>
+
+          <div className="w-1/4 flex items-center justify-center h-full">
+            <TeamDisplay team={mockTeamB} />
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   )
 }
 
-function TeamColumn({
-  team,
-  align
-}: {
-  team: typeof mockTeamA
-  align: 'left' | 'right'
-}) {
+function TeamDisplay({ team }: { team: typeof mockTeamA }) {
   const shadow = team.seccolor ?? team.color ?? '#0EA5E9'
   const dropShadow = { filter: `drop-shadow(0 0 6px ${shadow}99)` }
 
   return (
-    <div className={cn('flex flex-col items-center w-[70px] gap-1', align === 'left' ? 'text-left' : 'text-right')}>
+    <div className="flex flex-col items-center justify-center h-full gap-1">
       {team.logo ? (
         <Image
           src={team.logo}
           alt={`${team.name} logo`}
-          width={48}
-          height={48}
-          className="rounded-full object-contain"
+          width={40}
+          height={40}
+          className="object-contain"
           style={dropShadow}
         />
       ) : (
         <div
-          className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-white/15 to-white/5 flex items-center justify-center text-sm sm:text-base font-semibold text-white"
           style={dropShadow}
         >
           {team.initials}
         </div>
       )}
-      <span className="text-xs font-semibold truncate max-w-[72px]">{team.name}</span>
+      <span className="text-[10px] sm:text-xs text-white font-semibold uppercase tracking-wide">
+        {team.initials}
+      </span>
       <span className="text-[11px] text-white/60">{team.record}</span>
     </div>
   )

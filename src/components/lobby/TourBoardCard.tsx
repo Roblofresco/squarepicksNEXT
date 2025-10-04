@@ -90,6 +90,7 @@ const TourBoardCard = memo(({ stage = 'idle', highlightedNumber = null }: TourBo
   return (
     <motion.div
       data-tour="sports-board-card"
+      data-tour-allow="sports-board"
       className="w-full max-w-[390px] mx-auto p-4 text-white relative overflow-hidden flex flex-col bg-gradient-to-b from-[#0a0e1b] to-[#1f2937] border border-sky-400/30 shadow-[0px_0px_40px_-20px_#63c6ff] rounded-3xl"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}

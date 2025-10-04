@@ -597,12 +597,28 @@ function LobbyContent() {
       holePadding: 16,
     },
     {
+      id: 'sports-games-tap',
+      anchor: '[data-tour="sports-games-upcoming"]',
+      title: 'View Game Boards',
+      description: 'Tap a matchup to jump into the full game page where you can choose from different board entry amounts.',
+      scroll: 'center',
+      holePadding: 16,
+    },
+    {
       id: 'sports-games-live',
       anchor: '[data-tour="sports-games-live"]',
       title: 'Live Game View',
       description: 'Live cards update the score and game clock in real time. Tap any live game to track the board while the action unfolds.',
       scroll: 'center',
       holePadding: 16,
+    },
+    {
+      id: 'sports-board',
+      anchor: '[data-tour="sports-board-card"]',
+      title: 'Explore the Board',
+      description: 'Review open squares, quick entry, and entry fee details before locking in your pick.',
+      scroll: 'center',
+      holePadding: 24,
     },
   ]), []);
   const [moreClicked, setMoreClicked] = useState(false);
@@ -1048,7 +1064,11 @@ function LobbyContent() {
             }
           } : undefined}
           allowClickSelectors={activeTour === 'sports'
-            ? ['[data-tour-allow="sports-games-upcoming"]', '[data-tour-allow="sports-games-live"]']
+            ? [
+                '[data-tour-allow="sports-games-upcoming"]',
+                '[data-tour-allow="sports-games-live"]',
+                '[data-tour-allow="sports-board"]'
+              ]
             : [
               '[data-tour-allow="more"]',
               '[data-tour-allow="sweepstakes"]',

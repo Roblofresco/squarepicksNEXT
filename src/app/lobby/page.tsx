@@ -950,19 +950,23 @@ function LobbyContent() {
                             exit={{ opacity: 0 }}
                             className="w-full mt-0 px-2 pb-4"
                           >
-                           <BoardsList 
-                             games={games}
-                             teams={teams}
-                             user={user} 
-                             currentUserId={userId} // from useWallet
-                             onProtectedAction={handleProtectedAction} 
-                             entryInteraction={entryInteraction}
-                             handleBoardAction={handleBoardAction}
-                             openWalletDialog={openWalletDialog}
-                             walletHasWallet={hasWallet} // from useWallet
-                             walletBalance={balance}     // from useWallet
-                             walletIsLoading={isWalletLoading} // from useWallet
-                           />
+                           {tourOpen && activeTour === 'sports' ? (
+                             <TourBoardCard stage="idle" highlightedNumber={entryInteraction.selectedNumber ?? 32} />
+                           ) : (
+                             <BoardsList 
+                               games={games}
+                               teams={teams}
+                               user={user} 
+                               currentUserId={userId}
+                               onProtectedAction={handleProtectedAction} 
+                               entryInteraction={entryInteraction}
+                               handleBoardAction={handleBoardAction}
+                               openWalletDialog={openWalletDialog}
+                               walletHasWallet={hasWallet}
+                               walletBalance={balance}    
+                               walletIsLoading={isWalletLoading}
+                             />
+                           )}
                           </motion.div>
                         ) : (
                           <motion.div

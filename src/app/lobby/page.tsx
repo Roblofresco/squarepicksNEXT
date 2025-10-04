@@ -968,7 +968,11 @@ function LobbyContent() {
                             className="w-full mt-0 px-2 pb-4"
                           >
                            {tourOpen && activeTour === 'sports' ? (
-                             <TourBoardCard stage="idle" highlightedNumber={entryInteraction.selectedNumber ?? 32} />
+                             <TourBoardCard
+                               stage={entryInteraction.stage}
+                               highlightedNumber={entryInteraction.selectedNumber ?? 32}
+                               game={games[0]}
+                             />
                            ) : (
                              <BoardsList 
                                games={games}

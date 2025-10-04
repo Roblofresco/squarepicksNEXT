@@ -18,6 +18,7 @@ import SportSelector from '@/components/lobby/SportSelector';
 import TourSportSelector from '@/components/lobby/TourSportSelector';
 import GamesList from '@/components/lobby/GamesList';
 import TourGamesList from '@/components/lobby/TourGamesList';
+import TourBoardCard from '@/components/lobby/TourBoardCard';
 import BoardsList from '@/components/lobby/BoardsList';
 import BottomNav from '@/components/lobby/BottomNav';
 import InAppHeader from '@/components/InAppHeader';

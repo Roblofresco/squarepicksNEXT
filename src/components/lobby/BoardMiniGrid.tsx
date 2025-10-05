@@ -32,7 +32,7 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
     return new Set<number>();
   }, [currentUserSelectedSquares, boardData?.currentUserSelectedIndexes]);
 
-  const baseSquareClasses = 'aspect-square flex items-center justify-center text-[9px] font-mono rounded-[1px] cursor-pointer border border-white/10 transition-all duration-150 ease-in-out';
+  const baseSquareClasses = 'aspect-square flex items-center justify-center text-[9px] font-mono rounded-[1px] cursor-pointer border border-white/10 transition-all duration-150 ease-in-out bg-transparent';
 
   return (
     <div className="grid grid-cols-10 gap-[2px] p-1 bg-black/20 backdrop-blur-[1px] border border-white/10 rounded-md">
@@ -46,9 +46,9 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         if (isCurrentUserPurchased) {
           classes.push(
             'bg-gradient-to-br',
-            'from-[#4fd1ff]',
-            'via-[#2bb4f5]',
-            'to-[#1587d8]',
+            'from-[#4fd1ffcc]',
+            'via-[#2bb4f5bf]',
+            'to-[#1587d8b3]',
             'text-white',
             'font-semibold',
             'ring-2',
@@ -58,9 +58,9 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         } else if (isPreSelectedByCurrentUser) {
           classes.push(
             'bg-gradient-to-br',
-            'from-[#ec4899]',
-            'via-[#c026d3]',
-            'to-[#7c3aed]',
+            'from-[#ec4899cc]',
+            'via-[#c026d3bf]',
+            'to-[#7c3aedb3]',
             'text-white',
             'font-semibold',
             'ring-2',
@@ -70,9 +70,9 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         } else if (isTakenByOther) {
           classes.push(
             'bg-gradient-to-br',
-            'from-[#0d341c]',
-            'via-[#082214]',
-            'to-[#04150c]',
+            'from-[#0d341ccc]',
+            'via-[#082214bf]',
+            'to-[#04150cb3]',
             'text-slate-400',
             'opacity-80'
           );
@@ -80,9 +80,9 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         } else {
           classes.push(
             'bg-gradient-to-br',
-            'from-[#2fa874]',
-            'via-[#1f7f57]',
-            'to-[#156043]',
+            'from-[#2fa874cc]',
+            'via-[#1f7f57bf]',
+            'to-[#156043b3]',
             'text-white'
           );
         }

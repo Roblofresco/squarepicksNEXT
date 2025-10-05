@@ -169,6 +169,7 @@ const BoardCard = memo((props: BoardCardProps) => {
   // Get resolved team data directly from the enriched game prop
   const teamA = game.teamA;
   const teamB = game.teamB;
+  const isLiveGame = Boolean(game.isLive ?? game.is_live);
 
   // Calculate logo styles (can be memoized if needed)
   const shadowColorHexA = teamA?.seccolor || teamA?.color;
@@ -230,7 +231,7 @@ const BoardCard = memo((props: BoardCardProps) => {
           Free Entry!
         </div>
       )}
-      <div className="flex justify-between items-center mb-3">
+      <div className="flex justify-between items-start mb-3">
         <div className="flex items-center space-x-2 w-1/3 justify-start">
           {teamA?.logo ? (
             <Image src={teamA.logo} alt={`${teamA.name} logo`} width={45} height={45} className="rounded-full object-contain flex-shrink-0 transition-transform duration-200 will-change-transform hover:scale-105" style={logoFilterStyleA}/>
@@ -242,7 +243,14 @@ const BoardCard = memo((props: BoardCardProps) => {
             <div className="text-xs text-gray-400">{teamA?.record}</div>
           </div>
         </div>
-        <div className="text-accent-1 font-bold text-xl text-center">@</div>
+        <div className="flex flex-col items-center justify-start w-1/3 text-center gap-1 pt-1">
+          {isLiveGame && (
+            <span className="px-2 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide text-white bg-red-600 rounded-full shadow-[0_0_10px_rgba(248,113,113,0.45)] animate-pulse">
+              Live
+            </span>
+          )}
+          <div className="text-accent-1 font-bold text-xl">@</div>
+        </div>
         <div className="flex items-center space-x-2 w-1/3 justify-end">
           <div className="flex flex-col items-end">
             <div className="font-semibold text-sm text-white truncate">{teamB?.name}</div>

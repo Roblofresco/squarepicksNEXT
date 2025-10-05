@@ -177,6 +177,7 @@ function TeamBadge({ team, shadowColor, align }: { team: TeamInfo; shadowColor: 
       )}
       <div className="flex flex-col">
         <div className="font-semibold text-sm text-white truncate">{team.name}</div>
+        <div className="text-xs text-white/60">{team.record ?? '0-0'}</div>
       </div>
     </div>
   )

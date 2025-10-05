@@ -3,7 +3,6 @@
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { TeamInfo } from '@/types/lobby'
 
@@ -22,7 +21,7 @@ const mockTeamA: TeamInfo = {
   name: 'Philadelphia',
   fullName: 'Philadelphia Eagles',
   initials: 'PHI',
-  record: '4-0',
+  record: undefined,
   logo: undefined,
   color: '#0d4b3d',
   seccolor: '#1f7a67'
@@ -33,7 +32,7 @@ const mockTeamB: TeamInfo = {
   name: 'New Orleans',
   fullName: 'New Orleans Saints',
   initials: 'NO',
-  record: '3-1',
+  record: undefined,
   logo: undefined,
   color: '#2b1f0f',
   seccolor: '#c9a43d'
@@ -77,12 +76,6 @@ export default function TourGameCard({ state = 'scheduled', variant = state === 
         )}
       >
         <CardContent className="flex items-center justify-between p-2 sm:p-3 h-[60px] sm:h-[90px]">
-          {variant === 'live' && (
-            <Badge variant="destructive" className="absolute top-2 sm:top-3 right-2 sm:right-3 text-[0.45rem] sm:text-[0.5rem] uppercase">
-              Live
-            </Badge>
-          )}
-
           <div className="w-1/4 flex items-center justify-center h-full">
             <TeamDisplay team={displayTeamA} />
           </div>
@@ -114,7 +107,6 @@ function TeamDisplay({ team }: { team?: TeamInfo }) {
   const shadow = team?.seccolor ?? team?.color ?? '#0EA5E9'
   const dropShadow = { filter: `drop-shadow(0 0 6px ${shadow}99)` }
   const initials = team?.initials ?? 'N/A'
-  const record = team?.record ?? '--'
   const logoSrc = team?.logo
   const nameForAlt = team?.fullName ?? team?.name ?? initials
 
@@ -140,7 +132,6 @@ function TeamDisplay({ team }: { team?: TeamInfo }) {
       <span className="text-[10px] sm:text-xs text-white font-semibold uppercase tracking-wide">
         {initials}
       </span>
-      <span className="text-[11px] text-white/60">{record}</span>
     </div>
   )
 }

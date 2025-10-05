@@ -22,7 +22,7 @@ const mockTeamA: TeamInfo = {
   name: 'Philadelphia',
   fullName: 'Philadelphia Eagles',
   initials: 'PHI',
-  record: '4-0',
+  record: undefined,
   logo: undefined,
   color: '#0d4b3d',
   seccolor: '#1f7a67'
@@ -33,7 +33,7 @@ const mockTeamB: TeamInfo = {
   name: 'New Orleans',
   fullName: 'New Orleans Saints',
   initials: 'NO',
-  record: '3-1',
+  record: undefined,
   logo: undefined,
   color: '#2b1f0f',
   seccolor: '#c9a43d'
@@ -114,7 +114,6 @@ function TeamDisplay({ team }: { team?: TeamInfo }) {
   const shadow = team?.seccolor ?? team?.color ?? '#0EA5E9'
   const dropShadow = { filter: `drop-shadow(0 0 6px ${shadow}99)` }
   const initials = team?.initials ?? 'N/A'
-  const record = team?.record ?? '--'
   const logoSrc = team?.logo
   const nameForAlt = team?.fullName ?? team?.name ?? initials
 
@@ -140,7 +139,6 @@ function TeamDisplay({ team }: { team?: TeamInfo }) {
       <span className="text-[10px] sm:text-xs text-white font-semibold uppercase tracking-wide">
         {initials}
       </span>
-      <span className="text-[11px] text-white/60">{record}</span>
     </div>
   )
 }

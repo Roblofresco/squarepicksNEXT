@@ -46,9 +46,9 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         if (isCurrentUserPurchased) {
           classes.push(
             'bg-gradient-to-br',
-            'from-[#4fd1ffcc]',
-            'via-[#2bb4f5bf]',
-            'to-[#1587d8b3]',
+            'from-[#4fd1ff99]',
+            'via-[#2bb4f588]',
+            'to-[#1587d877]',
             'text-white',
             'font-semibold',
             'ring-2',
@@ -58,9 +58,9 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         } else if (isPreSelectedByCurrentUser) {
           classes.push(
             'bg-gradient-to-br',
-            'from-[#ec4899cc]',
-            'via-[#c026d3bf]',
-            'to-[#7c3aedb3]',
+            'from-[#ec489999]',
+            'via-[#c026d388]',
+            'to-[#7c3aed77]',
             'text-white',
             'font-semibold',
             'ring-2',
@@ -70,9 +70,9 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         } else if (isTakenByOther) {
           classes.push(
             'bg-gradient-to-br',
-            'from-[#0d341ccc]',
-            'via-[#082214bf]',
-            'to-[#04150cb3]',
+            'from-[#0d341c99]',
+            'via-[#08221488]',
+            'to-[#04150c77]',
             'text-slate-400',
             'opacity-80'
           );
@@ -80,9 +80,9 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         } else {
           classes.push(
             'bg-gradient-to-br',
-            'from-[#2fa874cc]',
-            'via-[#1f7f57bf]',
-            'to-[#156043b3]',
+            'from-[#2fa87499]',
+            'via-[#1f7f5788]',
+            'to-[#15604377]',
             'text-white'
           );
         }

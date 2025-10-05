@@ -46,14 +46,14 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         if (isCurrentUserPurchased) {
           classes.push(
             'bg-gradient-to-br',
-            'from-[#1bb0f2]',
-            'via-[#11a1e5]',
-            'to-[#0b6fb3]',
+            'from-[#4fd1ff]',
+            'via-[#2bb4f5]',
+            'to-[#1587d8]',
             'text-white',
             'font-semibold',
             'ring-2',
-            'ring-[#6ad6ff]/60',
-            'shadow-[0_0_14px_rgba(27,176,242,0.45)]'
+            'ring-[#8be2ff]/60',
+            'shadow-[0_0_16px_rgba(79,209,255,0.55)]'
           );
         } else if (isPreSelectedByCurrentUser) {
           classes.push(
@@ -80,10 +80,10 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
         } else {
           classes.push(
             'bg-gradient-to-br',
-            'from-[#1c4d36]',
-            'via-[#123827]',
-            'to-[#0a261b]',
-            'text-white/90'
+            'from-[#2fa874]',
+            'via-[#1f7f57]',
+            'to-[#156043]',
+            'text-white'
           );
         }
 

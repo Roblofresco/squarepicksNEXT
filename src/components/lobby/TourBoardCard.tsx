@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -40,8 +41,8 @@ const mockBoard: BoardType = {
 
 const stageCopy: Record<'idle' | 'selecting' | 'confirming' | 'entered', { title: string; description: string }> = {
   idle: {
-    title: '$1 Featured Grid',
-    description: 'Pick a number or tap Enter to use Quick Entry. You can lock in a square in seconds.',
+    title: ' ',
+    description: ' ',
   },
   selecting: {
     title: 'Choose Your Square',
@@ -77,8 +78,15 @@ export default function TourBoardCard({
   const isFree = boardForRender.isFreeEntry ?? entryFee === 0
   const emphasizedNumber = highlightedNumber ?? 32
   const copy = stageCopy[stage]
-
-  const currentUserSquares = new Set<number>(boardForRender.currentUserSelectedIndexes ?? mockBoard.currentUserSelectedIndexes ?? [])
+  const currentUserSquares = useMemo(() => {
+    if (board?.currentUserSelectedIndexes && board.currentUserSelectedIndexes.length > 0) {
+      return new Set(board.currentUserSelectedIndexes)
+    }
+    if (boardForRender.currentUserSelectedIndexes && boardForRender.currentUserSelectedIndexes.length > 0) {
+      return new Set(boardForRender.currentUserSelectedIndexes)
+    }
+    return new Set<number>()
+  }, [board?.currentUserSelectedIndexes, boardForRender.currentUserSelectedIndexes])
   const shadowA = teamA.seccolor ?? teamA.color ?? '#38bdf8'
   const shadowB = teamB.seccolor ?? teamB.color ?? '#38bdf8'
 
@@ -169,7 +177,6 @@ function TeamBadge({ team, shadowColor, align }: { team: TeamInfo; shadowColor: 
       )}
       <div className="flex flex-col">
         <div className="font-semibold text-sm text-white truncate">{team.name}</div>
-        <div className="text-xs text-white/60">{team.record ?? '0-0'}</div>
       </div>
     </div>
   )

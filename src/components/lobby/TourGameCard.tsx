@@ -75,18 +75,18 @@ export default function TourGameCard({ state = 'scheduled', variant = state === 
           highlight && 'border-sky-400 shadow-[0_0_18px_rgba(56,189,248,0.45)]'
         )}
       >
-        <CardContent className="flex items-center justify-between p-2 sm:p-3 h-[60px] sm:h-[90px]">
+        <CardContent className="flex items-center justify-between p-2 sm:p-3 h-[60px] sm:h-[90px] relative">
           <div className="w-1/4 flex items-center justify-center h-full">
             <TeamDisplay team={displayTeamA} />
           </div>
 
-          <div className="flex flex-col items-center justify-center w-1/2 text-center px-1">
+          <div className="flex flex-col items-center justify-start w-1/2 text-center px-1 pt-2 gap-1">
             {state === 'live' && (
-              <span className="mb-1 px-2 py-0.5 text-[0.55rem] sm:text-[0.6rem] font-semibold uppercase tracking-wide text-white bg-red-600 rounded-full shadow-[0_0_10px_rgba(248,113,113,0.45)] animate-pulse">
+              <span className="px-2 py-0.5 text-[0.55rem] sm:text-[0.6rem] font-semibold uppercase tracking-wide text-white bg-red-600 rounded-full shadow-[0_0_10px_rgba(248,113,113,0.45)] animate-pulse">
                 Live
               </span>
             )}
-            <div className="text-xs sm:text-sm font-bold mb-1 text-white" data-tour="sports-game-center">
+            <div className="text-xs sm:text-sm font-bold text-white" data-tour="sports-game-center">
               {copy.centerLine}
             </div>
             <div className="text-[10px] sm:text-xs text-white/70">

@@ -35,7 +35,6 @@ export default function TourQuickEntrySelector({
         transition={{ duration: 0.2 }}
       >
         <div className="flex flex-col items-center justify-center bg-black/20 text-white h-[90px] gap-1">
-          <span className="text-[11px] uppercase tracking-[0.2em] text-white/60">Entry Fee</span>
           <span className="text-3xl font-bold">{entryFeeDisplay}</span>
         </div>
         <Button

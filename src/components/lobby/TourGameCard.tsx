@@ -80,9 +80,9 @@ export default function TourGameCard({ state = 'scheduled', variant = state === 
             <TeamDisplay team={displayTeamA} />
           </div>
 
-          <div className="flex flex-col items-center justify-start w-1/2 text-center px-1 pt-2 gap-1">
+          <div className="relative flex flex-col items-center justify-center w-1/2 text-center px-1 pt-5 sm:pt-6 gap-1">
             {state === 'live' && (
-              <span className="px-2 py-0.5 text-[0.55rem] sm:text-[0.6rem] font-semibold uppercase tracking-wide text-white bg-red-600 rounded-full shadow-[0_0_10px_rgba(248,113,113,0.45)] animate-pulse">
+              <span className="absolute top-0 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[0.55rem] sm:text-[0.6rem] font-semibold uppercase tracking-wide text-white bg-red-600 rounded-full shadow-[0_0_10px_rgba(248,113,113,0.45)] animate-pulse">
                 Live
               </span>
             )}

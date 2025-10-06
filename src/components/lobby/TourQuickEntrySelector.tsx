@@ -3,7 +3,6 @@
 import { useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { X, Check } from 'lucide-react'
 
@@ -73,19 +72,29 @@ export default function TourQuickEntrySelector({
             style={{
               backgroundImage: 'linear-gradient(to top left, #5855E4, #403DAA)',
               color: '#FFFFFF',
+              fontFamily: 'Inter, sans-serif',
               borderRadius: '10px 10px 0 0',
               padding: '8px',
-              borderBottom: '1px solid rgba(0,0,0,0.1)',
+              borderBottom: '1px solid rgba(0,0,0,0.1)'
             }}
           >
             Random
           </Button>
-          <div className="bg-black/20 text-white flex items-center justify-center h-[95px] border-y border-white/10">
-            <Input
-              value={paddedNumber}
-              readOnly
-              className="text-center font-extrabold text-4xl bg-transparent border-none focus-visible:ring-0"
-            />
+          <div
+            className="w-full flex justify-center items-center transition-all duration-200 ease-out bg-black/20 backdrop-blur-sm border-y border-white/10"
+            style={{ height: '95px' }}
+          >
+            <span
+              className="font-extrabold"
+              style={{
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '50px',
+                color: '#F3F4F6',
+                lineHeight: '95px'
+              }}
+            >
+              {paddedNumber}
+            </span>
           </div>
           <Button
             className="w-full text-sm font-semibold"
@@ -93,12 +102,13 @@ export default function TourQuickEntrySelector({
             style={{
               backgroundImage: 'linear-gradient(to bottom right, rgba(108, 99, 255, 1), rgba(68, 62, 180, 1))',
               color: '#FFFFFF',
+              fontFamily: 'Inter, sans-serif',
               borderRadius: '0 0 10px 10px',
               padding: '8px',
-              borderTop: '1px solid rgba(255,255,255,0.15)',
+              borderTop: '1px solid rgba(255,255,255,0.15)'
             }}
           >
-            Confirm
+            Confirm?
           </Button>
         </motion.div>
       </AnimatePresence>

@@ -621,6 +621,14 @@ function LobbyContent() {
       scroll: 'center',
       holePadding: 24,
     },
+    {
+      id: 'sports-board-grid',
+      anchor: '[data-tour="sports-board-card"]',
+      title: 'Squares at a Glance',
+      description: 'Bright green squares are open, charcoal squares are taken, and blue glow marks your entries. Each number pair is a score combo.',
+      scroll: 'center',
+      holePadding: 24,
+    },
   ]), []);
   const [moreClicked, setMoreClicked] = useState(false);
   const [sweepstakesClicked, setSweepstakesClicked] = useState(false);

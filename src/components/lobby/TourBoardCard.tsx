@@ -41,8 +41,8 @@ const mockBoard: BoardType = {
 
 const stageCopy: Record<'idle' | 'selecting' | 'confirming' | 'entered', { title: string; description: string }> = {
   idle: {
-    title: 'Get Ready',
-    description: 'Take a quick look at the grid. We will walk you through picking a square next.',
+    title: 'Explore the Board',
+    description: 'Each square is a score combo. Bright green = open, charcoal = taken. We will pick next.',
   },
   selecting: {
     title: 'Choose Your Square',

@@ -63,6 +63,7 @@ interface TourBoardCardProps {
   highlightedNumber?: number
   game?: GameType
   board?: BoardType
+  legendSquares?: number[]
 }
 
 export default function TourBoardCard({
@@ -70,6 +71,7 @@ export default function TourBoardCard({
   highlightedNumber = 32,
   game,
   board,
+  legendSquares,
 }: TourBoardCardProps) {
   const boardForRender = board ?? mockBoard
   const teamA = game?.teamA ?? mockTeamA
@@ -80,7 +82,7 @@ export default function TourBoardCard({
   const copy = stageCopy[stage]
   const showHighlightedSquare = stage !== 'idle'
   const showCurrentUserSquares = stage === 'entered'
-  const legendSquares = stage === 'selecting' ? [12, 47, 88] : []
+  const legendSquaresForStage = legendSquares ?? (stage === 'selecting' ? [12, 47, 88] : [])
   const currentUserSquares = useMemo(() => {
     if (stage === 'entered') {
       const basis = board?.currentUserSelectedIndexes ?? boardForRender.currentUserSelectedIndexes
@@ -139,7 +141,7 @@ export default function TourBoardCard({
               highlightedNumber={emphasizedNumber}
               showHighlightedSquare={showHighlightedSquare}
               showCurrentUserSquares={showCurrentUserSquares}
-              legendSquares={legendSquares}
+              legendSquares={legendSquaresForStage}
             />
           </div>
         </div>

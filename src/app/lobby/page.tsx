@@ -982,11 +982,21 @@ function LobbyContent() {
                             className="w-full mt-0 px-2 pb-4"
                           >
                            {tourOpen && activeTour === 'sports' ? (
-                             <TourBoardCard
-                               stage={entryInteraction.stage}
-                               highlightedNumber={entryInteraction.selectedNumber ?? 32}
-                               game={games[0]}
-                             />
+                             (() => {
+                               const activeStepId = sportsTourSteps[tourStep]?.id;
+                               const forceLegendStage = activeStepId === 'sports-board-grid';
+                               const tourStage = forceLegendStage ? 'selecting' : entryInteraction.stage;
+                               const legendSquares = forceLegendStage ? [12, 47, 88] : undefined;
+
+                               return (
+                                 <TourBoardCard
+                                   stage={tourStage}
+                                   highlightedNumber={entryInteraction.selectedNumber ?? 32}
+                                   game={games[0]}
+                                   legendSquares={legendSquares}
+                                 />
+                               );
+                             })()
                            ) : (
                              <BoardsList 
                                games={games}

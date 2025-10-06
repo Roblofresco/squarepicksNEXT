@@ -8,20 +8,32 @@ interface BoardMiniGridProps {
   // currentUserId?: string | null; // No longer needed for internal fetching
   currentUserSelectedSquares?: Set<number>; // Squares purchased by current user
   highlightedNumber?: number | string; // Square pre-selected by current user for action
+  showCurrentUserSquares?: boolean;
+  showHighlightedSquare?: boolean;
 }
 
-const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlightedNumber }: BoardMiniGridProps) => {
+const BoardMiniGrid = memo(({
+  boardData,
+  currentUserSelectedSquares,
+  highlightedNumber,
+  showCurrentUserSquares = true,
+  showHighlightedSquare = true
+}: BoardMiniGridProps) => {
   // const [currentUserSquaresSet, setCurrentUserSquaresSet] = useState<Set<number>>(new Set()); // Removed
   // Internal useEffect for fetching user squares is REMOVED
 
   const squares = useMemo(() => Array.from({ length: 100 }, (_, i) => i), []);
-  const preSelectedSq = highlightedNumber !== undefined && highlightedNumber !== '' ? parseInt(String(highlightedNumber), 10) : null;
+  const preSelectedSq = showHighlightedSquare && highlightedNumber !== undefined && highlightedNumber !== '' ? parseInt(String(highlightedNumber), 10) : null;
 
   const allTakenSet = useMemo(() =>
     new Set((boardData?.selected_indexes as number[] | undefined) || [])
   , [boardData?.selected_indexes]);
 
   const currentUserSquaresSet = useMemo(() => {
+    if (!showCurrentUserSquares) {
+      return new Set<number>();
+    }
+
     if (currentUserSelectedSquares && currentUserSelectedSquares.size > 0) {
       return currentUserSelectedSquares;
     }
@@ -30,7 +42,7 @@ const BoardMiniGrid = memo(({ boardData, currentUserSelectedSquares, highlighted
       return new Set(fallback);
     }
     return new Set<number>();
-  }, [currentUserSelectedSquares, boardData?.currentUserSelectedIndexes]);
+  }, [showCurrentUserSquares, currentUserSelectedSquares, boardData?.currentUserSelectedIndexes]);
 
   const baseSquareClasses = 'aspect-square flex items-center justify-center text-[9px] font-mono rounded-[1px] cursor-pointer border border-white/10 transition-all duration-150 ease-in-out bg-transparent';
 

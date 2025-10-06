@@ -41,20 +41,20 @@ const mockBoard: BoardType = {
 
 const stageCopy: Record<'idle' | 'selecting' | 'confirming' | 'entered', { title: string; description: string }> = {
   idle: {
-    title: ' ',
-    description: ' ',
+    title: 'Get Ready',
+    description: 'Take a quick look at the grid. We will walk you through picking a square next.',
   },
   selecting: {
     title: 'Choose Your Square',
-    description: 'Squares in cyan are yours, green are available, and gray are already taken.',
+    description: 'Bright green squares are open. Tap one to highlight it in purple before confirming.',
   },
   confirming: {
     title: 'Review Your Pick',
-    description: 'Confirm the highlighted square or pick another before the game gets underway.',
+    description: 'Double-check the purple highlight. Need a change? Go back and try another open square.',
   },
   entered: {
     title: 'Entry Locked',
-    description: 'Track this grid as the game plays out to see if your square hits the winning combo.',
+    description: 'Your blue-glow squares are locked in. Track the grid during the game for a winning combo.',
   },
 }
 
@@ -78,6 +78,8 @@ export default function TourBoardCard({
   const isFree = boardForRender.isFreeEntry ?? entryFee === 0
   const emphasizedNumber = highlightedNumber ?? 32
   const copy = stageCopy[stage]
+  const showHighlightedSquare = stage !== 'idle'
+  const showCurrentUserSquares = stage === 'entered'
   const currentUserSquares = useMemo(() => {
     if (board?.currentUserSelectedIndexes && board.currentUserSelectedIndexes.length > 0) {
       return new Set(board.currentUserSelectedIndexes)
@@ -134,6 +136,8 @@ export default function TourBoardCard({
               boardData={boardForRender}
               currentUserSelectedSquares={currentUserSquares}
               highlightedNumber={emphasizedNumber}
+              showHighlightedSquare={showHighlightedSquare}
+              showCurrentUserSquares={showCurrentUserSquares}
             />
           </div>
         </div>

@@ -10,6 +10,7 @@ interface BoardMiniGridProps {
   highlightedNumber?: number | string; // Square pre-selected by current user for action
   showCurrentUserSquares?: boolean;
   showHighlightedSquare?: boolean;
+  legendSquares?: number[];
 }
 
 const BoardMiniGrid = memo(({
@@ -17,7 +18,8 @@ const BoardMiniGrid = memo(({
   currentUserSelectedSquares,
   highlightedNumber,
   showCurrentUserSquares = true,
-  showHighlightedSquare = true
+  showHighlightedSquare = true,
+  legendSquares = []
 }: BoardMiniGridProps) => {
   // const [currentUserSquaresSet, setCurrentUserSquaresSet] = useState<Set<number>>(new Set()); // Removed
   // Internal useEffect for fetching user squares is REMOVED
@@ -25,9 +27,13 @@ const BoardMiniGrid = memo(({
   const squares = useMemo(() => Array.from({ length: 100 }, (_, i) => i), []);
   const preSelectedSq = showHighlightedSquare && highlightedNumber !== undefined && highlightedNumber !== '' ? parseInt(String(highlightedNumber), 10) : null;
 
-  const allTakenSet = useMemo(() =>
-    new Set((boardData?.selected_indexes as number[] | undefined) || [])
-  , [boardData?.selected_indexes]);
+  const allTakenSet = useMemo(() => {
+    const base = new Set((boardData?.selected_indexes as number[] | undefined) || []);
+    if (legendSquares.length > 0) {
+      legendSquares.slice(1).forEach((sq) => base.add(sq));
+    }
+    return base;
+  }, [boardData?.selected_indexes, legendSquares]);
 
   const currentUserSquaresSet = useMemo(() => {
     if (!showCurrentUserSquares) {
@@ -49,9 +55,13 @@ const BoardMiniGrid = memo(({
   return (
     <div className="grid grid-cols-10 gap-[2px] p-1 bg-black/20 backdrop-blur-[1px] border border-white/10 rounded-md">
       {squares.map((sq) => {
-        const isCurrentUserPurchased = currentUserSquaresSet.has(sq);
-        const isPreSelectedByCurrentUser = preSelectedSq !== null && sq === preSelectedSq;
-        const isTakenByOther = allTakenSet.has(sq) && !isCurrentUserPurchased;
+        const isLegendAvailable = legendSquares[0] === sq;
+        const isLegendTaken = legendSquares[1] === sq;
+        const isLegendOwned = legendSquares[2] === sq;
+
+        const isCurrentUserPurchased = isLegendOwned || currentUserSquaresSet.has(sq);
+        const isPreSelectedByCurrentUser = !isLegendAvailable && !isLegendTaken && preSelectedSq !== null && sq === preSelectedSq;
+        const isTakenByOther = (isLegendTaken || allTakenSet.has(sq)) && !isCurrentUserPurchased;
         let squareContent = String(sq).padStart(2, '0');
         const classes: string[] = [baseSquareClasses];
 
@@ -97,6 +107,16 @@ const BoardMiniGrid = memo(({
             'to-[#15604377]',
             'text-white'
           );
+        }
+
+        if (isLegendAvailable) {
+          squareContent = 'OPEN';
+        }
+        if (isLegendTaken) {
+          squareContent = 'TAKEN';
+        }
+        if (isLegendOwned) {
+          squareContent = 'YOURS';
         }
 
         return (

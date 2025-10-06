@@ -41,8 +41,8 @@ const mockBoard: BoardType = {
 
 const stageCopy: Record<'idle' | 'selecting' | 'confirming' | 'entered', { title: string; description: string }> = {
   idle: {
-    title: 'Explore the Board',
-    description: 'Each square is a score combo. Bright green = open, charcoal = taken. We will pick next.',
+    title: ' ',
+    description: ' ',
   },
   selecting: {
     title: 'Choose Your Square',
@@ -80,15 +80,16 @@ export default function TourBoardCard({
   const copy = stageCopy[stage]
   const showHighlightedSquare = stage !== 'idle'
   const showCurrentUserSquares = stage === 'entered'
+  const legendSquares = stage === 'selecting' ? [12, 47, 88] : []
   const currentUserSquares = useMemo(() => {
-    if (board?.currentUserSelectedIndexes && board.currentUserSelectedIndexes.length > 0) {
-      return new Set(board.currentUserSelectedIndexes)
-    }
-    if (boardForRender.currentUserSelectedIndexes && boardForRender.currentUserSelectedIndexes.length > 0) {
-      return new Set(boardForRender.currentUserSelectedIndexes)
+    if (stage === 'entered') {
+      const basis = board?.currentUserSelectedIndexes ?? boardForRender.currentUserSelectedIndexes
+      if (basis && basis.length > 0) {
+        return new Set(basis)
+      }
     }
     return new Set<number>()
-  }, [board?.currentUserSelectedIndexes, boardForRender.currentUserSelectedIndexes])
+  }, [stage, board?.currentUserSelectedIndexes, boardForRender.currentUserSelectedIndexes])
   const shadowA = teamA.seccolor ?? teamA.color ?? '#38bdf8'
   const shadowB = teamB.seccolor ?? teamB.color ?? '#38bdf8'
 
@@ -138,6 +139,7 @@ export default function TourBoardCard({
               highlightedNumber={emphasizedNumber}
               showHighlightedSquare={showHighlightedSquare}
               showCurrentUserSquares={showCurrentUserSquares}
+              legendSquares={legendSquares}
             />
           </div>
         </div>

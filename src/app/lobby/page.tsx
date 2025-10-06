@@ -984,9 +984,9 @@ function LobbyContent() {
                            {tourOpen && activeTour === 'sports' ? (
                              (() => {
                                const activeStepId = sportsTourSteps[tourStep]?.id;
-                               const forceLegendStage = activeStepId === 'sports-board-grid';
-                               const tourStage = forceLegendStage ? 'selecting' : entryInteraction.stage;
-                               const legendSquares = forceLegendStage ? [12, 47, 88] : undefined;
+                               const showLegendStep = activeStepId === 'sports-board-grid';
+                               const tourStage = showLegendStep ? 'idle' : entryInteraction.stage;
+                               const legendSquares = showLegendStep ? [12, 47, 88] : undefined;
 
                                return (
                                  <TourBoardCard

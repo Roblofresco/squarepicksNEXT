@@ -109,15 +109,7 @@ const BoardMiniGrid = memo(({
           );
         }
 
-        if (isLegendAvailable) {
-          squareContent = 'OPEN';
-        }
-        if (isLegendTaken) {
-          squareContent = 'TAKEN';
-        }
-        if (isLegendOwned) {
-          squareContent = 'YOURS';
-        }
+        // Legend squares keep the same visual treatment but retain default text (number or X)
 
         return (
           <div

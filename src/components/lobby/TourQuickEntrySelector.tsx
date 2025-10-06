@@ -104,7 +104,8 @@ export default function TourQuickEntrySelector({
     )
   }
 
-  const isConfirmed = stage === 'confirming'
+  const isConfirming = stage === 'confirming'
+  const isEntered = stage === 'entered'
 
   return (
     <motion.div
@@ -119,26 +120,44 @@ export default function TourQuickEntrySelector({
       <div
         className={cn(
           'text-white text-center text-sm font-semibold py-2',
-          isConfirmed
+          isEntered
             ? 'bg-gradient-to-br from-[#22c55e] via-[#16a34a] to-[#15803d]'
             : 'bg-gradient-to-br from-[#6366f1] via-[#4f46e5] to-[#4338ca]'
         )}
         style={{ borderRadius: '10px 10px 0 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
       >
-        {isConfirmed || stage === 'entered' ? 'Entry Locked' : 'Confirm Entry'}
+        {isEntered ? 'Entry Locked' : 'Confirm Entry'}
       </div>
       <div className="bg-black/20 text-white flex flex-col items-center justify-center h-[95px] gap-1 border-y border-white/10">
         <span className="text-xs uppercase text-white/60">Square</span>
         <span className="text-3xl font-bold">{paddedNumber}</span>
         <span className="text-[11px] text-white/60">{entryFeeDisplay}</span>
       </div>
-      {stage === 'entered' ? (
+      {isEntered ? (
         <div className="bg-white/10 text-white text-sm font-medium text-center py-2">
           You’re in! Watch for payout alerts.
         </div>
       ) : (
-        <div className="bg-white/10 text-white text-sm font-medium text-center py-2">
-          Good luck!
+        <div className="flex w-full gap-0 min-w-0 items-stretch">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1 text-sm inline-flex items-center justify-center bg-black/30 hover:bg-black/40 border-white/10 text-white backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-accent-1/40 rounded-none rounded-bl-[10px] border-t"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            className="flex-1 text-sm inline-flex items-center justify-center hover:brightness-110 hover:scale-[1.02] min-w-0 rounded-none rounded-br-[10px] border-t"
+            style={{
+              backgroundImage: 'linear-gradient(to bottom right, rgba(108, 99, 255, 1), rgba(68, 62, 180, 1))',
+              color: '#FFFFFF',
+              padding: '8px',
+              borderTop: '1px solid rgba(255,255,255,0.15)'
+            }}
+          >
+            Confirm
+          </Button>
         </div>
       )}
     </motion.div>

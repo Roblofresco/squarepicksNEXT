@@ -26,6 +26,7 @@ type Step = {
   arrowTarget?: string;
   holePadding?: number;
   popoverOffsetY?: number;
+  legend?: { color: string; label: string }[];
 };
 
 interface TourOverlayProps {
@@ -499,12 +500,22 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
             : { left: `${Math.round(arrowLeft)}px`, bottom: '100%', transform: 'translateX(-50%)', borderBottom: '8px solid rgba(0,0,0,0.9)' }}
         />
         <div className="font-bold text-base">{step?.title}</div>
-        <div className="text-white/80 text-sm mt-1 space-y-1">
+        <div className="text-white/80 text-sm mt-1 space-y-2">
           {descriptionLines.length > 0
             ? descriptionLines.map((line, i) => (
                 <div key={i}>{renderBold(line)}</div>
               ))
             : step?.description}
+          {step?.legend && step.legend.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {step.legend.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <span className={`inline-flex h-4 w-4 rounded-sm border border-white/20 ${item.color}`} />
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex justify-end gap-2 mt-3">
           {stepIndex === steps.length - 1 ? (

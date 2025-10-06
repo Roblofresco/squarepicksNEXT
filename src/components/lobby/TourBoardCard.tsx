@@ -120,7 +120,7 @@ export default function TourBoardCard({
       </div>
 
       <div className="flex flex-row items-center space-x-4 flex-grow mt-4">
-        <div className="block w-[65%] relative bg-transparent rounded-xl overflow-hidden border-[1.5px] border-slate-300 shadow-[inset_0px_4px_4px_rgba(0,0,0,0.25)]">
+        <div className="block w-[65%] relative bg-transparent rounded-xl overflow-hidden border-[1.5px] border-slate-300 shadow-[inset_0px_4px_4px_rgba(0,0,0,0.25)]" data-tour="sports-board-grid">
           <div className="absolute inset-0 z-0">
             <Image
               src="/images/nfl-grid-background.png"

@@ -623,11 +623,17 @@ function LobbyContent() {
     },
     {
       id: 'sports-board-grid',
-      anchor: '[data-tour="sports-board-card"]',
+      anchor: '[data-tour="sports-board-grid"]',
+      arrowTarget: '[data-tour="sports-board-grid"]',
       title: 'Squares at a Glance',
-      description: 'Bright green squares are open, charcoal squares are taken, and blue glow marks your entries. Each number pair is a score combo.',
+      description: ' ',
       scroll: 'center',
-      holePadding: 24,
+      holePadding: 18,
+      legend: [
+        { color: 'bg-gradient-to-br from-[#2fa87499] via-[#1f7f5788] to-[#15604377]', label: 'Open square' },
+        { color: 'bg-gradient-to-br from-[#0d341c99] via-[#08221488] to-[#04150c77]', label: 'Taken square' },
+        { color: 'bg-gradient-to-br from-[#4fd1ff99] via-[#2bb4f588] to-[#1587d877]', label: 'Your square' }
+      ],
     },
   ]), []);
   const [moreClicked, setMoreClicked] = useState(false);

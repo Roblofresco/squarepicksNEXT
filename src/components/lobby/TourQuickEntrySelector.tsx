@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { X, Check } from 'lucide-react'
 
 interface TourQuickEntrySelectorProps {
   stage?: 'idle' | 'selecting' | 'confirming' | 'entered'
@@ -142,21 +143,22 @@ export default function TourQuickEntrySelector({
           <Button
             type="button"
             variant="outline"
-            className="flex-1 text-sm inline-flex items-center justify-center bg-black/30 hover:bg-black/40 border-white/10 text-white backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-accent-1/40 rounded-none rounded-bl-[10px] border-t"
+            className="flex-1 text-sm inline-flex items-center justify-center relative overflow-hidden transition-all duration-200 ease-in-out bg-black/30 hover:bg-black/40 border-white/10 text-white backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-accent-1/40 min-w-0 rounded-none rounded-bl-[10px] border-t"
+            style={{ padding: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.15)' }}
           >
-            Cancel
+            <X className="h-5 w-5 shrink-0 text-red-400" strokeWidth={3} />
           </Button>
           <Button
             type="button"
-            className="flex-1 text-sm inline-flex items-center justify-center hover:brightness-110 hover:scale-[1.02] min-w-0 rounded-none rounded-br-[10px] border-t"
+            className="flex-1 text-sm inline-flex items-center justify-center relative overflow-hidden transition-all duration-200 ease-in-out hover:brightness-110 hover:scale-[1.02] min-w-0 rounded-none rounded-br-[10px] border-t"
             style={{
               backgroundImage: 'linear-gradient(to bottom right, rgba(108, 99, 255, 1), rgba(68, 62, 180, 1))',
               color: '#FFFFFF',
               padding: '8px',
-              borderTop: '1px solid rgba(255,255,255,0.15)'
+              borderTop: '1px solid rgba(255, 255, 255, 0.15)'
             }}
           >
-            Confirm
+            <Check className="h-5 w-5 shrink-0 text-green-400" strokeWidth={3} />
           </Button>
         </div>
       )}

@@ -130,14 +130,14 @@ export default function TourQuickEntrySelector({
     >
       <div
         className={cn(
-          'text-white text-center text-sm font-semibold py-2',
+          'text-white text-center text-sm font-semibold py-2 uppercase tracking-wide',
           isEntered
             ? 'bg-gradient-to-br from-[#22c55e] via-[#16a34a] to-[#15803d]'
             : 'bg-gradient-to-br from-[#6366f1] via-[#4f46e5] to-[#4338ca]'
         )}
         style={{ borderRadius: '10px 10px 0 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
       >
-        {isEntered ? 'Entry Locked' : 'Confirm Entry'}
+        {isEntered ? 'Entry Locked' : 'Confirm'}
       </div>
       <div className="bg-black/20 text-white flex flex-col items-center justify-center h-[95px] gap-1 border-y border-white/10">
         <span className="text-xs uppercase text-white/60">Square</span>

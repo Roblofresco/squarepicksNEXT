@@ -1047,7 +1047,8 @@ function LobbyContent() {
                                const boardTrack = activeStepId === 'sports-board-track';
                                const tourStage = showLegendStep ? 'idle' : quickEntryResponse || boardTrack ? 'entered' : quickEntryConfirm ? 'confirming' : (quickEntryType || quickEntryRandom) ? 'selecting' : entryInteraction.stage;
                                const legendSquares = showLegendStep ? [12, 47, 88] : undefined;
-                               const highlightedNumber = quickEntryRandom ? 57 : entryInteraction.selectedNumber ?? 32;
+                               const randomNumberForTour = 57;
+                               const highlightedNumber = quickEntryRandom || quickEntryConfirm ? randomNumberForTour : entryInteraction.selectedNumber ?? 32;
 
                                return (
                                  <TourBoardCard

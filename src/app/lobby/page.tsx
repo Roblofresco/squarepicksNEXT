@@ -625,7 +625,7 @@ function LobbyContent() {
       id: 'sports-board-grid',
       anchor: '[data-tour="sports-board-grid"]',
       arrowTarget: '[data-tour="sports-board-grid"]',
-      title: 'Squares at a Glance',
+      title: 'Grid at a Glance',
       description: ' ',
       scroll: 'center',
       holePadding: 18,
@@ -634,6 +634,60 @@ function LobbyContent() {
         { color: 'bg-gradient-to-br from-[#0d341c99] via-[#08221488] to-[#04150c77]', label: 'Taken square' },
         { color: 'bg-gradient-to-br from-[#4fd1ff99] via-[#2bb4f588] to-[#1587d877]', label: 'Your square' }
       ],
+    },
+    {
+      id: 'sports-quick-entry-intro',
+      anchor: '[data-tour="sports-quick-entry"]',
+      arrowTarget: '[data-tour="sports-quick-entry"]',
+      title: 'Enter a Board',
+      description: 'Review the entry amount, then press Enter to start picking your number. We’ll guide you through confirming the square next.',
+      scroll: 'center',
+      holePadding: 16,
+    },
+    {
+      id: 'sports-quick-entry-type',
+      anchor: '[data-tour="sports-quick-entry"]',
+      arrowTarget: '[data-tour="sports-quick-entry"]',
+      title: 'Type Your Number',
+      description: 'Enter the two-digit number you want, or tap Random to let us pick. Highlighted squares match the number you choose.',
+      scroll: 'center',
+      holePadding: 16,
+    },
+    {
+      id: 'sports-quick-entry-random',
+      anchor: '[data-tour="sports-quick-entry"]',
+      arrowTarget: '[data-tour="sports-quick-entry-random"]',
+      title: 'Use Random',
+      description: 'Tap Random for a surprise number. We’ll update the grid instantly so you can decide whether to confirm it.',
+      scroll: 'center',
+      holePadding: 16,
+    },
+    {
+      id: 'sports-quick-entry-confirm',
+      anchor: '[data-tour="sports-quick-entry"]',
+      arrowTarget: '[data-tour="sports-quick-entry"]',
+      title: 'Confirm Your Pick',
+      description: 'Review the number and entry fee, then hit Confirm to lock in your square. You can still cancel before submitting.',
+      scroll: 'center',
+      holePadding: 16,
+    },
+    {
+      id: 'sports-quick-entry-response',
+      anchor: '[data-tour="sports-quick-entry"]',
+      arrowTarget: '[data-tour="sports-quick-entry"]',
+      title: 'Entry Response',
+      description: 'Success! This is where we confirm your entry and show your prize status. Keep an eye here after every submission.',
+      scroll: 'center',
+      holePadding: 16,
+    },
+    {
+      id: 'sports-board-track',
+      anchor: '[data-tour="sports-board-grid"]',
+      arrowTarget: '[data-tour="sports-board-grid"]',
+      title: 'Track Your Squares',
+      description: 'Your glowing squares mark active entries. Check back during the game to follow each period’s payouts.',
+      scroll: 'center',
+      holePadding: 18,
     },
   ]), []);
   const [moreClicked, setMoreClicked] = useState(false);
@@ -985,13 +1039,20 @@ function LobbyContent() {
                              (() => {
                                const activeStepId = sportsTourSteps[tourStep]?.id;
                                const showLegendStep = activeStepId === 'sports-board-grid';
-                               const tourStage = showLegendStep ? 'idle' : entryInteraction.stage;
+                               const quickEntryIntro = activeStepId === 'sports-quick-entry-intro';
+                               const quickEntryType = activeStepId === 'sports-quick-entry-type';
+                               const quickEntryRandom = activeStepId === 'sports-quick-entry-random';
+                               const quickEntryConfirm = activeStepId === 'sports-quick-entry-confirm';
+                               const quickEntryResponse = activeStepId === 'sports-quick-entry-response';
+                               const boardTrack = activeStepId === 'sports-board-track';
+                               const tourStage = showLegendStep ? 'idle' : quickEntryResponse || boardTrack ? 'entered' : quickEntryConfirm ? 'confirming' : (quickEntryType || quickEntryRandom) ? 'selecting' : entryInteraction.stage;
                                const legendSquares = showLegendStep ? [12, 47, 88] : undefined;
+                               const highlightedNumber = quickEntryRandom ? 57 : entryInteraction.selectedNumber ?? 32;
 
                                return (
                                  <TourBoardCard
                                    stage={tourStage}
-                                   highlightedNumber={entryInteraction.selectedNumber ?? 32}
+                                   highlightedNumber={highlightedNumber}
                                    game={games[0]}
                                    legendSquares={legendSquares}
                                  />

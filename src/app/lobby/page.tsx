@@ -1038,6 +1038,7 @@ function LobbyContent() {
                            {tourOpen && activeTour === 'sports' ? (
                              (() => {
                                const activeStepId = sportsTourSteps[tourStep]?.id;
+                               const tourUserSquare = 88;
                                const showLegendStep = activeStepId === 'sports-board-grid';
                                const quickEntryIntro = activeStepId === 'sports-quick-entry-intro';
                                const quickEntryType = activeStepId === 'sports-quick-entry-type';
@@ -1045,6 +1046,15 @@ function LobbyContent() {
                                const quickEntryConfirm = activeStepId === 'sports-quick-entry-confirm';
                                const quickEntryResponse = activeStepId === 'sports-quick-entry-response';
                                const boardTrack = activeStepId === 'sports-board-track';
+                               const boardStepsWithUserSquare = new Set([
+                                 'sports-board-grid',
+                                 'sports-quick-entry-intro',
+                                 'sports-quick-entry-type',
+                                 'sports-quick-entry-random',
+                                 'sports-quick-entry-confirm',
+                                 'sports-quick-entry-response',
+                                 'sports-board-track',
+                               ]);
                                const tourStage = showLegendStep
                                  ? 'idle'
                                  : quickEntryResponse
@@ -1054,11 +1064,13 @@ function LobbyContent() {
                                  : quickEntryType || quickEntryRandom
                                  ? 'selecting'
                                  : entryInteraction.stage;
-                               const legendSquares = showLegendStep ? [12, 47, 88] : undefined;
+                               const legendSquares = showLegendStep ? [12, 47, tourUserSquare] : undefined;
                                const randomNumberForTour = 57;
                                const highlightedNumber = quickEntryRandom || quickEntryConfirm ? randomNumberForTour : entryInteraction.selectedNumber ?? 32;
                                const quickEntryStage = quickEntryResponse || boardTrack ? 'idle' : tourStage;
-                               const forcedUserSquares = boardTrack ? new Set<number>([randomNumberForTour]) : undefined;
+                               const forcedUserSquares = boardStepsWithUserSquare.has(activeStepId ?? '')
+                                 ? new Set<number>([tourUserSquare])
+                                 : undefined;
 
                                return (
                                  <TourBoardCard

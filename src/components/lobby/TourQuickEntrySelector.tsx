@@ -139,10 +139,27 @@ export default function TourQuickEntrySelector({
       >
         {isEntered ? 'Entry Locked' : 'Confirm'}
       </div>
-      <div className="bg-black/20 text-white flex flex-col items-center justify-center h-[95px] gap-1 border-y border-white/10">
-        <span className="text-xs uppercase text-white/60">Square</span>
-        <span className="text-3xl font-bold">{paddedNumber}</span>
-        <span className="text-[11px] text-white/60">{entryFeeDisplay}</span>
+      <div
+        className="w-full min-w-0 flex flex-col items-center justify-center gap-1 px-2 transition-all duration-200 ease-out bg-black/20 backdrop-blur-sm border-y border-white/10"
+        style={{ height: '95px' }}
+      >
+        <div
+          className="font-extrabold text-center leading-none tracking-tight"
+          style={{
+            fontFamily: 'Inter, sans-serif',
+            fontSize: 'clamp(28px, 10vw, 40px)',
+            color: '#F3F4F6',
+            width: '100%'
+          }}
+        >
+          {paddedNumber}
+        </div>
+        <div
+          className="text-white/80 leading-none whitespace-nowrap text-center"
+          style={{ fontSize: 'clamp(9px, 2.8vw, 11px)' }}
+        >
+          Entry Fee: {entryFeeDisplay}
+        </div>
       </div>
       {isEntered ? (
         <div className="bg-white/10 text-white text-sm font-medium text-center py-2">

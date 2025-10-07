@@ -111,6 +111,9 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     if (step.id === 'response') {
       return document.querySelector('[data-tour-card="sweepstakes"]') as HTMLElement | null;
     }
+    if (step.id === 'sports-quick-entry-response') {
+      return document.querySelector('[data-tour="sports-entry-response-dialog"]') as HTMLElement | null;
+    }
     return document.querySelector(step.anchor) as HTMLElement | null;
   })();
   const holeRect = holeSource ? holeSource.getBoundingClientRect() : null;

@@ -1,7 +1,7 @@
-import React, { memo, useState, useEffect, useMemo, CSSProperties } from 'react';
+import React, { memo, useMemo } from 'react';
 // import { db } from '@/lib/firebase'; // No longer needed for direct DB access
 // import { collection, query, where, onSnapshot, DocumentData, DocumentReference, doc } from 'firebase/firestore'; // No longer needed
-import { Board as BoardType, SquareEntry } from '@/types/lobby'; // DocumentData no longer needed from here
+import { Board as BoardType } from '@/types/lobby';
 
 interface BoardMiniGridProps {
   boardData?: BoardType | null; // Simplified DocumentData away as BoardType should be used

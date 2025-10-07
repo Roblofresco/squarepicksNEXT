@@ -6,6 +6,9 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import BoardMiniGrid from '@/components/lobby/BoardMiniGrid'
 import TourQuickEntrySelector from '@/components/lobby/TourQuickEntrySelector'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { CheckCircle2 } from 'lucide-react'
 import type { Game as GameType, Board as BoardType, TeamInfo } from '@/types/lobby'
 
 const mockTeamA: TeamInfo = {
@@ -64,6 +67,8 @@ interface TourBoardCardProps {
   game?: GameType
   board?: BoardType
   legendSquares?: number[]
+  quickEntryStage?: 'idle' | 'selecting' | 'confirming' | 'entered'
+  showResponseDialog?: boolean
 }
 
 export default function TourBoardCard({
@@ -72,6 +77,8 @@ export default function TourBoardCard({
   game,
   board,
   legendSquares,
+  quickEntryStage,
+  showResponseDialog = false,
 }: TourBoardCardProps) {
   const boardForRender = board ?? mockBoard
   const teamA = game?.teamA ?? mockTeamA
@@ -147,7 +154,7 @@ export default function TourBoardCard({
         </div>
         <div className="w-[35%] flex-shrink-0">
           <TourQuickEntrySelector
-            stage={stage}
+            stage={quickEntryStage ?? stage}
             selectedNumber={emphasizedNumber}
             entryFee={entryFee}
             isFreeEntry={isFree}
@@ -160,6 +167,22 @@ export default function TourBoardCard({
         <p className="text-xs leading-relaxed text-white/70">{copy.description}</p>
       </div>
     </motion.div>
+    <Dialog open={showResponseDialog}>
+      <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
+        <DialogHeader className="text-center space-y-2">
+          <DialogTitle className="text-2xl font-bold flex items-center justify-center gap-2">
+            <CheckCircle2 className="h-6 w-6 text-green-400" />
+            Entry Successful
+          </DialogTitle>
+          <DialogDescription className="text-white/70">
+            Your square has been locked in. Good luck!
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-center">
+          <Button className="bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90">Got it</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

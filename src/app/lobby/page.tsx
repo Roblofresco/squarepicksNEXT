@@ -1045,10 +1045,19 @@ function LobbyContent() {
                                const quickEntryConfirm = activeStepId === 'sports-quick-entry-confirm';
                                const quickEntryResponse = activeStepId === 'sports-quick-entry-response';
                                const boardTrack = activeStepId === 'sports-board-track';
-                               const tourStage = showLegendStep ? 'idle' : quickEntryResponse || boardTrack ? 'entered' : quickEntryConfirm ? 'confirming' : (quickEntryType || quickEntryRandom) ? 'selecting' : entryInteraction.stage;
+                               const tourStage = showLegendStep
+                                 ? 'idle'
+                                 : quickEntryResponse || boardTrack
+                                 ? 'entered'
+                                 : quickEntryConfirm
+                                 ? 'confirming'
+                                 : quickEntryType || quickEntryRandom
+                                 ? 'selecting'
+                                 : entryInteraction.stage;
                                const legendSquares = showLegendStep ? [12, 47, 88] : undefined;
                                const randomNumberForTour = 57;
                                const highlightedNumber = quickEntryRandom || quickEntryConfirm ? randomNumberForTour : entryInteraction.selectedNumber ?? 32;
+                               const quickEntryStage = quickEntryResponse ? 'idle' : tourStage;
 
                                return (
                                  <TourBoardCard
@@ -1056,6 +1065,8 @@ function LobbyContent() {
                                    highlightedNumber={highlightedNumber}
                                    game={games[0]}
                                    legendSquares={legendSquares}
+                                   quickEntryStage={quickEntryStage}
+                                   showResponseDialog={quickEntryResponse}
                                  />
                                );
                              })()

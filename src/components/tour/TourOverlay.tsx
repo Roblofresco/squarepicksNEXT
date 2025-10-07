@@ -112,7 +112,8 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
       return document.querySelector('[data-tour-card="sweepstakes"]') as HTMLElement | null;
     }
     if (step.id === 'sports-quick-entry-response') {
-      return document.querySelector('[data-tour="sports-entry-response-dialog"]') as HTMLElement | null;
+      const dialog = document.querySelector('[data-tour="sports-entry-response-dialog"]') as HTMLElement | null;
+      if (dialog) return dialog;
     }
     return document.querySelector(step.anchor) as HTMLElement | null;
   })();
@@ -120,13 +121,27 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
   useEffect(() => {
     if (!open || !step) return;
+    const anchorSelector = step.id === 'sports-quick-entry-response'
+      ? '[data-tour="sports-entry-response-dialog"]'
+      : step.anchor;
+
     if (step.id === 'response') {
       const card = document.querySelector('[data-tour-card="sweepstakes"]') as HTMLElement | null;
       setRect(card ? card.getBoundingClientRect() : null);
       setPlacement('top');
       return;
     }
-    const target = document.querySelector(step.anchor) as HTMLElement | null;
+    let target = anchorSelector ? document.querySelector(anchorSelector) as HTMLElement | null : null;
+    if (!target && step.id === 'sports-quick-entry-response') {
+      const rafId = requestAnimationFrame(() => {
+        const dialog = document.querySelector('[data-tour="sports-entry-response-dialog"]') as HTMLElement | null;
+        if (dialog) {
+          setRect(dialog.getBoundingClientRect());
+          setPlacement('top');
+        }
+      });
+      return () => cancelAnimationFrame(rafId);
+    }
     if (target) {
       try {
         if (step.scroll === 'bottom') {

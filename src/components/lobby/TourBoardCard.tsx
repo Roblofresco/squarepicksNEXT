@@ -103,7 +103,8 @@ export default function TourBoardCard({
   const shadowB = teamB.seccolor ?? teamB.color ?? '#38bdf8'
 
   return (
-    <motion.div
+    <>
+      <motion.div
       data-tour="sports-board-card"
       data-tour-allow="sports-board"
       whileHover={{ scale: 1.01 }}
@@ -166,8 +167,8 @@ export default function TourBoardCard({
         <div className="font-semibold text-white mb-1">{copy.title}</div>
         <p className="text-xs leading-relaxed text-white/70">{copy.description}</p>
       </div>
-    </motion.div>
-    <Dialog open={showResponseDialog}>
+      </motion.div>
+      <Dialog open={showResponseDialog}>
       <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
         <DialogHeader className="text-center space-y-2">
           <DialogTitle className="text-2xl font-bold flex items-center justify-center gap-2">
@@ -182,7 +183,8 @@ export default function TourBoardCard({
           <Button className="bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90">Got it</Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+    </>
   )
 }
 

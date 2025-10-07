@@ -169,7 +169,7 @@ export default function TourBoardCard({
       </div>
       </motion.div>
       <Dialog open={showResponseDialog}>
-      <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
+        <DialogContent data-tour="sports-entry-response-dialog" className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
         <DialogHeader className="text-center space-y-2">
           <DialogTitle className="text-2xl font-bold flex items-center justify-center gap-2">
             <CheckCircle2 className="h-6 w-6 text-green-400" />

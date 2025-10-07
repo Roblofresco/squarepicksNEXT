@@ -673,8 +673,8 @@ function LobbyContent() {
     },
     {
       id: 'sports-quick-entry-response',
-      anchor: '[data-tour="sports-quick-entry"]',
-      arrowTarget: '[data-tour="sports-quick-entry"]',
+      anchor: '[data-tour="sports-entry-response-dialog"]',
+      arrowTarget: '[data-tour="sports-entry-response-dialog"]',
       title: 'Entry Response',
       description: 'Success! This is where we confirm your entry and show your prize status. Keep an eye here after every submission.',
       scroll: 'center',

@@ -1,9 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { auth, db } from '@/lib/firebase'
-import { onAuthStateChanged, User } from 'firebase/auth'
+import { db } from '@/lib/firebase'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -21,11 +19,10 @@ type NotificationPrefs = {
 }
 
 const defaultPrefs: NotificationPrefs = {
-  pushNotifications: true
+  pushNotifications: false
 }
 
 export default function ProfileNotificationsPage() {
-  const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [prefs, setPrefs] = useState<NotificationPrefs>(defaultPrefs)
   const headingRef = useRef<HTMLHeadingElement>(null)
@@ -33,15 +30,19 @@ export default function ProfileNotificationsPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [devicePermission, setDevicePermission] = useState<NotificationPermission>('default')
   const [isEnabling, setIsEnabling] = useState(false)
+  const [isPushSupported, setIsPushSupported] = useState(true)
   
   // Use the new auth guard hook
-  const { user, loading, isAuthenticated, isEmailVerified } = useAuthGuard(true)
+  const { user, loading, isAuthenticated } = useAuthGuard(true)
 
-  // Check device notification permission
+  // Check device notification permission & support
   useEffect(() => {
-    if ('Notification' in window) {
-      setDevicePermission(Notification.permission)
+    if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setIsPushSupported(false)
+      return
     }
+
+    setDevicePermission(Notification.permission)
   }, [])
 
   // Load notification preferences when user is authenticated
@@ -70,28 +71,63 @@ export default function ProfileNotificationsPage() {
     }
   }, [user, isAuthenticated])
 
-  const handleChange = (key: keyof NotificationPrefs) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPrefs((prev) => ({ ...prev, [key]: e.target.checked }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const savePreferences = async (next: NotificationPrefs) => {
     if (!user) return
     setSaving(true)
-    setError(null)
-    setSuccess(null)
     try {
       const prefsRef = doc(db, 'users', user.uid, 'preferences', 'notifications')
-      await setDoc(prefsRef, prefs, { merge: true })
+      await setDoc(prefsRef, next, { merge: true })
       setSuccess('Preferences saved')
-      headingRef.current?.focus()
     } catch (e) {
       console.error('save prefs error', e)
       setError('Failed to save preferences')
-      headingRef.current?.focus()
     } finally {
       setSaving(false)
     }
+  }
+
+  const handlePushToggle = async (checked: boolean) => {
+    if (saving || isEnabling) return
+    setError(null)
+    setSuccess(null)
+
+    if (!isPushSupported) {
+      setError('Push notifications are not supported on this device.')
+      return
+    }
+
+    if (checked) {
+      setIsEnabling(true)
+      try {
+        if (typeof Notification.requestPermission !== 'function') {
+          setError('Please enable notifications in your browser settings.')
+          setIsEnabling(false)
+          return
+        }
+
+        let permission = devicePermission
+        if (permission !== 'granted') {
+          permission = await Notification.requestPermission()
+          setDevicePermission(permission)
+        }
+
+        if (permission !== 'granted') {
+          setError('Notifications are blocked. Enable them in your browser settings to receive updates.')
+          setIsEnabling(false)
+          return
+        }
+      } catch (err) {
+        console.error('Error requesting notification permission:', err)
+        setError('Could not enable notifications. Please try again.')
+        setIsEnabling(false)
+        return
+      }
+      setIsEnabling(false)
+    }
+
+    const nextPrefs = { ...prefs, pushNotifications: checked }
+    setPrefs(nextPrefs)
+    await savePreferences(nextPrefs)
   }
 
   if (loading) {
@@ -135,7 +171,17 @@ export default function ProfileNotificationsPage() {
           <div className="w-full max-w-lg">
 
         <div className="rounded-xl overflow-hidden bg-gradient-to-b from-background-primary via-background-primary via-5% to-background-secondary divide-y divide-gray-700/50 shadow-md">
-          {devicePermission === 'default' ? (
+          {(!isPushSupported || devicePermission === 'denied') && (
+            <div className="p-4">
+              <Alert className="bg-muted/20 border-muted/30">
+                <AlertDescription>
+                  Push notifications are not available on this device or have been blocked in your browser settings.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+
+          {isPushSupported && devicePermission === 'default' && (
             <div className="p-4">
               <Alert className="bg-accent-1/10 border-accent-1/20">
                 <BellRing className="h-4 w-4" />
@@ -143,33 +189,20 @@ export default function ProfileNotificationsPage() {
                   To receive notifications about your games and winnings, you'll need to allow notifications on your device.
                 </AlertDescription>
               </Alert>
-              <Button 
+              <Button
                 className="w-full mt-4 bg-accent-1 hover:bg-accent-1/90"
                 onClick={async () => {
                   setIsEnabling(true)
                   setError(null)
                   try {
-                    // Check if the browser supports the notifications API
-                    if (!('Notification' in window)) {
-                      setError('Your browser does not support notifications')
-                      return
-                    }
-
-                    // For mobile Safari, we need to check if we can request permission
-                    if (typeof Notification.requestPermission !== 'function') {
-                      setError('Please enable notifications in your browser settings')
-                      return
-                    }
-
-                    // Request permission
                     const permission = await Notification.requestPermission()
                     setDevicePermission(permission)
 
                     if (permission === 'granted') {
-                      setPrefs(prev => ({ ...prev, pushNotifications: true }))
+                      const nextPrefs = { ...prefs, pushNotifications: true }
+                      setPrefs(nextPrefs)
                       setSuccess('Notifications enabled successfully')
-                      // Auto-save the preference
-                      handleSubmit({ preventDefault: () => {} } as React.FormEvent)
+                      await savePreferences(nextPrefs)
                     } else if (permission === 'denied') {
                       setError('Please allow notifications in your browser settings to receive updates')
                     }
@@ -192,8 +225,9 @@ export default function ProfileNotificationsPage() {
                 )}
               </Button>
             </div>
-          ) : (
-          <form onSubmit={handleSubmit}>
+          )}
+
+          {isPushSupported && devicePermission === 'granted' && (
             <div className="p-4 flex items-center justify-between">
               <div className="pr-4">
                   <Label htmlFor="pushNotifications" className="text-base">Push notifications</Label>
@@ -203,23 +237,15 @@ export default function ProfileNotificationsPage() {
                   id="pushNotifications"
                   checked={prefs.pushNotifications}
                   onCheckedChange={(checked: boolean) => {
-                    setPrefs(prev => ({ ...prev, pushNotifications: checked }))
-                    handleSubmit({ preventDefault: () => {} } as React.FormEvent)
+                    handlePushToggle(checked)
                   }}
                   className="mt-1"
-                  disabled={devicePermission === 'denied' || saving}
+                  disabled={saving || isEnabling}
                 />
             </div>
-              {devicePermission === 'denied' && (
-                <div className="px-4 pb-4">
-                  <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
-                    <AlertDescription>
-                      Notifications are blocked. Please enable them in your browser settings to receive updates.
-                    </AlertDescription>
-                  </Alert>
-              </div>
+              {saving && (
+                <div className="px-4 pb-4 text-sm text-gray-400">Saving your preferences…</div>
               )}
-          </form>
           )}
         </div>
       </div>

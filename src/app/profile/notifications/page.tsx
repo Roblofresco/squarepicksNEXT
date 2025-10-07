@@ -228,11 +228,12 @@ export default function ProfileNotificationsPage() {
           )}
 
           {isPushSupported && devicePermission === 'granted' && (
-            <div className="p-4 flex items-center justify-between">
-              <div className="pr-4">
+            <div className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="pr-4">
                   <Label htmlFor="pushNotifications" className="text-base">Push notifications</Label>
                   <p className="text-sm text-gray-400 mt-1">Get notified about game updates and wins.</p>
-              </div>
+                </div>
                 <Switch
                   id="pushNotifications"
                   checked={prefs.pushNotifications}
@@ -242,10 +243,11 @@ export default function ProfileNotificationsPage() {
                   className="mt-1"
                   disabled={saving || isEnabling}
                 />
-            </div>
+              </div>
               {saving && (
-                <div className="px-4 pb-4 text-sm text-gray-400">Saving your preferences…</div>
+                <div className="pb-2 text-sm text-gray-400">Saving your preferences…</div>
               )}
+            </div>
           )}
         </div>
       </div>

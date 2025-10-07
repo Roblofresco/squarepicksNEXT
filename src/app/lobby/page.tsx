@@ -1047,7 +1047,7 @@ function LobbyContent() {
                                const boardTrack = activeStepId === 'sports-board-track';
                                const tourStage = showLegendStep
                                  ? 'idle'
-                                 : quickEntryResponse || boardTrack
+                                 : quickEntryResponse
                                  ? 'entered'
                                  : quickEntryConfirm
                                  ? 'confirming'
@@ -1057,7 +1057,8 @@ function LobbyContent() {
                                const legendSquares = showLegendStep ? [12, 47, 88] : undefined;
                                const randomNumberForTour = 57;
                                const highlightedNumber = quickEntryRandom || quickEntryConfirm ? randomNumberForTour : entryInteraction.selectedNumber ?? 32;
-                               const quickEntryStage = quickEntryResponse ? 'idle' : tourStage;
+                               const quickEntryStage = quickEntryResponse || boardTrack ? 'idle' : tourStage;
+                               const forcedUserSquares = boardTrack ? new Set<number>([randomNumberForTour]) : undefined;
 
                                return (
                                  <TourBoardCard
@@ -1067,6 +1068,7 @@ function LobbyContent() {
                                    legendSquares={legendSquares}
                                    quickEntryStage={quickEntryStage}
                                    showResponseDialog={quickEntryResponse}
+                                   forcedUserSquares={forcedUserSquares}
                                  />
                                );
                              })()

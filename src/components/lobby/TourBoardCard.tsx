@@ -69,6 +69,7 @@ interface TourBoardCardProps {
   legendSquares?: number[]
   quickEntryStage?: 'idle' | 'selecting' | 'confirming' | 'entered'
   showResponseDialog?: boolean
+  forcedUserSquares?: Set<number>
 }
 
 export default function TourBoardCard({
@@ -79,6 +80,7 @@ export default function TourBoardCard({
   legendSquares,
   quickEntryStage,
   showResponseDialog = false,
+  forcedUserSquares,
 }: TourBoardCardProps) {
   const boardForRender = board ?? mockBoard
   const teamA = game?.teamA ?? mockTeamA
@@ -150,6 +152,7 @@ export default function TourBoardCard({
               showHighlightedSquare={showHighlightedSquare}
               showCurrentUserSquares={showCurrentUserSquares}
               legendSquares={legendSquaresForStage}
+            forcedCurrentUserSquares={forcedUserSquares}
             />
           </div>
         </div>
@@ -163,10 +166,6 @@ export default function TourBoardCard({
         </div>
       </div>
 
-      <div className="mt-4 text-center text-sm text-white/75">
-        <div className="font-semibold text-white mb-1">{copy.title}</div>
-        <p className="text-xs leading-relaxed text-white/70">{copy.description}</p>
-      </div>
       </motion.div>
       <Dialog open={showResponseDialog}>
         <DialogContent data-tour="sports-entry-response-dialog" className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">

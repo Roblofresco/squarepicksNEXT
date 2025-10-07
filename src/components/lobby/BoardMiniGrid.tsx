@@ -11,6 +11,7 @@ interface BoardMiniGridProps {
   showCurrentUserSquares?: boolean;
   showHighlightedSquare?: boolean;
   legendSquares?: number[];
+  forcedCurrentUserSquares?: Set<number>;
 }
 
 const BoardMiniGrid = memo(({
@@ -19,7 +20,8 @@ const BoardMiniGrid = memo(({
   highlightedNumber,
   showCurrentUserSquares = true,
   showHighlightedSquare = true,
-  legendSquares = []
+  legendSquares = [],
+  forcedCurrentUserSquares
 }: BoardMiniGridProps) => {
   // const [currentUserSquaresSet, setCurrentUserSquaresSet] = useState<Set<number>>(new Set()); // Removed
   // Internal useEffect for fetching user squares is REMOVED
@@ -36,6 +38,9 @@ const BoardMiniGrid = memo(({
   }, [boardData?.selected_indexes, legendSquares]);
 
   const currentUserSquaresSet = useMemo(() => {
+    if (forcedCurrentUserSquares) {
+      return forcedCurrentUserSquares;
+    }
     if (!showCurrentUserSquares) {
       return new Set<number>();
     }

@@ -75,7 +75,7 @@ interface TourBoardCardProps {
 
 export default function TourBoardCard({
   stage = 'idle',
-  highlightedNumber = 32,
+  highlightedNumber,
   game,
   board,
   legendSquares,
@@ -93,7 +93,7 @@ export default function TourBoardCard({
   const copy = stageCopy[stage]
   const showHighlightedSquare = stage !== 'idle' && highlightedNumber !== undefined
   const showCurrentUserSquares = stage === 'entered'
-  const legendSquaresForStage = legendSquares ?? (stage === 'selecting' ? [12, 47, 88] : [])
+  const legendSquaresForStage = legendSquares ?? []
   const currentUserSquares = useMemo(() => {
     if (stage === 'entered') {
       const basis = board?.currentUserSelectedIndexes ?? boardForRender.currentUserSelectedIndexes

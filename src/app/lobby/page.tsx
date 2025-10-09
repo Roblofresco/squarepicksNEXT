@@ -1128,18 +1128,18 @@ function LobbyContent() {
                                    case 'sports-quick-entry-type':
                                      return {
                                        stage: 'selecting' as const,
-                                       legendSquares: undefined,
+                                      legendSquares: undefined,
                                        highlightedNumber: defaultSelectedNumber,
-                                       forcedSquares: new Set<number>([tourUserSquare]),
+                                      forcedSquares: new Set<number>([tourUserSquare]),
                                        quickEntryStage: 'selecting' as const,
                                        showResponseDialog: false,
                                      };
                                    case 'sports-quick-entry-random':
                                      return {
                                        stage: 'selecting' as const,
-                                       legendSquares: undefined,
+                                      legendSquares: undefined,
                                        highlightedNumber: randomNumberForTour,
-                                       forcedSquares: new Set<number>([tourUserSquare]),
+                                      forcedSquares: new Set<number>([tourUserSquare]),
                                        quickEntryStage: 'selecting' as const,
                                        showResponseDialog: false,
                                      };

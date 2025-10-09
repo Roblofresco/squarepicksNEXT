@@ -569,6 +569,7 @@ function LobbyContent() {
   const [sportsTourSeen, setSportsTourSeen] = useState<UserTourState>({ done: false, loading: true });
   const [sweepstakesTourAutoTriggered, setSweepstakesTourAutoTriggered] = useState(false);
   const [sportsTourAutoTriggered, setSportsTourAutoTriggered] = useState(false);
+  const tourOpenFrameRef = useRef<number | null>(null);
   type LobbyTourStep = {
     id: string;
     anchor: string;
@@ -761,7 +762,39 @@ function LobbyContent() {
   const boardReadyForTour = useMemo(() => (
     !!(sweepstakesBoard && sweepstakesGame && sweepstakesGame.teamA && sweepstakesGame.teamB && sweepstakesTeams[sweepstakesGame.teamA.id] && sweepstakesTeams[sweepstakesGame.teamB.id])
   ), [sweepstakesBoard, sweepstakesGame, sweepstakesTeams]);
-  const sportsReadyForTour = useMemo(() => !isLoadingGamesAndTeams || games.length > 0, [isLoadingGamesAndTeams, games]);
+  const sportsReadyForTour = useMemo(() => games.length > 0 && !isLoadingGamesAndTeams, [games, isLoadingGamesAndTeams]);
+
+  const openTour = useCallback((tour: 'sweepstakes' | 'sports') => {
+    setActiveTour(tour);
+    setTourStep(0);
+    setTourPhase('A');
+    setMoreClicked(false);
+    setSweepstakesClicked(false);
+
+    if (tourOpenFrameRef.current !== null && typeof window !== 'undefined') {
+      window.cancelAnimationFrame(tourOpenFrameRef.current);
+      tourOpenFrameRef.current = null;
+    }
+
+    const triggerOpen = () => {
+      setTourOpen(true);
+      tourOpenFrameRef.current = null;
+    };
+
+    if (typeof window !== 'undefined') {
+      tourOpenFrameRef.current = window.requestAnimationFrame(triggerOpen);
+    } else {
+      triggerOpen();
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (tourOpenFrameRef.current !== null && typeof window !== 'undefined') {
+        window.cancelAnimationFrame(tourOpenFrameRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedSport !== SWEEPSTAKES_SPORT_ID) return;
@@ -770,14 +803,9 @@ function LobbyContent() {
     if (sweepstakesTourSeen.loading) return;
     if (sweepstakesTourSeen.done) return;
     if (!boardReadyForTour) return;
-    setActiveTour('sweepstakes');
-    setTourOpen(true);
-    setTourStep(0);
-    setTourPhase('A');
-    setMoreClicked(false);
-    setSweepstakesClicked(false);
+    openTour('sweepstakes');
     setSweepstakesTourAutoTriggered(true);
-  }, [userId, sweepstakesTourSeen, sweepstakesTourAutoTriggered, boardReadyForTour]);
+  }, [userId, sweepstakesTourSeen, sweepstakesTourAutoTriggered, boardReadyForTour, openTour]);
 
   useEffect(() => {
     if (selectedSport === SWEEPSTAKES_SPORT_ID) return;
@@ -786,14 +814,9 @@ function LobbyContent() {
     if (sportsTourSeen.loading) return;
     if (sportsTourSeen.done) return;
     if (!sportsReadyForTour) return;
-    setActiveTour('sports');
-    setTourOpen(true);
-    setTourStep(0);
-    setTourPhase('A');
-    setMoreClicked(false);
-    setSweepstakesClicked(false);
+    openTour('sports');
     setSportsTourAutoTriggered(true);
-  }, [selectedSport, userId, sportsTourSeen, sportsTourAutoTriggered, sportsReadyForTour]);
+  }, [selectedSport, userId, sportsTourSeen, sportsTourAutoTriggered, sportsReadyForTour, openTour]);
 
   useEffect(() => {
     if (!tourOpen) {
@@ -1047,6 +1070,7 @@ function LobbyContent() {
                                const quickEntryResponse = activeStepId === 'sports-quick-entry-response';
                                const boardTrack = activeStepId === 'sports-board-track';
                                const boardStepsWithUserSquare = new Set([
+                                 'sports-board',
                                  'sports-board-grid',
                                  'sports-quick-entry-intro',
                                  'sports-quick-entry-type',
@@ -1066,10 +1090,18 @@ function LobbyContent() {
                                  : entryInteraction.stage;
                                const legendSquares = showLegendStep ? [12, 47, tourUserSquare] : undefined;
                                const randomNumberForTour = 57;
-                               const highlightedNumber = quickEntryRandom || quickEntryConfirm ? randomNumberForTour : entryInteraction.selectedNumber ?? 32;
+                               const highlightedNumber = quickEntryRandom || quickEntryConfirm
+                                 ? randomNumberForTour
+                                 : quickEntryResponse
+                                 ? undefined
+                                 : entryInteraction.selectedNumber ?? 32;
                                const quickEntryStage = quickEntryResponse || boardTrack ? 'idle' : tourStage;
-                               const forcedUserSquares = boardStepsWithUserSquare.has(activeStepId ?? '')
-                                 ? new Set<number>([tourUserSquare])
+                               const hasForcedSquares = boardStepsWithUserSquare.has(activeStepId ?? '');
+                               const forcedUserSquares = hasForcedSquares
+                                 ? new Set<number>([
+                                     tourUserSquare,
+                                     ...(quickEntryResponse || boardTrack ? [randomNumberForTour] : []),
+                                   ])
                                  : undefined;
 
                                return (

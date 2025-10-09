@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button';
 type TourSweepstakesBoardCardProps = {
   tourStepId?: string;
   highlightedSquare?: number | null;
+  onMounted?: () => void;
 };
 
 const stageOrder = ['selector','input','grid','enter','confirm','response'];
 
-export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare }: TourSweepstakesBoardCardProps) {
+export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare, onMounted }: TourSweepstakesBoardCardProps) {
   const accentGlowRgb = '184, 134, 11';
   const highlighted = highlightedSquare ?? 37;
 
@@ -39,6 +40,7 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
         data-tour={isStage('response') ? 'sweepstakes-response' : undefined}
         className="p-4 rounded-xl shadow-lg max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20"
         style={containerStyle}
+        onAnimationEnd={() => onMounted?.()}
       >
         <div className="relative z-10 transition-all duration-300">
           <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">

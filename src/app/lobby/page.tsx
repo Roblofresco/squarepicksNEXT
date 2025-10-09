@@ -1014,6 +1014,7 @@ function LobbyContent() {
                                 <TourSweepstakesBoardCard
                                   tourStepId={stepsForRender[tourStep]?.id}
                                   highlightedSquare={typeof entryInteraction.selectedNumber === 'number' ? entryInteraction.selectedNumber : undefined}
+                                  onMounted={() => setTourContentReady(true)}
                           />
                               )}
                           <p className="text-xs text-gray-400 mt-2">Free weekly entry. Numbers assigned at game time.</p>

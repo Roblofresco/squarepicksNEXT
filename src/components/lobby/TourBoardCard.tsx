@@ -91,7 +91,7 @@ export default function TourBoardCard({
   const isFree = boardForRender.isFreeEntry ?? entryFee === 0
   const emphasizedNumber = highlightedNumber ?? 32
   const copy = stageCopy[stage]
-  const showHighlightedSquare = stage !== 'idle'
+  const showHighlightedSquare = stage !== 'idle' && highlightedNumber !== undefined
   const showCurrentUserSquares = stage === 'entered'
   const legendSquaresForStage = legendSquares ?? (stage === 'selecting' ? [12, 47, 88] : [])
   const currentUserSquares = useMemo(() => {

@@ -53,7 +53,7 @@ const BoardMiniGrid = memo(({
       return new Set(fallback);
     }
     return new Set<number>();
-  }, [showCurrentUserSquares, currentUserSelectedSquares, boardData?.currentUserSelectedIndexes]);
+  }, [showCurrentUserSquares, currentUserSelectedSquares, boardData?.currentUserSelectedIndexes, forcedCurrentUserSquares]);
 
   const baseSquareClasses = 'aspect-square flex items-center justify-center text-[9px] font-mono rounded-[1px] cursor-pointer border border-white/10 transition-all duration-150 ease-in-out bg-transparent';
 

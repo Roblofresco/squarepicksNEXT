@@ -1078,60 +1078,105 @@ function LobbyContent() {
                              (() => {
                                const activeStepId = sportsTourSteps[tourStep]?.id;
                                const tourUserSquare = 88;
-                               const showLegendStep = activeStepId === 'sports-board-grid';
-                               const quickEntryIntro = activeStepId === 'sports-quick-entry-intro';
-                               const quickEntryType = activeStepId === 'sports-quick-entry-type';
-                               const quickEntryRandom = activeStepId === 'sports-quick-entry-random';
-                               const quickEntryConfirm = activeStepId === 'sports-quick-entry-confirm';
-                               const quickEntryResponse = activeStepId === 'sports-quick-entry-response';
-                               const boardTrack = activeStepId === 'sports-board-track';
-                               const exploreBoard = activeStepId === 'sports-board';
-                               const boardStepsWithUserSquare = new Set([
-                                 'sports-board',
-                                 'sports-board-grid',
-                                 'sports-quick-entry-intro',
-                                 'sports-quick-entry-type',
-                                 'sports-quick-entry-random',
-                                 'sports-quick-entry-confirm',
-                                 'sports-quick-entry-response',
-                                 'sports-board-track',
-                               ]);
-                               const tourStage = showLegendStep
-                                 ? 'idle'
-                                 : quickEntryResponse || boardTrack
-                                 ? 'entered'
-                                 : quickEntryConfirm
-                                 ? 'confirming'
-                                 : quickEntryType || quickEntryRandom
-                                 ? 'selecting'
-                                 : exploreBoard || quickEntryIntro
-                                 ? 'idle'
-                                 : entryInteraction.stage;
-                               const legendSquares = showLegendStep ? [12, 47, tourUserSquare] : undefined;
                                const randomNumberForTour = 57;
-                               const highlightedNumber = quickEntryRandom || quickEntryConfirm
-                                 ? randomNumberForTour
-                                 : showLegendStep || quickEntryResponse || boardTrack || exploreBoard || quickEntryIntro
-                                 ? undefined
-                                 : entryInteraction.selectedNumber ?? 32;
-                               const quickEntryStage = quickEntryResponse || boardTrack ? 'idle' : tourStage === 'idle' ? 'selecting' : tourStage;
-                               const hasForcedSquares = boardStepsWithUserSquare.has(activeStepId ?? '');
-                               const forcedUserSquares = hasForcedSquares
-                                 ? new Set<number>([
-                                     tourUserSquare,
-                                     ...(quickEntryResponse || boardTrack ? [randomNumberForTour] : []),
-                                   ])
-                                 : undefined;
+                               const defaultSelectedNumber = entryInteraction.selectedNumber ?? 32;
+
+                               const stepConfig = (() => {
+                                 switch (activeStepId) {
+                                   case 'sports-board':
+                                     return {
+                                       stage: 'idle' as const,
+                                       legendSquares: undefined,
+                                       highlightedNumber: undefined,
+                                       forcedSquares: new Set<number>([tourUserSquare]),
+                                       quickEntryStage: 'idle' as const,
+                                       showResponseDialog: false,
+                                     };
+                                   case 'sports-board-grid':
+                                     return {
+                                       stage: 'idle' as const,
+                                       legendSquares: [12, 47, tourUserSquare] as [number, number, number],
+                                       highlightedNumber: undefined,
+                                       forcedSquares: new Set<number>([tourUserSquare]),
+                                       quickEntryStage: 'idle' as const,
+                                       showResponseDialog: false,
+                                     };
+                                   case 'sports-quick-entry-intro':
+                                     return {
+                                       stage: 'idle' as const,
+                                       legendSquares: undefined,
+                                       highlightedNumber: undefined,
+                                       forcedSquares: new Set<number>([tourUserSquare]),
+                                       quickEntryStage: 'idle' as const,
+                                       showResponseDialog: false,
+                                     };
+                                   case 'sports-quick-entry-type':
+                                     return {
+                                       stage: 'selecting' as const,
+                                       legendSquares: undefined,
+                                       highlightedNumber: defaultSelectedNumber,
+                                       forcedSquares: new Set<number>([tourUserSquare]),
+                                       quickEntryStage: 'selecting' as const,
+                                       showResponseDialog: false,
+                                     };
+                                   case 'sports-quick-entry-random':
+                                     return {
+                                       stage: 'selecting' as const,
+                                       legendSquares: undefined,
+                                       highlightedNumber: randomNumberForTour,
+                                       forcedSquares: new Set<number>([tourUserSquare]),
+                                       quickEntryStage: 'selecting' as const,
+                                       showResponseDialog: false,
+                                     };
+                                   case 'sports-quick-entry-confirm':
+                                     return {
+                                       stage: 'confirming' as const,
+                                       legendSquares: undefined,
+                                       highlightedNumber: randomNumberForTour,
+                                       forcedSquares: new Set<number>([tourUserSquare]),
+                                       quickEntryStage: 'confirming' as const,
+                                       showResponseDialog: false,
+                                     };
+                                   case 'sports-quick-entry-response':
+                                     return {
+                                       stage: 'entered' as const,
+                                       legendSquares: undefined,
+                                       highlightedNumber: undefined,
+                                       forcedSquares: new Set<number>([tourUserSquare, randomNumberForTour]),
+                                       quickEntryStage: 'entered' as const,
+                                       showResponseDialog: true,
+                                     };
+                                   case 'sports-board-track':
+                                     return {
+                                       stage: 'entered' as const,
+                                       legendSquares: undefined,
+                                       highlightedNumber: undefined,
+                                       forcedSquares: new Set<number>([tourUserSquare, randomNumberForTour]),
+                                       quickEntryStage: 'entered' as const,
+                                       showResponseDialog: false,
+                                     };
+                                   default:
+                                     return {
+                                       stage: entryInteraction.stage,
+                                       legendSquares: undefined,
+                                       highlightedNumber: defaultSelectedNumber,
+                                       forcedSquares: undefined,
+                                       quickEntryStage:
+                                         entryInteraction.stage === 'idle' ? 'selecting' : entryInteraction.stage,
+                                       showResponseDialog: false,
+                                     };
+                                 }
+                               })();
 
                                return (
                                  <TourBoardCard
-                                   stage={tourStage}
-                                   highlightedNumber={highlightedNumber}
+                                   stage={stepConfig.stage}
+                                   highlightedNumber={stepConfig.highlightedNumber}
                                    game={games[0]}
-                                   legendSquares={legendSquares}
-                                   quickEntryStage={quickEntryStage}
-                                   showResponseDialog={quickEntryResponse}
-                                   forcedUserSquares={forcedUserSquares}
+                                   legendSquares={stepConfig.legendSquares}
+                                   quickEntryStage={stepConfig.quickEntryStage}
+                                   showResponseDialog={stepConfig.showResponseDialog}
+                                   forcedUserSquares={stepConfig.forcedSquares}
                                  />
                                );
                              })()

@@ -64,6 +64,8 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const inertElementsRef = useRef<Array<{ el: HTMLElement; alreadyInert: boolean }>>([]);
 
+
+
   const handleFinalClose = useCallback(() => {
     if (step?.id === 'sports-board-track' && !hasWallet) {
       onShowWallet?.();
@@ -93,13 +95,6 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     setShowHomePrompt(false);
     closeFinalOverlay(true);
   };
-
-  const handleFinalClose = useCallback(() => {
-    if (step?.id === 'sports-board-track' && !hasWallet) {
-      onShowWallet?.();
-    }
-    onClose();
-  }, [step?.id, hasWallet, onShowWallet, onClose]);
 
   const renderBold = (text: string) => {
     const parts = text.split(/(\*\*[^*]+\*\*)/g);

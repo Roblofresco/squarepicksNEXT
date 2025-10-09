@@ -66,12 +66,21 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
 
 
 
-  const handleFinalClose = useCallback(() => {
-    if (step?.id === 'sports-board-track' && !hasWallet) {
+  const handleFinalClose = useCallback(async () => {
+    if (step?.id === 'sports-board-track' && (agreeToSweepstakes ?? true) && !hasWallet) {
       onShowWallet?.();
     }
+
+    if (onFinalComplete) {
+      try {
+        await onFinalComplete();
+      } catch (err) {
+        console.error('[TourOverlay] onFinalComplete failed', err);
+      }
+    }
+
     onClose();
-  }, [step?.id, hasWallet, onShowWallet, onClose]);
+  }, [step?.id, agreeToSweepstakes, hasWallet, onShowWallet, onFinalComplete, onClose]);
 
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
@@ -80,10 +89,10 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     }
   }, [stepIndex, steps.length]);
 
-  const closeFinalOverlay = useCallback((shouldCloseTour = true) => {
+  const closeFinalOverlay = useCallback(async (shouldCloseTour = true) => {
     setFinalOverlayOpen(false);
     setShowHomePrompt(false);
-    if (shouldCloseTour) handleFinalClose();
+    if (shouldCloseTour) await handleFinalClose();
   }, [handleFinalClose]);
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
@@ -559,20 +568,7 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
                   return;
                 }
 
-                if ((agreeToSweepstakes ?? true) && !hasWallet) {
-                  onShowWallet?.();
-                  return;
-                }
-
-                if (onFinalComplete) {
-                  try {
-                    await onFinalComplete();
-                  } catch (err) {
-                    console.error('[TourOverlay] onFinalComplete failed', err);
-                  }
-                }
-
-                closeFinalOverlay(true);
+                await closeFinalOverlay(true);
               }}
               className="px-3 py-1 rounded bg-gradient-to-r from-[#1bb0f2] to-[#6366f1]"
             >

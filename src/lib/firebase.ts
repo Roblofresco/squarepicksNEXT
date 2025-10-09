@@ -38,7 +38,7 @@ if (typeof window !== 'undefined') {
 }
 
 // Initialize App Check in the browser to satisfy Firestore/AppCheck enforcement
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && !(window as any).__APP_CHECK_INITIALIZED__) {
   try {
     // Enable debug token on localhost if configured
     if (process.env.NEXT_PUBLIC_APPCHECK_DEBUG === 'true') {
@@ -51,6 +51,7 @@ if (typeof window !== 'undefined') {
         provider: new ReCaptchaV3Provider(siteKey),
         isTokenAutoRefreshEnabled: true,
       });
+      (window as any).__APP_CHECK_INITIALIZED__ = true;
     }
   } catch (err) {
     // Swallow to avoid breaking SSR/CSR; logs can be inspected in devtools

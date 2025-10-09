@@ -4,24 +4,21 @@ service cloud.firestore {
 
     // --- users Collection ---
     match /users/{userId} {
-      allow create: if request.auth.uid == userId;
-      allow read: if request.auth.uid == userId;
-      allow update: if request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow read, update: if request.auth != null && request.auth.uid == userId;
       allow delete: if false;
 
       match /address/{document} {
-        allow create, read, write, delete: if request.auth.uid == userId;
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
       }
       match /bets/{document} {
-        allow create, read, write, delete: if request.auth.uid == userId;
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
       }
       match /wallet/{document} {
-        allow create, read, write, delete: if request.auth.uid == userId;
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
       }
-      // --- private wins Subcollection (per-user quarter/final wins) ---
       match /wins/{winId} {
-        // Users can read their own wins; server (Admin SDK) writes
-        allow read: if request.auth.uid == userId;
+        allow read: if request.auth != null && request.auth.uid == userId;
         allow create, update, delete: if false;
       }
     }
@@ -29,49 +26,41 @@ service cloud.firestore {
     // --- games Collection ---
     match /games/{gameDocId} {
       allow read: if true;
-      allow create, write, delete: if false;
+      allow create, update, delete: if false;
     }
 
     // --- sports Collection ---
     match /sports/{sportDocId} {
       allow read: if true;
-      allow create, write, delete: if false;
+      allow create, update, delete: if false;
     }
 
     // --- teams Collection ---
     match /teams/{teamDocId} {
       allow read: if true;
-      allow create, write, delete: if false;
+      allow create, update, delete: if false;
     }
 
     // --- boards Collection ---
     match /boards/{boardId} {
       allow read: if resource.data.status == "open" || request.auth != null;
       allow create: if request.auth != null;
-      allow update: if false;
-      allow delete: if false;
+      allow update, delete: if false;
 
-      // --- squares Subcollection (under boards) ---
       match /squares/{squareId} {
-        allow read: if isSquareOwner();
-        allow create, update, delete: if false;
-
-        function isSquareOwner() {
-          return request.auth != null && (
+        allow read: if request.auth != null && (
+          resource.data.userID == request.auth.uid ||
+          (resource.data.userID is string && (
             resource.data.userID == request.auth.uid ||
-            (resource.data.userID is string && (
-              resource.data.userID == request.auth.uid ||
-              resource.data.userID == ('users/' + request.auth.uid)
-            )) ||
-            (resource.data.userID is map && resource.data.userID.id == request.auth.uid) ||
-            (resource.data.userID is path && resource.data.userID == path('/databases/$(database)/documents/users/$(request.auth.uid)'))
-          );
-        }
+            resource.data.userID == ('users/' + request.auth.uid)
+          )) ||
+          (resource.data.userID is map && resource.data.userID.id == request.auth.uid) ||
+          (resource.data.userID is path && resource.data.userID == path("/databases/$(database)/documents/users/$(request.auth.uid)"))
+        );
+        allow create, update, delete: if false;
       }
 
-      // --- winners Subcollection (public, non-PII summary) ---
       match /winners/{periodId} {
-        // Public can read winner index/square/metadata; server writes
         allow read: if true;
         allow create, update, delete: if false;
       }
@@ -80,35 +69,30 @@ service cloud.firestore {
     // --- sweepstakes Collection ---
     match /sweepstakes/{sweepstakeDocId} {
       allow read: if true;
-      allow create, write, delete: if false;
+      allow create, update, delete: if false;
 
-      // --- participants Subcollection (under sweepstakes) ---
       match /participants/{participantId} {
         allow create: if request.auth != null &&
                        request.resource.data.userID == request.auth.uid;
         allow read: if request.auth != null;
-        allow write, delete: if false;
+        allow update, delete: if false;
       }
     }
 
     // --- transactions Collection ---
     match /transactions/{transactionId} {
-      allow create: if false;
       allow read: if request.auth != null && resource.data.userID == request.auth.uid;
-      allow write, delete: if false;
+      allow create, update, delete: if false;
     }
     
-    // +++ START: NEW notifications Collection Rules +++
+    // --- notifications Collection ---
     match /notifications/{notificationId} {
       allow read: if request.auth != null && request.auth.uid == resource.data.userID;
-      // Allow only marking as read by the owner
       allow update: if request.auth != null &&
                      request.auth.uid == resource.data.userID &&
                      request.writeFields.hasOnly(['isRead']) &&
                      request.resource.data.isRead == true;
-      // Disallow client-side creation; notifications must be created by server
       allow create, delete: if false;
     }
-    // +++ END: NEW notifications Collection Rules +++
   }
 } 

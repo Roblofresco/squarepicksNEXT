@@ -1110,7 +1110,7 @@ function LobbyContent() {
                                    case 'sports-board-grid':
                                      return {
                                        stage: 'idle' as const,
-                                       legendSquares: [12, 47, tourUserSquare] as [number, number, number],
+                                      legendSquares: [12, tourUserSquare] as [number, number],
                                        highlightedNumber: undefined,
                                        forcedSquares: new Set<number>([tourUserSquare]),
                                        quickEntryStage: 'idle' as const,

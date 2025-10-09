@@ -64,6 +64,13 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const inertElementsRef = useRef<Array<{ el: HTMLElement; alreadyInert: boolean }>>([]);
 
+  const handleFinalClose = useCallback(() => {
+    if (step?.id === 'sports-board-track' && !hasWallet) {
+      onShowWallet?.();
+    }
+    onClose();
+  }, [step?.id, hasWallet, onShowWallet, onClose]);
+
   useEffect(() => {
     if (stepIndex !== steps.length - 1) {
       setFinalOverlayOpen(false);

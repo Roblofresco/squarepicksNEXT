@@ -53,8 +53,20 @@ service cloud.firestore {
 
       // --- squares Subcollection (under boards) ---
       match /squares/{squareId} {
-        // Squares contain sensitive userIDs; disallow client reads/writes
-        allow create, read, update, delete: if false;
+        allow read: if isSquareOwner();
+        allow create, update, delete: if false;
+
+        function isSquareOwner() {
+          return request.auth != null && (
+            resource.data.userID == request.auth.uid ||
+            (resource.data.userID is string && (
+              resource.data.userID == request.auth.uid ||
+              resource.data.userID == ('users/' + request.auth.uid)
+            )) ||
+            (resource.data.userID is map && resource.data.userID.id == request.auth.uid) ||
+            (resource.data.userID is path && resource.data.userID == path('/databases/$(database)/documents/users/$(request.auth.uid)'))
+          );
+        }
       }
 
       // --- winners Subcollection (public, non-PII summary) ---

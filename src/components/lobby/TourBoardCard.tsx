@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -121,8 +121,11 @@ export default function TourBoardCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20, duration: 0.25 }}
-      onAnimationComplete={() => onLoaded?.()}
     >
+      {useEffect(() => {
+        const frame = requestAnimationFrame(() => onLoaded?.());
+        return () => cancelAnimationFrame(frame);
+      }, [onLoaded])}
       {isFree && (
         <div className="absolute top-0 left-0 bg-gradient-accent1-accent4 text-white text-xs font-bold px-3 py-1 rounded-br-lg z-10">
           Free Entry!

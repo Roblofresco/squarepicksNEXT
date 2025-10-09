@@ -8,6 +8,7 @@ import { Game, TeamInfo } from '@/types/lobby'
 interface TourGamesListProps {
   activeStepId?: string
   games?: Game[]
+  onMounted?: () => void
 }
 
 const tourCardVariants = {
@@ -15,7 +16,7 @@ const tourCardVariants = {
   animate: { opacity: 1, y: 0 },
 }
 
-const TourGamesList = memo(({ activeStepId, games = [] }: TourGamesListProps) => {
+const TourGamesList = memo(({ activeStepId, games = [], onMounted }: TourGamesListProps) => {
   const upcomingTeams = useMemo(() => {
     const first = games.find((game) => !!game.teamA && !!game.teamB)
     if (!first) return { teamA: undefined, teamB: undefined }
@@ -35,6 +36,7 @@ const TourGamesList = memo(({ activeStepId, games = [] }: TourGamesListProps) =>
         initial="initial"
         animate="animate"
         variants={tourCardVariants}
+        onAnimationComplete={() => onMounted?.()}
       >
         <TourGameCard
           state="scheduled"

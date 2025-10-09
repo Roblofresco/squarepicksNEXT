@@ -572,6 +572,7 @@ function LobbyContent() {
   const [sweepstakesTourAutoTriggered, setSweepstakesTourAutoTriggered] = useState(false);
   const [sportsTourAutoTriggered, setSportsTourAutoTriggered] = useState(false);
   const tourOpenFrameRef = useRef<number | null>(null);
+  const [tourContentReady, setTourContentReady] = useState(false);
   type LobbyTourStep = {
     id: string;
     anchor: string;
@@ -775,6 +776,7 @@ function LobbyContent() {
     setTourPhase('A');
     setMoreClicked(false);
     setSweepstakesClicked(false);
+    setTourContentReady(false);
 
     if (tourOpenFrameRef.current !== null && typeof window !== 'undefined') {
       window.cancelAnimationFrame(tourOpenFrameRef.current);
@@ -782,6 +784,13 @@ function LobbyContent() {
     }
 
     const triggerOpen = () => {
+      if (!tourContentReady) {
+        // wait until content marks itself ready
+        if (typeof window !== 'undefined') {
+          tourOpenFrameRef.current = window.requestAnimationFrame(triggerOpen);
+        }
+        return;
+      }
       setTourOpen(true);
       tourOpenFrameRef.current = null;
     };
@@ -1041,11 +1050,12 @@ function LobbyContent() {
                                 </div>
                               ))}
                             </motion.div>
-                          ) : tourOpen && activeTour === 'sports' ? (
-                            <TourGamesList
-                              activeStepId={stepsForRender[tourStep]?.id}
-                              games={games}
-                            />
+                          ) : activeTour === 'sports' ? (
+          <TourGamesList
+            activeStepId={stepsForRender[tourStep]?.id}
+            games={games}
+            onMounted={() => setTourContentReady(true)}
+          />
                           ) : (
                             <GamesList games={games} teams={teams} user={user} onProtectedAction={handleProtectedAction} />
                           )}
@@ -1074,7 +1084,7 @@ function LobbyContent() {
                             exit={{ opacity: 0 }}
                             className="w-full mt-0 px-2 pb-4"
                           >
-                           {tourOpen && activeTour === 'sports' ? (
+                           {activeTour === 'sports' ? (
                              (() => {
                                const activeStepId = sportsTourSteps[tourStep]?.id;
                                const tourUserSquare = 88;
@@ -1175,8 +1185,9 @@ function LobbyContent() {
                                    game={games[0]}
                                    legendSquares={stepConfig.legendSquares}
                                    quickEntryStage={stepConfig.quickEntryStage}
-                                   showResponseDialog={stepConfig.showResponseDialog}
+                                   showResponseDialog={tourOpen && stepConfig.showResponseDialog}
                                    forcedUserSquares={stepConfig.forcedSquares}
+                                   onLoaded={() => setTourContentReady(true)}
                                  />
                                );
                              })()

@@ -70,6 +70,7 @@ interface TourBoardCardProps {
   quickEntryStage?: 'idle' | 'selecting' | 'confirming' | 'entered'
   showResponseDialog?: boolean
   forcedUserSquares?: Set<number>
+  onLoaded?: () => void
 }
 
 export default function TourBoardCard({
@@ -81,6 +82,7 @@ export default function TourBoardCard({
   quickEntryStage,
   showResponseDialog = false,
   forcedUserSquares,
+  onLoaded,
 }: TourBoardCardProps) {
   const boardForRender = board ?? mockBoard
   const teamA = game?.teamA ?? mockTeamA
@@ -119,6 +121,7 @@ export default function TourBoardCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20, duration: 0.25 }}
+      onAnimationComplete={() => onLoaded?.()}
     >
       {isFree && (
         <div className="absolute top-0 left-0 bg-gradient-accent1-accent4 text-white text-xs font-bold px-3 py-1 rounded-br-lg z-10">

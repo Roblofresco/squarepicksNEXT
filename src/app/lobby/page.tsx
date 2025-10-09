@@ -572,7 +572,12 @@ function LobbyContent() {
   const [sweepstakesTourAutoTriggered, setSweepstakesTourAutoTriggered] = useState(false);
   const [sportsTourAutoTriggered, setSportsTourAutoTriggered] = useState(false);
   const tourOpenFrameRef = useRef<number | null>(null);
-  const [tourContentReady, setTourContentReady] = useState(false);
+  const tourContentReadyRef = useRef(false);
+  const [tourContentReady, _setTourContentReady] = useState(false);
+  const setTourContentReady = useCallback((value: boolean) => {
+    tourContentReadyRef.current = value;
+    _setTourContentReady(value);
+  }, []);
   type LobbyTourStep = {
     id: string;
     anchor: string;
@@ -783,11 +788,10 @@ function LobbyContent() {
       tourOpenFrameRef.current = null;
     }
 
-    const triggerOpen = () => {
-      if (!tourContentReady) {
-        // wait until content marks itself ready
+    const waitForContent = () => {
+      if (!tourContentReadyRef.current) {
         if (typeof window !== 'undefined') {
-          tourOpenFrameRef.current = window.requestAnimationFrame(triggerOpen);
+          tourOpenFrameRef.current = window.requestAnimationFrame(waitForContent);
         }
         return;
       }
@@ -796,9 +800,9 @@ function LobbyContent() {
     };
 
     if (typeof window !== 'undefined') {
-      tourOpenFrameRef.current = window.requestAnimationFrame(triggerOpen);
+      tourOpenFrameRef.current = window.requestAnimationFrame(waitForContent);
     } else {
-      triggerOpen();
+      waitForContent();
     }
   }, []);
 
@@ -820,7 +824,7 @@ function LobbyContent() {
     const frame = window.requestAnimationFrame(() => {
       if (boardReadyForTour) {
         openTour('sweepstakes');
-        setSweepstakesTourAutoTriggered(true);
+    setSweepstakesTourAutoTriggered(true);
       }
     });
     return () => window.cancelAnimationFrame(frame);
@@ -837,7 +841,7 @@ function LobbyContent() {
     const frame = window.requestAnimationFrame(() => {
       if (sportsReadyForTour.ready && sportsReadyForTour.version === versionAtReady) {
         openTour('sports');
-        setSportsTourAutoTriggered(true);
+    setSportsTourAutoTriggered(true);
       }
     });
     return () => window.cancelAnimationFrame(frame);
@@ -1004,18 +1008,18 @@ function LobbyContent() {
                                   onMounted={() => setTourContentReady(true)}
                                 />
                               ) : (
-                                <SweepstakesBoardCard 
-                                  key={sweepstakesBoard.id}
-                                  board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
+                              <SweepstakesBoardCard 
+                                key={sweepstakesBoard.id}
+                                board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
                                   user={user}
-                                  onProtectedAction={handleProtectedAction}
-                                  entryInteraction={entryInteraction}
-                                  handleBoardAction={handleBoardAction}
-                                  openWalletDialog={openWalletDialog} 
+                                onProtectedAction={handleProtectedAction}
+                                entryInteraction={entryInteraction}
+                                handleBoardAction={handleBoardAction}
+                                openWalletDialog={openWalletDialog} 
                                   walletHasWallet={hasWallet}
                                   walletBalance={balance}
                                   walletIsLoading={isWalletLoading}
-                                />
+                          />
                               )}
                           <p className="text-xs text-gray-400 mt-2">Free weekly entry. Numbers assigned at game time.</p>
                         </div>
@@ -1052,11 +1056,11 @@ function LobbyContent() {
                               ))}
                             </motion.div>
                           ) : activeTour === 'sports' ? (
-          <TourGamesList
-            activeStepId={stepsForRender[tourStep]?.id}
-            games={games}
+                            <TourGamesList
+                              activeStepId={stepsForRender[tourStep]?.id}
+                              games={games}
             onMounted={() => setTourContentReady(true)}
-          />
+                            />
                           ) : (
                             <GamesList games={games} teams={teams} user={user} onProtectedAction={handleProtectedAction} />
                           )}

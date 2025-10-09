@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { User as FirebaseUser } from 'firebase/auth';
 import { Board as BoardType, Game as GameType, TeamInfo, SquareEntry } from '@/types/lobby';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, limit, DocumentData, DocumentReference, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, limit, DocumentData, DocumentReference, doc, getDocs } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { BOARD_STATUS_OPEN } from '@/config/lobbyConfig';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -118,68 +119,68 @@ const BoardCard = memo((props: BoardCardProps) => {
 
   }, [game.id, game.teamA, game.teamB, purchaseTrigger]); // Added purchaseTrigger
 
-  // Effect to fetch current user's squares for the activeBoard (supports ref or legacy string IDs)
+  // Effect to fetch current user's squares for the activeBoard (Cloud Function with Firestore fallbacks)
   useEffect(() => {
     if (!activeBoard?.id || !currentUserId) {
       setBoardCardCurrentUserSquaresSet(new Set());
       return () => {};
     }
 
-    const squaresSubcollectionRef = collection(db, 'boards', activeBoard.id, 'squares');
-    const userDocRef = doc(db, 'users', currentUserId);
+    let isCancelled = false;
 
-    let refOwnedSquares = new Set<number>();
-    let stringOwnedSquares = new Set<number>();
+    const loadUserSquares = async () => {
+      try {
+        // Prefer Cloud Function (respects security and avoids client rule pitfalls)
+        const functions = getFunctions(undefined, 'us-east1');
+        const getSelectionsFn = httpsCallable(functions, 'getBoardUserSelections');
+        const result = await getSelectionsFn({ boardID: activeBoard.id });
+        const data = result.data as { selectedIndexes?: number[] };
+        const idxs = Array.isArray(data?.selectedIndexes) ? data!.selectedIndexes! : [];
+        if (!isCancelled) {
+          setBoardCardCurrentUserSquaresSet(new Set(idxs));
+        }
+        return;
+      } catch (cfErr) {
+        console.warn(`[BoardCard] getBoardUserSelections failed for board ${activeBoard.id}`, cfErr);
+      }
 
-    const updateCombinedSquares = () => {
-      const combined = new Set<number>();
-      refOwnedSquares.forEach((sq) => combined.add(sq));
-      stringOwnedSquares.forEach((sq) => combined.add(sq));
-      setBoardCardCurrentUserSquaresSet(combined);
+      // Fallback 1: try reference-based query (works if rules allow owner read and App Check is valid)
+      try {
+        const userDocRef = doc(db, 'users', currentUserId);
+        const qRef = query(collection(db, 'boards', activeBoard.id, 'squares'), where('userID', '==', userDocRef));
+        const snapRef = await getDocs(qRef);
+        const setA = new Set<number>();
+        snapRef.forEach((docSnap) => {
+          const data = docSnap.data() as Partial<SquareEntry>;
+          if (typeof data.index === 'number') setA.add(data.index);
+        });
+        if (!isCancelled && setA.size > 0) {
+          setBoardCardCurrentUserSquaresSet(setA);
+          return;
+        }
+      } catch (refErr) {
+        console.warn(`[BoardCard] Ref query fallback failed for board ${activeBoard.id}`, refErr);
+      }
+
+      // Fallback 2: legacy string userID
+      try {
+        const qStr = query(collection(db, 'boards', activeBoard.id, 'squares'), where('userID', '==', currentUserId));
+        const snapStr = await getDocs(qStr);
+        const setB = new Set<number>();
+        snapStr.forEach((docSnap) => {
+          const data = docSnap.data() as Partial<SquareEntry>;
+          if (typeof data.index === 'number') setB.add(data.index);
+        });
+        if (!isCancelled) setBoardCardCurrentUserSquaresSet(setB);
+      } catch (strErr) {
+        console.warn(`[BoardCard] String query fallback failed for board ${activeBoard.id}`, strErr);
+        if (!isCancelled) setBoardCardCurrentUserSquaresSet(new Set());
+      }
     };
 
-    const unsubscribeRefQuery = onSnapshot(
-      query(squaresSubcollectionRef, where('userID', '==', userDocRef)),
-      (snapshot) => {
-        refOwnedSquares = new Set<number>();
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as Partial<SquareEntry>;
-          if (typeof data.index === 'number') {
-            refOwnedSquares.add(data.index);
-          }
-        });
-        updateCombinedSquares();
-      },
-      (error) => {
-        console.error(`Error fetching user squares by reference for board ${activeBoard.id} in BoardCard:`, error);
-        refOwnedSquares = new Set<number>();
-        updateCombinedSquares();
-      }
-    );
+    loadUserSquares();
 
-    const unsubscribeStringQuery = onSnapshot(
-      query(squaresSubcollectionRef, where('userID', '==', currentUserId)),
-      (snapshot) => {
-        stringOwnedSquares = new Set<number>();
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as Partial<SquareEntry>;
-          if (typeof data.index === 'number') {
-            stringOwnedSquares.add(data.index);
-          }
-        });
-        updateCombinedSquares();
-      },
-      (error) => {
-        console.error(`Error fetching user squares by string for board ${activeBoard.id} in BoardCard:`, error);
-        stringOwnedSquares = new Set<number>();
-        updateCombinedSquares();
-      }
-    );
-
-    return () => {
-      unsubscribeRefQuery();
-      unsubscribeStringQuery();
-    };
+    return () => { isCancelled = true; };
   }, [activeBoard?.id, currentUserId, purchaseTrigger]);
 
   // Determine if the interaction state applies to *this* card's active board

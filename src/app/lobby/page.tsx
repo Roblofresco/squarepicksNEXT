@@ -997,25 +997,25 @@ function LobbyContent() {
                                 awayScore={sweepstakesGame.away_score}
                                 homeScore={sweepstakesGame.home_score}
                               />
-                              {!tourOpen ? (
-                              <SweepstakesBoardCard 
-                                key={sweepstakesBoard.id}
-                                board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
-                            user={user} // Pass the LobbyPage's user state
-                                onProtectedAction={handleProtectedAction}
-                                entryInteraction={entryInteraction}
-                                handleBoardAction={handleBoardAction}
-                                openWalletDialog={openWalletDialog} 
-                            walletHasWallet={hasWallet} // from useWallet
-                            walletBalance={balance}     // from useWallet
-                            walletIsLoading={isWalletLoading} // from useWallet
-                            />
-                              ) : (
+                              {activeTour === 'sweepstakes' ? (
                                 <TourSweepstakesBoardCard
                                   tourStepId={stepsForRender[tourStep]?.id}
                                   highlightedSquare={typeof entryInteraction.selectedNumber === 'number' ? entryInteraction.selectedNumber : undefined}
                                   onMounted={() => setTourContentReady(true)}
-                          />
+                                />
+                              ) : (
+                                <SweepstakesBoardCard 
+                                  key={sweepstakesBoard.id}
+                                  board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
+                                  user={user}
+                                  onProtectedAction={handleProtectedAction}
+                                  entryInteraction={entryInteraction}
+                                  handleBoardAction={handleBoardAction}
+                                  openWalletDialog={openWalletDialog} 
+                                  walletHasWallet={hasWallet}
+                                  walletBalance={balance}
+                                  walletIsLoading={isWalletLoading}
+                                />
                               )}
                           <p className="text-xs text-gray-400 mt-2">Free weekly entry. Numbers assigned at game time.</p>
                         </div>

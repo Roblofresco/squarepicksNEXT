@@ -1158,7 +1158,7 @@ function LobbyContent() {
                                        legendSquares: undefined,
                                        highlightedNumber: undefined,
                                        forcedSquares: new Set<number>([tourUserSquare, randomNumberForTour]),
-                                       quickEntryStage: 'entered' as const,
+                                      quickEntryStage: 'idle' as const,
                                        showResponseDialog: true,
                                      };
                                    case 'sports-board-track':

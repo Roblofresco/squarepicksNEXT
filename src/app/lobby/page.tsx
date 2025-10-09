@@ -96,6 +96,12 @@ const fetchMultipleTeams = async (teamRefs: DocumentReference[]): Promise<Record
   return teamsMap;
 };
 
+const debugLog = (...args: unknown[]) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(...args);
+  }
+};
+
 export default function LobbyPage() {
   return (
     <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background-primary text-white">Loading…</div>}>
@@ -196,14 +202,14 @@ function LobbyContent() {
 
   // Main Data Fetching Effect (Consolidated for Sweepstakes)
   useEffect(() => {
-    console.log(`[LobbyPage] Main data fetch effect triggered for sport: ${selectedSport}`);
+      debugLog(`[LobbyPage] Main data fetch effect triggered for sport: ${selectedSport}`);
     if (unsubscribeGamesListenerRef.current) {
-      console.log("[LobbyPage] Cleaning up previous games listener.");
+      debugLog("[LobbyPage] Cleaning up previous games listener.");
       unsubscribeGamesListenerRef.current();
       unsubscribeGamesListenerRef.current = null;
     }
     if (unsubscribeSweepstakesListenerRef.current) {
-      console.log("[LobbyPage] Cleaning up previous sweepstakes (board/game) listener.");
+      debugLog("[LobbyPage] Cleaning up previous sweepstakes (board/game) listener.");
       unsubscribeSweepstakesListenerRef.current();
       unsubscribeSweepstakesListenerRef.current = null;
     }
@@ -218,7 +224,7 @@ function LobbyContent() {
     startTransition();
 
     if (selectedSport === SWEEPSTAKES_SPORT_ID) {
-      console.log("[LobbyPage] Fetching data for SWEEPSTAKES.");
+      debugLog("[LobbyPage] Fetching data for SWEEPSTAKES.");
       setIsLoadingSweepstakesData(true);
       setIsLoadingGamesAndTeams(false);
 
@@ -230,9 +236,9 @@ function LobbyContent() {
       );
 
       unsubscribeSweepstakesListenerRef.current = onSnapshot(sweepstakesBoardQuery, async (boardSnapshot) => {
-        console.log("[LobbyPage] SWEEPSTAKES BOARD snapshot. Empty:", boardSnapshot.empty);
+        debugLog("[LobbyPage] SWEEPSTAKES BOARD snapshot. Empty:", boardSnapshot.empty);
         if (boardSnapshot.empty) {
-          console.log("[LobbyPage] No active sweepstakes board found.");
+          debugLog("[LobbyPage] No active sweepstakes board found.");
           setSweepstakesBoard(null);
           setSweepstakesGame(null);
           setSweepstakesTeams({});
@@ -275,10 +281,10 @@ function LobbyContent() {
           sweepstakesID: sweepstakesIdString,
         } as BoardType;
         setSweepstakesBoard(typedBoardData);
-        console.log("[LobbyPage] Sweepstakes board data set:", typedBoardData);
+        debugLog("[LobbyPage] Sweepstakes board data set:", typedBoardData);
 
         if (typedBoardData.gameID && typedBoardData.gameID instanceof DocumentReference) {
-          console.log("[LobbyPage] Sweepstakes board has gameID. Fetching game:", typedBoardData.gameID.id);
+          debugLog("[LobbyPage] Sweepstakes board has gameID. Fetching game:", typedBoardData.gameID.id);
           try {
             const gameSnap = await getDoc(typedBoardData.gameID);
               if (gameSnap.exists()) {
@@ -323,7 +329,7 @@ function LobbyContent() {
                 const ts = typedGameData.startTime || typedGameData.start_time;
                 setSweepstakesStartTime(ts ? ts.toDate() : null);
               }
-              console.log("[LobbyPage] Sweepstakes game data set:", typedGameData);
+              debugLog("[LobbyPage] Sweepstakes game data set:", typedGameData);
               setSweepstakesDataError(null);
                 } else {
               console.warn("[LobbyPage] Sweepstakes game document not found for ID:", typedBoardData.gameID.id);
@@ -361,7 +367,7 @@ function LobbyContent() {
         setIsTransitioning(false);
       });
     } else { // Regular Sport
-      console.log(`[LobbyPage] Fetching data for REGULAR SPORT: ${selectedSport}.`);
+      debugLog(`[LobbyPage] Fetching data for REGULAR SPORT: ${selectedSport}.`);
       setIsLoadingGamesAndTeams(true);
       setIsLoadingSweepstakesData(false); // Not loading sweepstakes data
       // Get the NFL week range for filtering games
@@ -381,7 +387,7 @@ function LobbyContent() {
       );
       setGames([]);
       unsubscribeGamesListenerRef.current = onSnapshot(gamesQuery, async (gamesSnapshot) => {
-        console.log(`[LobbyPage] REGULAR GAMES snapshot received for ${selectedSport}. Game count: ${gamesSnapshot.size}`);
+        debugLog(`[LobbyPage] REGULAR GAMES snapshot received for ${selectedSport}. Game count: ${gamesSnapshot.size}`);
         const fetchedGamesRaw: DocumentData[] = [];
         const teamRefsToFetch: DocumentReference[] = [];
         
@@ -392,7 +398,7 @@ function LobbyContent() {
           if (gameData.home_team_id instanceof DocumentReference) teamRefsToFetch.push(gameData.home_team_id);
         });
 
-        console.log(`[LobbyPage] Fetching ${teamRefsToFetch.length} teams for ${gamesSnapshot.size} games.`);
+        debugLog(`[LobbyPage] Fetching ${teamRefsToFetch.length} teams for ${gamesSnapshot.size} games.`);
         const fetchedTeamsMap = await fetchMultipleTeams(teamRefsToFetch);
         setTeams(fetchedTeamsMap);
 
@@ -422,7 +428,7 @@ function LobbyContent() {
         
         setGames(enrichedGames);
         setSportsDataVersion(prev => prev + 1);
-        console.log(`[LobbyPage] Finished processing ${enrichedGames.length} games for ${selectedSport}.`);
+        debugLog(`[LobbyPage] Finished processing ${enrichedGames.length} games for ${selectedSport}.`);
         setIsLoadingGamesAndTeams(false);
         setIsTransitioning(false);
       }, (error) => {
@@ -440,7 +446,7 @@ function LobbyContent() {
 
   // Effect to redirect user based on auth status
   useEffect(() => {
-    console.log("[LobbyPage] Redirection check. isWalletLoading:", isWalletLoading, "userId:", userId, "emailVerified:", emailVerified, "selectedSport:", selectedSport);
+    debugLog("[LobbyPage] Redirection check. isWalletLoading:", isWalletLoading, "userId:", userId, "emailVerified:", emailVerified, "selectedSport:", selectedSport);
     if (!isWalletLoading) {
       if (userId && !emailVerified) router.push('/verify-email');
       else if (!userId && selectedSport !== SWEEPSTAKES_SPORT_ID) router.push('/login');
@@ -545,22 +551,22 @@ function LobbyContent() {
 
   const showPrimaryLoadingScreen = () => {
     if (isWalletLoading) {
-      console.log("[LobbyPage] Primary Loading: isWalletLoading is true.");
+      debugLog("[LobbyPage] Primary Loading: isWalletLoading is true.");
       return true;
     }
     if (userId && !emailVerified) {
-      console.log("[LobbyPage] Primary Loading: User logged in but email not verified.");
+      debugLog("[LobbyPage] Primary Loading: User logged in but email not verified.");
       return true;
     }
     if (!userId && selectedSport !== SWEEPSTAKES_SPORT_ID) {
-      console.log("[LobbyPage] Primary Loading: Guest on non-sweepstakes page.");
+      debugLog("[LobbyPage] Primary Loading: Guest on non-sweepstakes page.");
       return true;
     }
-    console.log("[LobbyPage] Primary Loading: Conditions not met, not showing primary loader.");
+    debugLog("[LobbyPage] Primary Loading: Conditions not met, not showing primary loader.");
     return false;
   };
 
-  console.log("[LobbyPage] Render. isWalletLoading:", isWalletLoading, "userId:", userId, "emailV:", emailVerified, "selSport:", selectedSport, "loadSweep:", isLoadingSweepstakesData, "sweepB:", !!sweepstakesBoard, "sweepG:", !!sweepstakesGame);
+  debugLog("[LobbyPage] Render. isWalletLoading:", isWalletLoading, "userId:", userId, "emailV:", emailVerified, "selSport:", selectedSport, "loadSweep:", isLoadingSweepstakesData, "sweepB:", !!sweepstakesBoard, "sweepG:", !!sweepstakesGame);
 
   // App-driven tour state (dev only for now)
   const [tourOpen, setTourOpen] = useState(false);
@@ -872,7 +878,7 @@ function LobbyContent() {
   }, [tourOpen]);
 
   if (showPrimaryLoadingScreen()) {
-    console.log("[LobbyPage] Rendering LoadingScreen. isWalletLoading:", isWalletLoading, "userId:", userId, "emailVerified:", emailVerified, "selectedSport:", selectedSport);
+    debugLog("[LobbyPage] Rendering LoadingScreen. isWalletLoading:", isWalletLoading, "userId:", userId, "emailVerified:", emailVerified, "selectedSport:", selectedSport);
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background-primary text-white space-y-8">
         <div className="flex flex-col items-center space-y-4">

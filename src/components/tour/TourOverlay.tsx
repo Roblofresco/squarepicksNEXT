@@ -71,11 +71,11 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
     }
   }, [stepIndex, steps.length]);
 
-  const closeFinalOverlay = (shouldCloseTour = true) => {
+  const closeFinalOverlay = useCallback((shouldCloseTour = true) => {
     setFinalOverlayOpen(false);
     setShowHomePrompt(false);
-    if (shouldCloseTour) onClose();
-  };
+    if (shouldCloseTour) handleFinalClose();
+  }, [handleFinalClose]);
 
   const handleGuidelinesAction = (action: 'skip' | 'agree') => {
     onSweepstakesAgreement?.(action === 'agree');
@@ -85,10 +85,14 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
   const handleHomePromptContinue = () => {
     setShowHomePrompt(false);
     closeFinalOverlay(true);
-    if ((agreeToSweepstakes ?? true) && !hasWallet) {
+  };
+
+  const handleFinalClose = useCallback(() => {
+    if (step?.id === 'sports-board-track' && !hasWallet) {
       onShowWallet?.();
     }
-  };
+    onClose();
+  }, [step?.id, hasWallet, onShowWallet, onClose]);
 
   const renderBold = (text: string) => {
     const parts = text.split(/(\*\*[^*]+\*\*)/g);

@@ -47,6 +47,13 @@ if (typeof window !== 'undefined' && !(window as any).__APP_CHECK_INITIALIZED__)
         isTokenAutoRefreshEnabled: true,
       });
       (window as any).__APP_CHECK_INITIALIZED__ = true;
+      // Expose non-sensitive debug info so we can verify the env made it to the client
+      // Site key is public by design (the secret never ships to the browser)
+      ;(window as any).__APP_CHECK_INFO__ = {
+        provider: 'recaptcha-v3',
+        siteKey,
+        initializedAt: new Date().toISOString(),
+      };
     }
   } catch (err) {
     // Swallow to avoid breaking SSR/CSR; logs can be inspected in devtools

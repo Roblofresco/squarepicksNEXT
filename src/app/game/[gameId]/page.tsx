@@ -306,41 +306,70 @@ function GamePageContent() {
     };
   }, [gameId, selectedEntryAmount, entrySuccessCount]);
 
-  // Effect to fetch current user's purchased squares for the current board
+  // Effect to fetch current user's purchased squares for the current board (live, supports ref and legacy string userID)
   useEffect(() => {
-    if (currentBoard?.id && userId) {
-      setIsLoadingUserSquares(true);
-      const fetchUserSquares = async () => {
-        try {
-          const userSquaresQuery = query(
-            collection(db, 'boards', currentBoard.id, 'squares'),
-            where('userID', '==', doc(db, 'users', userId))
-          );
-          const querySnapshot = await getDocs(userSquaresQuery);
-          const userSquares = new Set<number>();
-          console.log(`[GamePage fetchUserSquares] Query for board ${currentBoard.id} found ${querySnapshot.size} docs for user ${userId}`);
-          querySnapshot.forEach(doc => {
-            const data = doc.data();
-            console.log('[GamePage fetchUserSquares] Processing doc ID:', doc.id, 'Data:', data);
-            const squareNum = data.index;
-            if (typeof squareNum === 'number') {
-              userSquares.add(squareNum);
-            }
-          });
-          setCurrentUserPurchasedSquaresSet(userSquares);
-          console.log('[GamePage fetchUserSquares] currentUserPurchasedSquaresSet updated to:', userSquares);
-        } catch (error) {
-          console.error("Error fetching user's purchased squares:", error);
-          toast.error("Failed to load your selections. Please refresh.");
-        }
-        finally {
-          setIsLoadingUserSquares(false);
-        }
-      };
-      fetchUserSquares();
-    } else {
+    if (!currentBoard?.id || !userId) {
       setCurrentUserPurchasedSquaresSet(new Set());
+      setIsLoadingUserSquares(false);
+      return;
     }
+
+    setIsLoadingUserSquares(true);
+
+    const squaresRef = collection(db, 'boards', currentBoard.id, 'squares');
+    const userDocRef = doc(db, 'users', userId);
+
+    let refOwned = new Set<number>();
+    let strOwned = new Set<number>();
+
+    const updateCombined = () => {
+      const combined = new Set<number>();
+      refOwned.forEach((i) => combined.add(i));
+      strOwned.forEach((i) => combined.add(i));
+      setCurrentUserPurchasedSquaresSet(combined);
+      setIsLoadingUserSquares(false);
+    };
+
+    const unsubRef = onSnapshot(
+      query(squaresRef, where('userID', '==', userDocRef)),
+      (snapshot) => {
+        refOwned = new Set<number>();
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const idx = data?.index;
+          if (typeof idx === 'number') refOwned.add(idx);
+        });
+        updateCombined();
+      },
+      (error) => {
+        console.error(`[GamePage] Ref userID query failed for board ${currentBoard.id}:`, error);
+        refOwned = new Set<number>();
+        updateCombined();
+      }
+    );
+
+    const unsubStr = onSnapshot(
+      query(squaresRef, where('userID', '==', userId)),
+      (snapshot) => {
+        strOwned = new Set<number>();
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const idx = data?.index;
+          if (typeof idx === 'number') strOwned.add(idx);
+        });
+        updateCombined();
+      },
+      (error) => {
+        console.error(`[GamePage] String userID query failed for board ${currentBoard.id}:`, error);
+        strOwned = new Set<number>();
+        updateCombined();
+      }
+    );
+
+    return () => {
+      unsubRef();
+      unsubStr();
+    };
   }, [currentBoard?.id, userId, entrySuccessCount]);
 
   // New useEffect for redirection based on email verification status

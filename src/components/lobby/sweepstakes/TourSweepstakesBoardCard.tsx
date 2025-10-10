@@ -17,6 +17,8 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
   const accentGlowRgb = '184, 134, 11';
   const highlighted = highlightedSquare ?? 37;
 
+  const selectingHighlightClasses = 'bg-gradient-to-br from-black/10 to-yellow-700/20 text-[#B8860B] text-sm sm:text-base font-semibold shadow-[0_0_12px_2px_rgba(184,134,11,0.65)]';
+
   const squares = useMemo(() => Array.from({ length: 100 }, (_, i) => i), []);
   const currentStage = typeof tourStepId === 'string' ? tourStepId : undefined;
   const isStage = (stage: string) => currentStage === stage;
@@ -132,7 +134,8 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
                 const isSelected = sq === highlighted;
                 const selectedClasses = 'bg-gradient-to-br from-[#B8860B] to-[#A0740A] text-white text-sm sm:text-base font-semibold shadow-[0_0_12px_2px_rgba(184,134,11,0.55)]';
                 const baseClasses = 'bg-gradient-to-br from-black/10 to-black/20 text-[#B8860B] text-[9px] sm:text-[10px]';
-                const applySelectedStyle = isSelected && (isResponseOrLater || showHighlightDuringSelection);
+                const applySelectionHighlight = isSelected && showHighlightDuringSelection;
+                const applyConfirmedHighlight = isSelected && isResponseOrLater;
                 return (
                   <div
                     key={sq}
@@ -140,7 +143,11 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
                     className={cn(
                       'aspect-square flex items-center justify-center font-mono transition-all duration-150 ease-in-out',
                       'border border-black/20 rounded-sm',
-                      applySelectedStyle ? selectedClasses : baseClasses
+                      applyConfirmedHighlight
+                        ? selectedClasses
+                        : applySelectionHighlight
+                          ? selectingHighlightClasses
+                          : baseClasses
                     )}
                   >
                     {String(sq).padStart(2, '0')}

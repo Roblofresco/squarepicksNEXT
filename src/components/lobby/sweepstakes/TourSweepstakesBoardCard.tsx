@@ -31,7 +31,7 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
   };
 
   const isResponseOrLater = isStage('response') || isStageAfter('response');
-  const showHighlightDuringSelection = isStage('input') || isStage('grid') || isStage('enter');
+  const showHighlightDuringSelection = isStage('input') || isStage('grid') || isStage('enter') || isStage('confirm');
 
   const containerStyle = {
     background: `linear-gradient(to bottom, rgb(var(--color-background-primary)) 0%, #B8860B 15%, #B8860B 100%)`,

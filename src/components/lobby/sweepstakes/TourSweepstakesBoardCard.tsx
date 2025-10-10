@@ -18,8 +18,10 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
   const highlighted = highlightedSquare ?? 37;
 
   const selectingHighlightClasses = 'bg-gradient-to-br from-black/10 to-yellow-700/20 text-[#B8860B] text-sm sm:text-base font-semibold shadow-[0_0_12px_2px_rgba(184,134,11,0.65)]';
+  const takenByOtherClasses = 'bg-gradient-to-br from-black/30 to-black/40 text-gray-500 text-[9px] sm:text-[10px]';
 
   const squares = useMemo(() => Array.from({ length: 100 }, (_, i) => i), []);
+  const takenByOthers = useMemo(() => new Set([8, 17, 50, 71]), []);
   const currentStage = typeof tourStepId === 'string' ? tourStepId : undefined;
   const isStage = (stage: string) => currentStage === stage;
   const isStageAfter = (stage: string) => {
@@ -29,7 +31,7 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
   };
 
   const isResponseOrLater = isStage('response') || isStageAfter('response');
-  const showHighlightDuringSelection = isStage('input') || isStage('grid');
+  const showHighlightDuringSelection = isStage('input') || isStage('grid') || isStage('enter');
 
   const containerStyle = {
     background: `linear-gradient(to bottom, rgb(var(--color-background-primary)) 0%, #B8860B 15%, #B8860B 100%)`,
@@ -136,6 +138,7 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
                 const baseClasses = 'bg-gradient-to-br from-black/10 to-black/20 text-[#B8860B] text-[9px] sm:text-[10px]';
                 const applySelectionHighlight = isSelected && showHighlightDuringSelection;
                 const applyConfirmedHighlight = isSelected && isResponseOrLater;
+                const applyTakenByOther = takenByOthers.has(sq);
                 return (
                   <div
                     key={sq}
@@ -147,10 +150,12 @@ export default function TourSweepstakesBoardCard({ tourStepId, highlightedSquare
                         ? selectedClasses
                         : applySelectionHighlight
                           ? selectingHighlightClasses
-                          : baseClasses
+                          : applyTakenByOther
+                            ? takenByOtherClasses
+                            : baseClasses
                     )}
                   >
-                    {String(sq).padStart(2, '0')}
+                    {applyTakenByOther ? 'X' : String(sq).padStart(2, '0')}
                   </div>
                 );
               })}

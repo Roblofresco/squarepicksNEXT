@@ -5,7 +5,7 @@ export const runtime = 'edge';
 import React, { useState, ChangeEvent, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, Mail, DollarSign, List, Settings, ShieldCheck, Scale, LogOut, Info, HelpCircle, BookOpen, FileText, ArrowRight, Edit2, Loader2, Bell } from 'lucide-react';
+import { User, Mail, DollarSign, List, Settings, ShieldCheck, Scale, LogOut, Info, HelpCircle, BookOpen, FileText, ArrowRight, Edit2, Loader2 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -40,7 +40,6 @@ interface UserProfileData {
 // Define menu items based on your existing links
 const accountMenuItems = [
   { href: "/profile/settings", icon: Settings, label: "Account Settings" },
-  { href: "/profile/notifications", icon: Bell, label: "Notifications" },
 ];
 
 const supportMenuItems = [

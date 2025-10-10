@@ -701,7 +701,7 @@ function LobbyContent() {
       anchor: '[data-tour="sports-board-grid"]',
       arrowTarget: '[data-tour="sports-board-grid"]',
       title: 'Track Your Squares',
-      description: 'Your glowing squares mark active entries. Check back during the game to follow each period’s payouts.',
+      description: 'Your glowing squares mark active entries.',
       scroll: 'center',
       holePadding: 18,
     },

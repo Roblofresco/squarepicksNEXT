@@ -266,8 +266,32 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         </div>
       </CardHeader>
       <CardContent className="px-3 pt-0 pb-3 flex-grow text-sm">
-        {/* Divider between broadcast and Your Picks */}
+        {/* Divider between broadcast and summary */}
         <div className="mx-auto my-1 w-3/4 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+
+        <div className="mt-1 flex items-center justify-between text-sm">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            {typeof stakeAmount === 'number' && (
+              <span>Entry: ${stakeAmount.toFixed(2)}</span>
+            )}
+            <span>Picks: {userPickedSquares ? userPickedSquares.length : 0}</span>
+            {typeof potDisplay === 'number' && (
+              <span>Pot: ${potDisplay.toFixed(2)}</span>
+            )}
+          </div>
+          {status === 'open' && typeof stakeAmount === 'number' && (board.gameId) && (
+            <Link href={`/game/${board.gameId}?amount=${stakeAmount}`}>
+              <Button size="sm" variant="secondary" className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2">View</Button>
+            </Link>
+          )}
+          {(status !== 'open') && board.winnings && board.winnings > 0 && (
+            <Link href={`/transactions`}>
+              <Button size="sm" variant="secondary" className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2">View</Button>
+            </Link>
+          )}
+        </div>
+
+        <div className="border-t border-white/10 pt-2 mt-3" />
         {/* Your Selections (Squares/Picks) */}
         <div className="mt-0">
           <div className="font-semibold mb-0">Your Selections</div>
@@ -313,29 +337,6 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
               </>
             );
           })()}
-        </div>
-
-        <div className="border-t border-white/10 pt-2 mt-3" />
-        <div className="mt-2 flex items-center justify-between text-sm">
-          <div>
-            {typeof stakeAmount === 'number' && (
-              <span className="mr-3">Entry: ${stakeAmount.toFixed(2)}</span>
-            )}
-            <span className="mr-3">Picks: {userPickedSquares ? userPickedSquares.length : 0}</span>
-            {typeof potDisplay === 'number' && (
-              <span>Pot: ${potDisplay.toFixed(2)}</span>
-            )}
-          </div>
-          {status === 'open' && typeof stakeAmount === 'number' && (board.gameId) && (
-            <Link href={`/game/${board.gameId}?amount=${stakeAmount}`}>
-              <Button size="sm" variant="secondary" className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2">View</Button>
-            </Link>
-          )}
-          {(status !== 'open') && board.winnings && board.winnings > 0 && (
-            <Link href={`/transactions`}>
-              <Button size="sm" variant="secondary" className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2">View</Button>
-            </Link>
-          )}
         </div>
       </CardContent>
     </Card>

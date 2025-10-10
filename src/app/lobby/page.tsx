@@ -633,7 +633,8 @@ function LobbyContent() {
       anchor: '[data-tour="sports-board-card"]',
       title: 'Explore the Board',
       description: 'Review open squares, quick entry, and entry fee details before locking in your pick.',
-      scroll: 'center',
+      scroll: 'popoverTop',
+      side: 'top',
       holePadding: 24,
     },
     {

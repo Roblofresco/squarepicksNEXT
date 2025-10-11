@@ -906,7 +906,7 @@ function LobbyContent() {
   return (
     <div className="relative w-full min-h-screen flex flex-col bg-background-primary">
       <Toaster position="top-center" />
-      <div className={`sticky top-0 ${entryInteraction.stage === 'confirming' ? 'z-50' : 'z-20'}`}><InAppHeader showBalancePill={entryInteraction.stage !== 'idle'} balance={balance} /></div>
+      <div className={`sticky top-0 ${entryInteraction.stage === 'confirming' ? 'z-50' : 'z-20'}`}><InAppHeader showBalancePill={entryInteraction.stage !== 'idle'} balance={balance} onReplayTour={(tour) => openTour(tour)} /></div>
       <div className="flex-grow pb-20">
         <main className="px-4 py-2"> 
           <div className="w-full">

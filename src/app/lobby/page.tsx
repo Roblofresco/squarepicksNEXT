@@ -393,7 +393,7 @@ function LobbyContent() {
       const gamesQueryCamel = query(
         collection(db, 'games'),
         where('sport', '==', selectedSport.toUpperCase()),
-        where('status', '==', 'scheduled'),
+        where('status', 'in', ['scheduled', 'in_progress', 'final']),
         orderBy('startTime')
       );
 

@@ -117,7 +117,13 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
           }}
         >
           <Card className="relative w-[150px] sm:w-[240px] bg-gradient-to-b from-background-primary to-background-secondary border-accent-1/20">
-            <Link href={`/game/${game.id}`} onClick={handleClick}>
+            <Link
+              href={{
+                pathname: `/game/${game.id}`,
+                query: { view: isOver ? 'final' : isLive ? 'live' : 'upcoming' }
+              }}
+              onClick={handleClick}
+            >
               <CardContent className="flex items-center justify-between p-0.5 sm:p-2 h-[50px] sm:h-[90px]">
                 {/* Left Column: Team A */}
                 <div className="w-1/4 flex items-center justify-center h-full"> 

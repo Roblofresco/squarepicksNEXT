@@ -93,6 +93,7 @@ function GamePageContent() {
 
   const gameId = params.gameId as string;
   const initialEntryAmount = parseInt(searchParams.get('entry') || '1', 10);
+  const requestedView = (searchParams.get('view') || '').toLowerCase();
 
   const { 
     hasWallet, 
@@ -108,6 +109,10 @@ function GamePageContent() {
   const [requiredDepositAmount, setRequiredDepositAmount] = useState(0);
 
   const [gameDetails, setGameDetails] = useState<GameDetails | null>(null);
+  const [q1WinningSquare, setQ1WinningSquare] = useState<string | null>(null);
+  const [q2WinningSquare, setQ2WinningSquare] = useState<string | null>(null);
+  const [q3WinningSquare, setQ3WinningSquare] = useState<string | null>(null);
+  const [finalWinningSquare, setFinalWinningSquare] = useState<string | null>(null);
   const [currentBoard, setCurrentBoard] = useState<GameBoard | null>(null);
   const [selectedEntryAmount, setSelectedEntryAmount] = useState<number>(initialEntryAmount);
   const [selectedSquares, setSelectedSquares] = useState<Set<number>>(new Set());
@@ -187,6 +192,10 @@ function GamePageContent() {
           startTime: (gameData.startTime as Timestamp) || (gameData.start_time as Timestamp),
           start_time: (gameData.start_time as Timestamp) || undefined,
         });
+        setQ1WinningSquare(typeof gameData.q1WinningSquare === 'string' ? gameData.q1WinningSquare : null);
+        setQ2WinningSquare(typeof gameData.q2WinningSquare === 'string' ? gameData.q2WinningSquare : null);
+        setQ3WinningSquare(typeof gameData.q3WinningSquare === 'string' ? gameData.q3WinningSquare : null);
+        setFinalWinningSquare(typeof gameData.finalWinningSquare === 'string' ? gameData.finalWinningSquare : null);
       } catch (err: any) { setError(err.message || 'Failed to load game details.'); }
       finally { setIsLoadingGame(false); }
     };
@@ -732,6 +741,10 @@ function GamePageContent() {
   const glowA = glowHexA ? `${glowHexA}cc` : 'rgba(27,176,242,0.8)';
   const glowB = glowHexB ? `${glowHexB}cc` : 'rgba(27,176,242,0.8)';
 
+  const effectiveView = requestedView === 'final' || requestedView === 'live' || requestedView === 'upcoming'
+    ? requestedView
+    : (gameDetails.status === 'final' ? 'final' : (gameDetails.status === 'live' ? 'live' : 'upcoming'));
+
   return (
     <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-slate-900"><Loader2 className="h-16 w-16 animate-spin text-accent-1" /></div>}> 
       <div className="flex flex-col min-h-screen bg-background-primary text-slate-200">
@@ -777,19 +790,19 @@ function GamePageContent() {
                 <span className="text-[10px] sm:text-xs text-slate-400">({gameDetails.teamA.record})</span>
              </div>
               <div className="text-center px-1">
-                {gameDetails.status === 'live' && (
+                {effectiveView === 'live' && (
                     <>
                         <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white tabular-nums">{gameDetails.away_score} - {gameDetails.home_score}</div>
                         <div className="text-[10px] sm:text-xs text-red-400 animate-pulse font-semibold">{gameDetails.period?.toUpperCase()}</div>
                     </>
                 )}
-                {gameDetails.status === 'upcoming' && (
+                {effectiveView === 'upcoming' && (
                      <>
                         <div className="text-base sm:text-lg md:text-xl font-semibold text-accent-1">{gameDetails.time}</div>
                         <div className="text-[10px] sm:text-xs text-slate-400">{gameDetails.date}</div>
                     </>
                 )}
-                 {gameDetails.status === 'final' && (
+                 {effectiveView === 'final' && (
                      <>
                         <div className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-300 tabular-nums">{gameDetails.away_score} - {gameDetails.home_score}</div>
                         <div className="text-[10px] sm:text-xs text-slate-400">Final</div>
@@ -816,6 +829,16 @@ function GamePageContent() {
           {error && <p className="text-center text-red-400 mb-3 bg-red-900/30 p-2 rounded-md">Error: {error}</p>} 
 
           <div className="h-px w-full bg-white/10 mb-3" />
+
+          {/* Winners line (always shows all period chips; empty where unknown) */}
+          <div className="max-w-3xl mx-auto px-2 mb-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-xs">
+              <span className={cn("px-2 py-0.5 rounded-full border", q1WinningSquare ? "border-white/20 bg-white/5" : "border-white/10 bg-white/0 text-white/40")}>Q1 {q1WinningSquare || '--'}</span>
+              <span className={cn("px-2 py-0.5 rounded-full border", q2WinningSquare ? "border-white/20 bg-white/5" : "border-white/10 bg-white/0 text-white/40")}>Q2 {q2WinningSquare || '--'}</span>
+              <span className={cn("px-2 py-0.5 rounded-full border", q3WinningSquare ? "border-white/20 bg-white/5" : "border-white/10 bg-white/0 text-white/40")}>Q3 {q3WinningSquare || '--'}</span>
+              <span className={cn("px-2 py-0.5 rounded-full border", finalWinningSquare ? "border-white/20 bg-white/5" : "border-white/10 bg-white/0 text-white/40")}>FINAL {finalWinningSquare || '--'}</span>
+            </div>
+          </div>
 
           <div
             ref={entryFeeRef}

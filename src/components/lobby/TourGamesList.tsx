@@ -56,6 +56,15 @@ const TourGamesList = memo(({ activeStepId, games = [], onMounted }: TourGamesLi
           teamA={liveTeams.teamA as TeamInfo | undefined}
           teamB={liveTeams.teamB as TeamInfo | undefined}
         />
+        <TourGameCard
+          state="final"
+          variant="upcoming"
+          dataTour="sports-games-final"
+          allowKey="sports-games-final"
+          highlight={activeStepId === 'sports-games-final'}
+          teamA={upcomingTeams.teamA as TeamInfo | undefined}
+          teamB={upcomingTeams.teamB as TeamInfo | undefined}
+        />
       </motion.div>
     </div>
   )

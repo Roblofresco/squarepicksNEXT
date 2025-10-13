@@ -672,6 +672,14 @@ function LobbyContent() {
       holePadding: 16,
     },
     {
+      id: 'sports-games-final',
+      anchor: '[data-tour="sports-games-final"]',
+      title: 'Final Results',
+      description: 'Completed games show Final with the final score.',
+      scroll: 'center',
+      holePadding: 16,
+    },
+    {
       id: 'sports-board',
       anchor: '[data-tour="sports-board-card"]',
       title: 'Explore the Board',

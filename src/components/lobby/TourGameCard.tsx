@@ -86,6 +86,11 @@ export default function TourGameCard({ state = 'scheduled', variant = state === 
                 Live
               </span>
             )}
+            {state === 'final' && (
+              <span data-tour="sports-games-final" className="absolute top-0 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[0.55rem] sm:text-[0.6rem] font-semibold uppercase tracking-wide text-white bg-gray-600 rounded-full">
+                Final
+              </span>
+            )}
             <div className="text-xs sm:text-sm font-bold text-white" data-tour="sports-game-center">
               {copy.centerLine}
             </div>

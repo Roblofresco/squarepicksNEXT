@@ -106,6 +106,7 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null, onRepla
           <button
             type="button"
             aria-label="Help"
+            data-tour="header-info"
             onClick={() => setHelpOpen(true)}
             className="h-7 w-7 rounded-full flex items-center justify-center hover:opacity-80"
           >

@@ -643,7 +643,8 @@ function LobbyContent() {
     { id: 'grid', anchor: '[data-tour="sweepstakes-grid-selected"]', title: 'Choose Your Square', description: 'Tap your number.', side: 'top', scroll: 'center', arrowTarget: '[data-tour="sweepstakes-grid-selected"]', holePadding: 18, popoverOffsetY: 20 },
     { id: 'enter', anchor: '[data-tour="sweepstakes-enter"]', title: 'Enter Sweepstakes', description: 'Click Enter.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-enter"]', holePadding: 16, popoverOffsetY: 18 },
     { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
-    { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 }
+    { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 },
+    { id: 'info', anchor: '[data-tour="header-info"]', title: 'Info & Support', description: 'Tap the info icon for How to Play, Account Guide, FAQ, or to replay this tour.', side: 'bottom', scroll: 'popoverTop', holePadding: 12 }
   ]), []);
   const sportsTourSteps: LobbyTourStep[] = useMemo(() => ([
     {
@@ -1347,7 +1348,8 @@ function LobbyContent() {
               '[data-tour-allow="sweepstakes"]',
               '[data-tour-allow="home-continue"]',
               '[data-tour-allow="guidelines-skip"]',
-              '[data-tour-allow="guidelines-agree"]'
+              '[data-tour-allow="guidelines-agree"]',
+              '[data-tour="header-info"]'
             ]}
           hasWallet={!!hasWallet}
           onShowWallet={() => {

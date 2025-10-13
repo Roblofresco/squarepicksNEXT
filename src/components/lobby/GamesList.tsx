@@ -101,6 +101,8 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
   };
   
   const { timeStr, dateStr } = formatStartTime(game);
+  const isLive = (game as any).isLive ?? (game as any).is_live;
+  const isOver = (game as any).isOver ?? (game as any).is_over;
 
   return (
     <HoverCard>
@@ -123,17 +125,24 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
                 </div>
                 {/* Center Column: Game Details */}
                 <div className="flex flex-col items-center justify-center w-1/2 text-center px-0.5 sm:px-1"> 
-                  {(game.isLive ?? game.is_live) && (
+                  {isLive && (
                     <span className="mb-0.5 sm:mb-1 px-2 py-0.5 text-[0.55rem] sm:text-[0.6rem] font-semibold uppercase tracking-wide text-white bg-red-600 rounded-full shadow-[0_0_10px_rgba(248,113,113,0.45)] animate-pulse">
                       Live
                     </span>
                   )}
+                  {!isLive && isOver && (
+                    <span className="mb-0.5 sm:mb-1 px-2 py-0.5 text-[0.55rem] sm:text-[0.6rem] font-semibold uppercase tracking-wide text-white bg-gray-600 rounded-full">
+                      Final
+                    </span>
+                  )}
                   <div className="text-xs sm:text-sm font-bold mb-0.5 sm:mb-1 text-white"> 
-                    {(game.isLive ?? game.is_live) ? `${(game.awayScore ?? game.away_score) ?? 0} - ${(game.homeScore ?? game.home_score) ?? 0}` : 'VS'}
+                    {(isLive || isOver) ? `${(game.awayScore ?? game.away_score) ?? 0} - ${(game.homeScore ?? game.home_score) ?? 0}` : 'VS'}
                   </div>
                   <div className="text-[10px] sm:text-xs text-text-secondary mb-0.5"> 
-                    {(game.isLive ?? game.is_live) ? (
+                    {isLive ? (
                       <span>{game.period || (game.quarter as any) || 'Live'}</span>
+                    ) : isOver ? (
+                      <span>Final</span>
                     ) : (
                       <span>{timeStr} - {dateStr}</span>
                     )}
@@ -158,8 +167,10 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
           <div className="space-y-1">
             <h4 className="text-sm font-semibold text-white">{game.teamA?.fullName} vs {game.teamB?.fullName}</h4>
             <div className="text-sm text-white/70">
-              {(game.isLive ?? game.is_live) ? (
+              {isLive ? (
                 <span>Currently Live • {game.period || (game.quarter as any)}</span>
+              ) : isOver ? (
+                <span>Final</span>
               ) : (
                 <span>Starts {timeStr} on {dateStr}</span>
               )}
@@ -199,7 +210,28 @@ const GamesList = memo(({ games, user, onProtectedAction }: GamesListProps) => {
         </Alert>
       ) : (
         <div className="flex overflow-x-auto gap-2 pr-2 pb-4 scrollbar-hide">
-            {games.map((game) => (
+            {games
+              .slice()
+              .sort((a, b) => {
+                const aLive = (a as any).isLive ?? (a as any).is_live;
+                const bLive = (b as any).isLive ?? (b as any).is_live;
+                const aOver = (a as any).isOver ?? (a as any).is_over;
+                const bOver = (b as any).isOver ?? (b as any).is_over;
+
+                // Group order: Live (0) < Upcoming (1) < Final (2)
+                const groupRank = (g: any) => (g.isLive ? 0 : g.isOver ? 2 : 1);
+                const aRank = groupRank({ isLive: aLive, isOver: aOver });
+                const bRank = groupRank({ isLive: bLive, isOver: bOver });
+                if (aRank !== bRank) return aRank - bRank;
+
+                // Within group: sort by start time ascending
+                const aTs: Timestamp | undefined = (a as any).startTime || (a as any).start_time;
+                const bTs: Timestamp | undefined = (b as any).startTime || (b as any).start_time;
+                const aMs = aTs ? aTs.toMillis() : 0;
+                const bMs = bTs ? bTs.toMillis() : 0;
+                return aMs - bMs;
+              })
+              .map((game) => (
               <div key={game.id} className="flex-none">
                 <GameCard game={game} user={user} onProtectedAction={onProtectedAction} />
               </div>

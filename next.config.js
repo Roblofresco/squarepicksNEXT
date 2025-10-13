@@ -6,10 +6,8 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'storage.googleapis.com',
         port: '',
-        // You can add a pathname prefix if all images share a common path
-        // pathname: '/flutterflow-io-6f20.appspot.com/projects/square-picks-vpbb8d/assets/**',
+        pathname: '/flutterflow-io-6f20.appspot.com/projects/square-picks-vpbb8d/assets/**',
       },
-      // Add other hostnames here if needed
     ],
   },
   eslint: {

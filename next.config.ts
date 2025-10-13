@@ -13,7 +13,7 @@ const cspDirectives = {
     // Add other trusted script sources here
   ],
   "style-src": ["'self'", "'unsafe-inline'"], // Allow inline styles
-  "img-src": ["'self'", "data:", "https://*.paypal.com"], // Allow data URIs and PayPal images
+  "img-src": ["'self'", "data:", "https://*.paypal.com", "https://storage.googleapis.com"], // Allow data URIs, PayPal, and Storage images
   "connect-src": [
     "'self'",
     "https://*.paypal.com",       // Allow connections to PayPal API

@@ -290,33 +290,44 @@ function LobbyContent() {
               if (gameSnap.exists()) {
               const gameDataFirestore = gameSnap.data();
               const gameTeamRefs: DocumentReference[] = [];
-              if (gameDataFirestore.away_team_id instanceof DocumentReference) gameTeamRefs.push(gameDataFirestore.away_team_id);
-              if (gameDataFirestore.home_team_id instanceof DocumentReference) gameTeamRefs.push(gameDataFirestore.home_team_id);
+              const awayRef = (
+                gameDataFirestore.away_team_id instanceof DocumentReference
+                  ? gameDataFirestore.away_team_id
+                  : (gameDataFirestore.awayTeam instanceof DocumentReference ? gameDataFirestore.awayTeam : null)
+              );
+              const homeRef = (
+                gameDataFirestore.home_team_id instanceof DocumentReference
+                  ? gameDataFirestore.home_team_id
+                  : (gameDataFirestore.homeTeam instanceof DocumentReference ? gameDataFirestore.homeTeam : null)
+              );
+              if (awayRef) gameTeamRefs.push(awayRef);
+              if (homeRef) gameTeamRefs.push(homeRef);
               
               const fetchedTeams = await fetchMultipleTeams(gameTeamRefs);
               setSweepstakesTeams(fetchedTeams);
 
               const typedGameData = {
                 id: gameSnap.id, ...gameDataFirestore,
-                teamA: gameDataFirestore.away_team_id instanceof DocumentReference ? fetchedTeams[gameDataFirestore.away_team_id.id] : undefined,
-                teamB: gameDataFirestore.home_team_id instanceof DocumentReference ? fetchedTeams[gameDataFirestore.home_team_id.id] : undefined,
+                teamA: awayRef ? fetchedTeams[awayRef.id] : undefined,
+                teamB: homeRef ? fetchedTeams[homeRef.id] : undefined,
                 // Times
                 startTime: (gameDataFirestore.startTime as Timestamp) || (gameDataFirestore.start_time as Timestamp),
                 start_time: (gameDataFirestore.start_time as Timestamp) || undefined,
-                // Team refs
-                away_team_id: gameDataFirestore.away_team_id as DocumentReference,
-                home_team_id: gameDataFirestore.home_team_id as DocumentReference,
-                // Scores (prefer camelCase)
+                // Team refs (normalized)
+                away_team_id: (awayRef as DocumentReference | undefined),
+                home_team_id: (homeRef as DocumentReference | undefined),
+                // Scores with robust fallbacks
                 awayScore: typeof gameDataFirestore.awayScore === 'number' ? gameDataFirestore.awayScore : gameDataFirestore.away_team_score,
                 homeScore: typeof gameDataFirestore.homeScore === 'number' ? gameDataFirestore.homeScore : gameDataFirestore.home_team_score,
-                away_score: typeof gameDataFirestore.away_team_score === 'number' ? gameDataFirestore.away_team_score : undefined,
-                home_score: typeof gameDataFirestore.home_team_score === 'number' ? gameDataFirestore.home_team_score : undefined,
+                away_score: typeof gameDataFirestore.away_team_score === 'number' ? gameDataFirestore.away_team_score : (typeof gameDataFirestore.awayScore === 'number' ? gameDataFirestore.awayScore : undefined),
+                home_score: typeof gameDataFirestore.home_team_score === 'number' ? gameDataFirestore.home_team_score : (typeof gameDataFirestore.homeScore === 'number' ? gameDataFirestore.homeScore : undefined),
                 // Live flags (prefer camelCase)
                 isLive: gameDataFirestore.isLive ?? gameDataFirestore.is_live ?? false,
                 isOver: gameDataFirestore.isOver ?? gameDataFirestore.is_over ?? false,
                 is_live: gameDataFirestore.is_live ?? undefined,
                 is_over: gameDataFirestore.is_over ?? undefined,
                 // Period
+                period: gameDataFirestore.quarter || '',
                 quarter: gameDataFirestore.quarter || '',
                 sport: gameDataFirestore.sport || SWEEPSTAKES_SPORT_ID,
                 status: gameDataFirestore.status || 'scheduled',
@@ -376,63 +387,94 @@ function LobbyContent() {
       setWeekNumber(currentWeekNumber);
       setDateRange(timestampRange);
 
-      // Query keeps snake_case for backward compatibility
-      const gamesQuery = query(
+      const debugMode = (typeof window !== 'undefined') ? new URLSearchParams(window.location.search).get('debug') === '1' : false;
+
+      // Primary camelCase schema query (filter by sport + status; client-filter by week)
+      const gamesQueryCamel = query(
         collection(db, 'games'),
-        where("sport", "==", selectedSport.toUpperCase()),
-        where("is_over", "==", false),
-        where("start_time", ">=", timestampRange.startTimestamp),
-        where("start_time", "<=", timestampRange.endTimestamp),
-        orderBy("start_time")
+        where('sport', '==', selectedSport.toUpperCase()),
+        where('status', '==', 'scheduled'),
+        orderBy('startTime')
       );
+
       setGames([]);
-      unsubscribeGamesListenerRef.current = onSnapshot(gamesQuery, async (gamesSnapshot) => {
-        debugLog(`[LobbyPage] REGULAR GAMES snapshot received for ${selectedSport}. Game count: ${gamesSnapshot.size}`);
+      unsubscribeGamesListenerRef.current = onSnapshot(gamesQueryCamel, async (gamesSnapshot) => {
+        if (debugMode) debugLog(`[LobbyPage] CAMEL GAMES snapshot for ${selectedSport}:`, gamesSnapshot.size);
         const fetchedGamesRaw: DocumentData[] = [];
         const teamRefsToFetch: DocumentReference[] = [];
-        
+
         gamesSnapshot.forEach(docSnap => {
           const gameData = docSnap.data();
+          // Client-side filter to NFL week window
+          const startTs: Timestamp | undefined = (gameData.startTime as Timestamp) || (gameData.start_time as Timestamp);
+          if (!startTs) return;
+          const withinWeek = startTs.toMillis() >= timestampRange.startTimestamp.toMillis() && startTs.toMillis() <= timestampRange.endTimestamp.toMillis();
+          if (!withinWeek) return;
+
           fetchedGamesRaw.push({ id: docSnap.id, ...gameData });
-          if (gameData.away_team_id instanceof DocumentReference) teamRefsToFetch.push(gameData.away_team_id);
-          if (gameData.home_team_id instanceof DocumentReference) teamRefsToFetch.push(gameData.home_team_id);
+
+          const awayRef = (
+            gameData.away_team_id instanceof DocumentReference
+              ? gameData.away_team_id
+              : (gameData.awayTeam instanceof DocumentReference ? gameData.awayTeam : null)
+          );
+          const homeRef = (
+            gameData.home_team_id instanceof DocumentReference
+              ? gameData.home_team_id
+              : (gameData.homeTeam instanceof DocumentReference ? gameData.homeTeam : null)
+          );
+          if (awayRef) teamRefsToFetch.push(awayRef);
+          if (homeRef) teamRefsToFetch.push(homeRef);
         });
 
-        debugLog(`[LobbyPage] Fetching ${teamRefsToFetch.length} teams for ${gamesSnapshot.size} games.`);
+        if (debugMode) debugLog(`[LobbyPage] Fetching ${teamRefsToFetch.length} teams for ${fetchedGamesRaw.length} camelCase games.`);
         const fetchedTeamsMap = await fetchMultipleTeams(teamRefsToFetch);
         setTeams(fetchedTeamsMap);
 
-        const enrichedGames = fetchedGamesRaw.map(gr => ({
-          ...gr,
-          teamA: gr.away_team_id instanceof DocumentReference ? fetchedTeamsMap[gr.away_team_id.id] : undefined,
-          teamB: gr.home_team_id instanceof DocumentReference ? fetchedTeamsMap[gr.home_team_id.id] : undefined,
-          // times
-          startTime: (gr.startTime as Timestamp) || (gr.start_time as Timestamp),
-          start_time: gr.start_time as Timestamp,
-          // refs
-          away_team_id: gr.away_team_id as DocumentReference,
-          home_team_id: gr.home_team_id as DocumentReference,
-          // scores (prefer camelCase)
-          awayScore: typeof gr.awayScore === 'number' ? gr.awayScore : gr.away_team_score,
-          homeScore: typeof gr.homeScore === 'number' ? gr.homeScore : gr.home_team_score,
-          away_score: typeof gr.away_team_score === 'number' ? gr.away_team_score : undefined,
-          home_score: typeof gr.home_team_score === 'number' ? gr.home_team_score : undefined,
-          period: gr.quarter,
-          // live flags
-          isLive: gr.isLive ?? gr.is_live ?? false,
-          isOver: gr.isOver ?? gr.is_over ?? false,
-          // broadcast
-          broadcastProvider: gr.broadcastProvider || gr.broadcast_provider,
-          broadcast_provider: gr.broadcast_provider ?? undefined,
-        })) as GameType[];
-        
+        const enrichedGames = fetchedGamesRaw.map(gr => {
+          const awayRef = (
+            gr.away_team_id instanceof DocumentReference
+              ? gr.away_team_id
+              : (gr.awayTeam instanceof DocumentReference ? gr.awayTeam : undefined)
+          );
+          const homeRef = (
+            gr.home_team_id instanceof DocumentReference
+              ? gr.home_team_id
+              : (gr.homeTeam instanceof DocumentReference ? gr.homeTeam : undefined)
+          );
+          const startTs = (gr.startTime as Timestamp) || (gr.start_time as Timestamp);
+          return {
+            ...gr,
+            teamA: awayRef ? fetchedTeamsMap[awayRef.id] : undefined,
+            teamB: homeRef ? fetchedTeamsMap[homeRef.id] : undefined,
+            // times
+            startTime: startTs,
+            start_time: (gr.start_time as Timestamp | undefined),
+            // refs
+            away_team_id: awayRef as DocumentReference | undefined,
+            home_team_id: homeRef as DocumentReference | undefined,
+            // scores (prefer camelCase)
+            awayScore: typeof gr.awayScore === 'number' ? gr.awayScore : gr.away_team_score,
+            homeScore: typeof gr.homeScore === 'number' ? gr.homeScore : gr.home_team_score,
+            away_score: typeof gr.away_team_score === 'number' ? gr.away_team_score : (typeof gr.awayScore === 'number' ? gr.awayScore : undefined),
+            home_score: typeof gr.home_team_score === 'number' ? gr.home_team_score : (typeof gr.homeScore === 'number' ? gr.homeScore : undefined),
+            period: gr.quarter,
+            // live flags
+            isLive: (gr as any).isLive ?? (gr as any).is_live ?? false,
+            isOver: (gr as any).isOver ?? (gr as any).is_over ?? false,
+            // broadcast
+            broadcastProvider: (gr as any).broadcastProvider || (gr as any).broadcast_provider,
+            broadcast_provider: (gr as any).broadcast_provider ?? undefined,
+          } as GameType;
+        });
+
         setGames(enrichedGames);
         setSportsDataVersion(prev => prev + 1);
-        debugLog(`[LobbyPage] Finished processing ${enrichedGames.length} games for ${selectedSport}.`);
+        if (debugMode) debugLog(`[LobbyPage] Finished processing ${enrichedGames.length} camelCase games for ${selectedSport}.`);
         setIsLoadingGamesAndTeams(false);
         setIsTransitioning(false);
       }, (error) => {
-        console.error(`[LobbyPage] REGULAR GAMES listener error for ${selectedSport}:`, error);
+        console.error(`[LobbyPage] CAMEL GAMES listener error for ${selectedSport}:`, error);
         setGamesAndTeamsError(`Failed to load games for ${selectedSport}.`);
         setIsLoadingGamesAndTeams(false);
         setIsTransitioning(false);

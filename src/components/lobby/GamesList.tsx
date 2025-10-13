@@ -218,8 +218,8 @@ const GamesList = memo(({ games, user, onProtectedAction }: GamesListProps) => {
                 const aOver = (a as any).isOver ?? (a as any).is_over;
                 const bOver = (b as any).isOver ?? (b as any).is_over;
 
-                // Group order: Live (0) < Upcoming (1) < Final (2)
-                const groupRank = (g: any) => (g.isLive ? 0 : g.isOver ? 2 : 1);
+                // Group order: Upcoming (0) < Live (1) < Final (2)
+                const groupRank = (g: any) => (!g.isLive && !g.isOver ? 0 : g.isLive ? 1 : 2);
                 const aRank = groupRank({ isLive: aLive, isOver: aOver });
                 const bRank = groupRank({ isLive: bLive, isOver: bOver });
                 if (aRank !== bRank) return aRank - bRank;

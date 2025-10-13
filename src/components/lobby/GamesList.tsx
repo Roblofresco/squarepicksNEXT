@@ -138,15 +138,15 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
                   <div className="text-xs sm:text-sm font-bold mb-0.5 sm:mb-1 text-white"> 
                     {(isLive || isOver) ? `${(game.awayScore ?? game.away_score) ?? 0} - ${(game.homeScore ?? game.home_score) ?? 0}` : 'VS'}
                   </div>
-                  <div className="text-[10px] sm:text-xs text-text-secondary mb-0.5"> 
-                    {isLive ? (
-                      <span>{game.period || (game.quarter as any) || 'Live'}</span>
-                    ) : isOver ? (
-                      <span>Final</span>
-                    ) : (
-                      <span>{timeStr} - {dateStr}</span>
-                    )}
-                  </div>
+                  {!isOver && (
+                    <div className="text-[10px] sm:text-xs text-text-secondary mb-0.5"> 
+                      {isLive ? (
+                        <span>{game.period || (game.quarter as any) || 'Live'}</span>
+                      ) : (
+                        <span>{timeStr} - {dateStr}</span>
+                      )}
+                    </div>
+                  )}
                   {(game.broadcastProvider || game.broadcast_provider) && (
                     <span className="text-[0.55rem] sm:text-[0.65rem] text-gray-400 font-medium truncate w-full">
                       {game.broadcastProvider || game.broadcast_provider}

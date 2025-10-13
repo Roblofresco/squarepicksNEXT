@@ -52,7 +52,7 @@ const stateCopy: Record<NonNullable<TourGameCardProps['state']>, { badge?: strin
   final: {
     badge: 'Final',
     centerLine: '28 - 24',
-    subLine: 'Final Score'
+    subLine: ''
   }
 }
 
@@ -94,9 +94,11 @@ export default function TourGameCard({ state = 'scheduled', variant = state === 
             <div className="text-xs sm:text-sm font-bold text-white" data-tour="sports-game-center">
               {copy.centerLine}
             </div>
-            <div className="text-[10px] sm:text-xs text-white/70">
-              {copy.subLine}
-            </div>
+            {state !== 'final' && (
+              <div className="text-[10px] sm:text-xs text-white/70">
+                {copy.subLine}
+              </div>
+            )}
           </div>
 
           <div className="w-1/4 flex items-center justify-center h-full">

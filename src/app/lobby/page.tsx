@@ -1356,8 +1356,7 @@ function LobbyContent() {
               '[data-tour-allow="sweepstakes"]',
               '[data-tour-allow="home-continue"]',
               '[data-tour-allow="guidelines-skip"]',
-              '[data-tour-allow="guidelines-agree"]',
-              '[data-tour="header-info"]'
+              '[data-tour-allow="guidelines-agree"]'
             ]}
           hasWallet={!!hasWallet}
           onShowWallet={() => {

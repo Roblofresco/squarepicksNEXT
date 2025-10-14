@@ -290,16 +290,8 @@ function LobbyContent() {
               if (gameSnap.exists()) {
               const gameDataFirestore = gameSnap.data();
               const gameTeamRefs: DocumentReference[] = [];
-              const awayRef = (
-                gameDataFirestore.away_team_id instanceof DocumentReference
-                  ? gameDataFirestore.away_team_id
-                  : (gameDataFirestore.awayTeam instanceof DocumentReference ? gameDataFirestore.awayTeam : null)
-              );
-              const homeRef = (
-                gameDataFirestore.home_team_id instanceof DocumentReference
-                  ? gameDataFirestore.home_team_id
-                  : (gameDataFirestore.homeTeam instanceof DocumentReference ? gameDataFirestore.homeTeam : null)
-              );
+              const awayRef = gameDataFirestore.awayTeam instanceof DocumentReference ? gameDataFirestore.awayTeam : null;
+              const homeRef = gameDataFirestore.homeTeam instanceof DocumentReference ? gameDataFirestore.homeTeam : null;
               if (awayRef) gameTeamRefs.push(awayRef);
               if (homeRef) gameTeamRefs.push(homeRef);
               
@@ -413,16 +405,8 @@ function LobbyContent() {
 
           fetchedGamesRaw.push({ id: docSnap.id, ...gameData });
 
-          const awayRef = (
-            gameData.away_team_id instanceof DocumentReference
-              ? gameData.away_team_id
-              : (gameData.awayTeam instanceof DocumentReference ? gameData.awayTeam : null)
-          );
-          const homeRef = (
-            gameData.home_team_id instanceof DocumentReference
-              ? gameData.home_team_id
-              : (gameData.homeTeam instanceof DocumentReference ? gameData.homeTeam : null)
-          );
+          const awayRef = gameData.awayTeam instanceof DocumentReference ? gameData.awayTeam : null;
+          const homeRef = gameData.homeTeam instanceof DocumentReference ? gameData.homeTeam : null;
           if (awayRef) teamRefsToFetch.push(awayRef);
           if (homeRef) teamRefsToFetch.push(homeRef);
         });
@@ -432,16 +416,8 @@ function LobbyContent() {
         setTeams(fetchedTeamsMap);
 
         const enrichedGames = fetchedGamesRaw.map(gr => {
-          const awayRef = (
-            gr.away_team_id instanceof DocumentReference
-              ? gr.away_team_id
-              : (gr.awayTeam instanceof DocumentReference ? gr.awayTeam : undefined)
-          );
-          const homeRef = (
-            gr.home_team_id instanceof DocumentReference
-              ? gr.home_team_id
-              : (gr.homeTeam instanceof DocumentReference ? gr.homeTeam : undefined)
-          );
+          const awayRef = gr.awayTeam instanceof DocumentReference ? gr.awayTeam : undefined;
+          const homeRef = gr.homeTeam instanceof DocumentReference ? gr.homeTeam : undefined;
           const startTs = (gr.startTime as Timestamp) || (gr.start_time as Timestamp);
           return {
             ...gr,

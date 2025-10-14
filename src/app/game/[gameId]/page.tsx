@@ -171,16 +171,8 @@ function GamePageContent() {
         const gameSnap = await getDoc(gameRef);
         if (!gameSnap.exists()) throw new Error('Game not found');
         const gameData = gameSnap.data();
-        const awayRef = (
-          gameData.away_team_id instanceof DocumentReference
-            ? gameData.away_team_id
-            : (gameData.awayTeam instanceof DocumentReference ? gameData.awayTeam : undefined)
-        );
-        const homeRef = (
-          gameData.home_team_id instanceof DocumentReference
-            ? gameData.home_team_id
-            : (gameData.homeTeam instanceof DocumentReference ? gameData.homeTeam : undefined)
-        );
+        const awayRef = gameData.awayTeam instanceof DocumentReference ? gameData.awayTeam : undefined;
+        const homeRef = gameData.homeTeam instanceof DocumentReference ? gameData.homeTeam : undefined;
         const teamAData = await getTeamData(awayRef);
         const teamBData = await getTeamData(homeRef);
         setGameDetails({

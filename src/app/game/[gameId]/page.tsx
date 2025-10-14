@@ -127,12 +127,27 @@ function GamePageContent() {
   const [entrySuccessCount, setEntrySuccessCount] = useState(0);
   const [isDisplayingDelayedLoader, setIsDisplayingDelayedLoader] = useState(false);
   const [shakeEntryFee, setShakeEntryFee] = useState(false);
+  const [showWinnerAnimation, setShowWinnerAnimation] = useState(false);
   const entryFeeRef = useRef<HTMLDivElement>(null);
   const confirmRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const prevSelectedCountRef = useRef<number>(0);
   const scrollDownTimerRef = useRef<number | null>(null);
   const scrollUpTimerRef = useRef<number | null>(null);
+
+  // Animation variants for light switch flip
+  const switchVariants = {
+    off: {
+      rotateX: 0,
+    },
+    on: {
+      rotateX: 180,
+      transition: {
+        duration: 0.6,
+        ease: "easeInOut",
+      }
+    }
+  };
 
   // Compute optimistic displayed balance: subtract cost of currently selected squares
   const costCommitted = selectedSquares.size * selectedEntryAmount;
@@ -502,6 +517,14 @@ function GamePageContent() {
       if (scrollDownTimerRef.current) window.clearTimeout(scrollDownTimerRef.current);
       if (scrollUpTimerRef.current) window.clearTimeout(scrollUpTimerRef.current);
     };
+  }, []);
+
+  // Trigger winner animation after component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWinnerAnimation(true);
+    }, 300);
+    return () => clearTimeout(timer);
   }, []);
 
   // Clear selections when clicking outside the grid and confirm button
@@ -899,91 +922,219 @@ function GamePageContent() {
               </div>
               <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-md mx-auto">
                 {/* Q1 */}
-                <div className={cn(
-                  "px-2 py-2.5 rounded-lg border font-medium flex flex-col items-center justify-center min-h-[64px] transition-all duration-200",
-                  q1WinningSquare 
-                    ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
-                    : "border-slate-700/50 bg-slate-800/30 text-slate-500"
-                )}>
-                  {q1WinningSquare ? (
-                    <>
-                      <div className="text-[10px] mb-1.5 uppercase tracking-wide">1st Qtr</div>
-                      <Separator className="my-0.5 bg-current opacity-30" />
-                      <div className="text-lg font-bold mt-1.5 tabular-nums">{q1WinningSquare}</div>
-                    </>
-                  ) : (
-                    <>
+                <div 
+                  className={cn(
+                    "px-2 py-2.5 rounded-lg border font-medium min-h-[64px] transition-all duration-300 relative overflow-hidden",
+                    q1WinningSquare 
+                      ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
+                      : "border-slate-700/50 bg-slate-800/30 text-slate-500"
+                  )}
+                  style={{ perspective: "1000px" }}
+                >
+                  <motion.div
+                    initial="off"
+                    animate={q1WinningSquare && showWinnerAnimation ? "on" : "off"}
+                    variants={switchVariants}
+                    transition={{ delay: 0 }}
+                    style={{ 
+                      transformStyle: "preserve-3d",
+                      position: "relative",
+                    }}
+                    className="flex flex-col items-center justify-center"
+                  >
+                    {/* Front face - UNASSIGNED */}
+                    <motion.div
+                      style={{ 
+                        backfaceVisibility: "hidden",
+                        position: q1WinningSquare ? "absolute" : "relative",
+                        width: "100%",
+                      }}
+                      className="flex flex-col items-center justify-center"
+                    >
                       <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
                       <Separator className="my-0.5 bg-current opacity-30" />
                       <div className="text-[10px] mt-1.5 uppercase tracking-wide">1st Qtr</div>
-                    </>
-                  )}
+                    </motion.div>
+
+                    {/* Back face - ASSIGNED */}
+                    {q1WinningSquare && (
+                      <motion.div
+                        style={{ 
+                          backfaceVisibility: "hidden",
+                          transform: "rotateX(180deg)",
+                          position: "absolute",
+                          width: "100%",
+                        }}
+                        className="flex flex-col items-center justify-center"
+                      >
+                        <div className="text-[10px] mb-1.5 uppercase tracking-wide">1st Qtr</div>
+                        <Separator className="my-0.5 bg-current opacity-30" />
+                        <div className="text-lg font-bold mt-1.5 tabular-nums">{q1WinningSquare}</div>
+                      </motion.div>
+                    )}
+                  </motion.div>
                 </div>
                 
                 {/* Q2 */}
-                <div className={cn(
-                  "px-2 py-2.5 rounded-lg border font-medium flex flex-col items-center justify-center min-h-[64px] transition-all duration-200",
-                  q2WinningSquare 
-                    ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
-                    : "border-slate-700/50 bg-slate-800/30 text-slate-500"
-                )}>
-                  {q2WinningSquare ? (
-                    <>
-                      <div className="text-[10px] mb-1.5 uppercase tracking-wide">2nd Qtr</div>
-                      <Separator className="my-0.5 bg-current opacity-30" />
-                      <div className="text-lg font-bold mt-1.5 tabular-nums">{q2WinningSquare}</div>
-                    </>
-                  ) : (
-                    <>
+                <div 
+                  className={cn(
+                    "px-2 py-2.5 rounded-lg border font-medium min-h-[64px] transition-all duration-300 relative overflow-hidden",
+                    q2WinningSquare 
+                      ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
+                      : "border-slate-700/50 bg-slate-800/30 text-slate-500"
+                  )}
+                  style={{ perspective: "1000px" }}
+                >
+                  <motion.div
+                    initial="off"
+                    animate={q2WinningSquare && showWinnerAnimation ? "on" : "off"}
+                    variants={switchVariants}
+                    transition={{ delay: 0.15 }}
+                    style={{ 
+                      transformStyle: "preserve-3d",
+                      position: "relative",
+                    }}
+                    className="flex flex-col items-center justify-center"
+                  >
+                    {/* Front face - UNASSIGNED */}
+                    <motion.div
+                      style={{ 
+                        backfaceVisibility: "hidden",
+                        position: q2WinningSquare ? "absolute" : "relative",
+                        width: "100%",
+                      }}
+                      className="flex flex-col items-center justify-center"
+                    >
                       <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
                       <Separator className="my-0.5 bg-current opacity-30" />
                       <div className="text-[10px] mt-1.5 uppercase tracking-wide">2nd Qtr</div>
-                    </>
-                  )}
+                    </motion.div>
+
+                    {/* Back face - ASSIGNED */}
+                    {q2WinningSquare && (
+                      <motion.div
+                        style={{ 
+                          backfaceVisibility: "hidden",
+                          transform: "rotateX(180deg)",
+                          position: "absolute",
+                          width: "100%",
+                        }}
+                        className="flex flex-col items-center justify-center"
+                      >
+                        <div className="text-[10px] mb-1.5 uppercase tracking-wide">2nd Qtr</div>
+                        <Separator className="my-0.5 bg-current opacity-30" />
+                        <div className="text-lg font-bold mt-1.5 tabular-nums">{q2WinningSquare}</div>
+                      </motion.div>
+                    )}
+                  </motion.div>
                 </div>
                 
                 {/* Q3 */}
-                <div className={cn(
-                  "px-2 py-2.5 rounded-lg border font-medium flex flex-col items-center justify-center min-h-[64px] transition-all duration-200",
-                  q3WinningSquare 
-                    ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
-                    : "border-slate-700/50 bg-slate-800/30 text-slate-500"
-                )}>
-                  {q3WinningSquare ? (
-                    <>
-                      <div className="text-[10px] mb-1.5 uppercase tracking-wide">3rd Qtr</div>
-                      <Separator className="my-0.5 bg-current opacity-30" />
-                      <div className="text-lg font-bold mt-1.5 tabular-nums">{q3WinningSquare}</div>
-                    </>
-                  ) : (
-                    <>
+                <div 
+                  className={cn(
+                    "px-2 py-2.5 rounded-lg border font-medium min-h-[64px] transition-all duration-300 relative overflow-hidden",
+                    q3WinningSquare 
+                      ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
+                      : "border-slate-700/50 bg-slate-800/30 text-slate-500"
+                  )}
+                  style={{ perspective: "1000px" }}
+                >
+                  <motion.div
+                    initial="off"
+                    animate={q3WinningSquare && showWinnerAnimation ? "on" : "off"}
+                    variants={switchVariants}
+                    transition={{ delay: 0.3 }}
+                    style={{ 
+                      transformStyle: "preserve-3d",
+                      position: "relative",
+                    }}
+                    className="flex flex-col items-center justify-center"
+                  >
+                    {/* Front face - UNASSIGNED */}
+                    <motion.div
+                      style={{ 
+                        backfaceVisibility: "hidden",
+                        position: q3WinningSquare ? "absolute" : "relative",
+                        width: "100%",
+                      }}
+                      className="flex flex-col items-center justify-center"
+                    >
                       <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
                       <Separator className="my-0.5 bg-current opacity-30" />
                       <div className="text-[10px] mt-1.5 uppercase tracking-wide">3rd Qtr</div>
-                    </>
-                  )}
+                    </motion.div>
+
+                    {/* Back face - ASSIGNED */}
+                    {q3WinningSquare && (
+                      <motion.div
+                        style={{ 
+                          backfaceVisibility: "hidden",
+                          transform: "rotateX(180deg)",
+                          position: "absolute",
+                          width: "100%",
+                        }}
+                        className="flex flex-col items-center justify-center"
+                      >
+                        <div className="text-[10px] mb-1.5 uppercase tracking-wide">3rd Qtr</div>
+                        <Separator className="my-0.5 bg-current opacity-30" />
+                        <div className="text-lg font-bold mt-1.5 tabular-nums">{q3WinningSquare}</div>
+                      </motion.div>
+                    )}
+                  </motion.div>
                 </div>
                 
                 {/* FINAL */}
-                <div className={cn(
-                  "px-2 py-2.5 rounded-lg border font-medium flex flex-col items-center justify-center min-h-[64px] transition-all duration-200",
-                  finalWinningSquare 
-                    ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
-                    : "border-slate-700/50 bg-slate-800/30 text-slate-500"
-                )}>
-                  {finalWinningSquare ? (
-                    <>
-                      <div className="text-[10px] mb-1.5 uppercase tracking-wide">Final</div>
-                      <Separator className="my-0.5 bg-current opacity-30" />
-                      <div className="text-lg font-bold mt-1.5 tabular-nums">{finalWinningSquare}</div>
-                    </>
-                  ) : (
-                    <>
+                <div 
+                  className={cn(
+                    "px-2 py-2.5 rounded-lg border font-medium min-h-[64px] transition-all duration-300 relative overflow-hidden",
+                    finalWinningSquare 
+                      ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
+                      : "border-slate-700/50 bg-slate-800/30 text-slate-500"
+                  )}
+                  style={{ perspective: "1000px" }}
+                >
+                  <motion.div
+                    initial="off"
+                    animate={finalWinningSquare && showWinnerAnimation ? "on" : "off"}
+                    variants={switchVariants}
+                    transition={{ delay: 0.45 }}
+                    style={{ 
+                      transformStyle: "preserve-3d",
+                      position: "relative",
+                    }}
+                    className="flex flex-col items-center justify-center"
+                  >
+                    {/* Front face - UNASSIGNED */}
+                    <motion.div
+                      style={{ 
+                        backfaceVisibility: "hidden",
+                        position: finalWinningSquare ? "absolute" : "relative",
+                        width: "100%",
+                      }}
+                      className="flex flex-col items-center justify-center"
+                    >
                       <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
                       <Separator className="my-0.5 bg-current opacity-30" />
                       <div className="text-[10px] mt-1.5 uppercase tracking-wide">Final</div>
-                    </>
-                  )}
+                    </motion.div>
+
+                    {/* Back face - ASSIGNED */}
+                    {finalWinningSquare && (
+                      <motion.div
+                        style={{ 
+                          backfaceVisibility: "hidden",
+                          transform: "rotateX(180deg)",
+                          position: "absolute",
+                          width: "100%",
+                        }}
+                        className="flex flex-col items-center justify-center"
+                      >
+                        <div className="text-[10px] mb-1.5 uppercase tracking-wide">Final</div>
+                        <Separator className="my-0.5 bg-current opacity-30" />
+                        <div className="text-lg font-bold mt-1.5 tabular-nums">{finalWinningSquare}</div>
+                      </motion.div>
+                    )}
+                  </motion.div>
                 </div>
               </div>
             </div>

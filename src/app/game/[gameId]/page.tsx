@@ -171,8 +171,18 @@ function GamePageContent() {
         const gameSnap = await getDoc(gameRef);
         if (!gameSnap.exists()) throw new Error('Game not found');
         const gameData = gameSnap.data();
-        const teamAData = await getTeamData(gameData.away_team_id as DocumentReference | undefined);
-        const teamBData = await getTeamData(gameData.home_team_id as DocumentReference | undefined);
+        const awayRef = (
+          gameData.away_team_id instanceof DocumentReference
+            ? gameData.away_team_id
+            : (gameData.awayTeam instanceof DocumentReference ? gameData.awayTeam : undefined)
+        );
+        const homeRef = (
+          gameData.home_team_id instanceof DocumentReference
+            ? gameData.home_team_id
+            : (gameData.homeTeam instanceof DocumentReference ? gameData.homeTeam : undefined)
+        );
+        const teamAData = await getTeamData(awayRef);
+        const teamBData = await getTeamData(homeRef);
         setGameDetails({
           id: gameSnap.id,
           sport: gameData.sport,
@@ -198,7 +208,7 @@ function GamePageContent() {
         setQ2WinningSquare(typeof gameData.q2WinningSquare === 'string' ? gameData.q2WinningSquare : null);
         setQ3WinningSquare(typeof gameData.q3WinningSquare === 'string' ? gameData.q3WinningSquare : null);
         setFinalWinningSquare(typeof gameData.finalWinningSquare === 'string' ? gameData.finalWinningSquare : null);
-        console.log('Game data:', { away_team_id: gameData.away_team_id, home_team_id: gameData.home_team_id, teamAData, teamBData });
+        console.log('Game data:', { away_team_id: gameData.away_team_id, awayTeam: gameData.awayTeam, home_team_id: gameData.home_team_id, homeTeam: gameData.homeTeam, awayRef, homeRef, teamAData, teamBData });
       } catch (err: any) { setError(err.message || 'Failed to load game details.'); }
       finally { setIsLoadingGame(false); }
     };

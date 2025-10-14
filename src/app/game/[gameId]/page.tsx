@@ -196,6 +196,7 @@ function GamePageContent() {
         setQ2WinningSquare(typeof gameData.q2WinningSquare === 'string' ? gameData.q2WinningSquare : null);
         setQ3WinningSquare(typeof gameData.q3WinningSquare === 'string' ? gameData.q3WinningSquare : null);
         setFinalWinningSquare(typeof gameData.finalWinningSquare === 'string' ? gameData.finalWinningSquare : null);
+        console.log('Game data:', { away_team_id: gameData.away_team_id, home_team_id: gameData.home_team_id, teamAData, teamBData });
       } catch (err: any) { setError(err.message || 'Failed to load game details.'); }
       finally { setIsLoadingGame(false); }
     };
@@ -587,6 +588,24 @@ function GamePageContent() {
   };
 
   const renderGrid = () => {
+    // Don't show board selection for live or final games
+    if (gameDetails && (gameDetails.status === 'live' || gameDetails.status === 'final')) {
+      return (
+        <div className={cn(
+          "relative overflow-hidden p-6 md:p-8 rounded-lg shadow-xl",
+          "md:max-w-lg md:mx-auto text-center",
+          "min-h-[200px] flex flex-col items-center justify-center"
+        )}
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(20,28,48,0.98) 0%, rgba(20,28,48,0.9) 60%, rgba(20,28,48,0) 100%), #0a0e1b'
+        }}>
+          <p className="text-slate-400 text-sm">
+            {gameDetails.status === 'live' ? 'Board closed - game is live' : 'Board closed - game finished'}
+          </p>
+        </div>
+      );
+    }
+
     const commonContainerClasses = cn(
       "relative overflow-hidden p-6 md:p-8 rounded-lg shadow-xl",
       "md:max-w-lg md:mx-auto",
@@ -772,12 +791,20 @@ function GamePageContent() {
             <div className="pointer-events-none absolute inset-x-0 -top-4 mx-auto h-32 sm:h-40 max-w-3xl rounded-[28px] bg-gradient-to-b from-accent-1/15 via-accent-2/10 to-transparent blur-2xl shadow-[0_40px_120px_-20px_rgba(27,176,242,0.35)]" />
           </div>
 
-          {/* Game info content without container box */}
-          <div className="relative z-10 mb-2">
-            <div className="max-w-3xl mx-auto px-2 flex items-center justify-between">
+          {/* Enhanced Scoreboard Section */}
+          <div className="relative z-10 mb-4">
+            {/* Team matchup header */}
+            <div className="max-w-3xl mx-auto px-2 flex items-center justify-between mb-2">
               <div className="flex flex-col items-center text-center w-1/3 px-1">
                 <div className="relative mb-1.5">
-                  <Image src={gameDetails.teamA.logo || '/brandkit/logo-icon-only.svg'} alt={gameDetails.teamA.name} width={48} height={48} className="h-10 w-10 sm:h-12 sm:w-12 object-contain relative z-10" style={{ filter: `drop-shadow(0 0 6px ${glowA})` }}/>
+                  <Image 
+                    src={gameDetails.teamA.logo || '/brandkit/logo-icon-only.svg'} 
+                    alt={gameDetails.teamA.name} 
+                    width={48} 
+                    height={48} 
+                    className="h-10 w-10 sm:h-12 sm:w-12 object-contain relative z-10" 
+                    style={{ filter: `drop-shadow(0 0 6px ${glowA})` }}
+                  />
                   <div
                     className="pointer-events-none absolute -bottom-1 left-1/2 h-3 w-12 -translate-x-1/2 rounded-full opacity-100"
                     style={{
@@ -786,32 +813,56 @@ function GamePageContent() {
                     }}
                   />
                 </div>
-                <span className="font-semibold text-xs sm:text-sm md:text-base leading-tight">{gameDetails.teamA.name}</span>
-                <span className="text-[10px] sm:text-xs text-slate-400">({gameDetails.teamA.record})</span>
-             </div>
-              <div className="text-center px-1">
+                <span className="font-semibold text-xs sm:text-sm md:text-base leading-tight">
+                  {gameDetails.teamA.name}
+                </span>
+              </div>
+
+              {/* Center: Score and status */}
+              <div className="text-center px-1 flex flex-col items-center">
                 {effectiveView === 'live' && (
-                    <>
-                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white tabular-nums">{gameDetails.away_score} - {gameDetails.home_score}</div>
-                        <div className="text-[10px] sm:text-xs text-red-400 animate-pulse font-semibold">{gameDetails.period?.toUpperCase()}</div>
-                    </>
+                  <>
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tabular-nums mb-1">
+                      {gameDetails.awayScore ?? gameDetails.away_score ?? 0} - {gameDetails.homeScore ?? gameDetails.home_score ?? 0}
+                    </div>
+                    <div className="text-xs sm:text-sm text-red-400 animate-pulse font-semibold mb-0.5">
+                      {gameDetails.period?.toUpperCase() || 'LIVE'}
+                    </div>
+                  </>
                 )}
                 {effectiveView === 'upcoming' && (
-                     <>
-                        <div className="text-base sm:text-lg md:text-xl font-semibold text-accent-1">{gameDetails.time}</div>
-                        <div className="text-[10px] sm:text-xs text-slate-400">{gameDetails.date}</div>
-                    </>
+                  <>
+                    <div className="text-lg sm:text-xl md:text-2xl font-semibold text-accent-1 mb-1">
+                      {gameDetails.time}
+                    </div>
+                    <div className="text-xs sm:text-sm text-slate-400">{gameDetails.date}</div>
+                  </>
                 )}
-                 {effectiveView === 'final' && (
-                     <>
-                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-300 tabular-nums">{gameDetails.away_score} - {gameDetails.home_score}</div>
-                        <div className="text-[10px] sm:text-xs text-slate-400">Final</div>
-                    </>
+                {effectiveView === 'final' && (
+                  <>
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-300 tabular-nums mb-1">
+                      {gameDetails.awayScore ?? gameDetails.away_score ?? 0} - {gameDetails.homeScore ?? gameDetails.home_score ?? 0}
+                    </div>
+                    <div className="text-xs sm:text-sm text-slate-400 font-semibold">FINAL</div>
+                  </>
                 )}
-             </div>
+                {(gameDetails.broadcastProvider || gameDetails.broadcast_provider) && (
+                  <div className="text-[10px] sm:text-xs text-slate-500 mt-1">
+                    {gameDetails.broadcastProvider || gameDetails.broadcast_provider} • Week {gameDetails.week} • {gameDetails.sport}
+                  </div>
+                )}
+              </div>
+
               <div className="flex flex-col items-center text-center w-1/3 px-1">
                 <div className="relative mb-1.5">
-                  <Image src={gameDetails.teamB.logo || '/brandkit/logo-icon-only.svg'} alt={gameDetails.teamB.name} width={48} height={48} className="h-10 w-10 sm:h-12 sm:w-12 object-contain relative z-10" style={{ filter: `drop-shadow(0 0 6px ${glowB})` }}/>
+                  <Image 
+                    src={gameDetails.teamB.logo || '/brandkit/logo-icon-only.svg'} 
+                    alt={gameDetails.teamB.name} 
+                    width={48} 
+                    height={48} 
+                    className="h-10 w-10 sm:h-12 sm:w-12 object-contain relative z-10" 
+                    style={{ filter: `drop-shadow(0 0 6px ${glowB})` }}
+                  />
                   <div
                     className="pointer-events-none absolute -bottom-1 left-1/2 h-3 w-12 -translate-x-1/2 rounded-full opacity-100"
                     style={{
@@ -820,62 +871,106 @@ function GamePageContent() {
                     }}
                   />
                 </div>
-                <span className="font-semibold text-xs sm:text-sm md:text-base leading-tight">{gameDetails.teamB.name}</span>
-                <span className="text-[10px] sm:text-xs text-slate-400">({gameDetails.teamB.record})</span>
+                <span className="font-semibold text-xs sm:text-sm md:text-base leading-tight">
+                  {gameDetails.teamB.name}
+                </span>
               </div>
-             </div>
+            </div>
+
+            {/* Winners line with badges */}
+            <div className="max-w-3xl mx-auto px-2 py-2 rounded-lg bg-slate-900/30 border border-white/5">
+              <div className="text-[10px] sm:text-xs text-slate-400 mb-1.5 text-center font-medium">
+                Winners
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm">
+                <span className={cn(
+                  "px-3 py-1 rounded-full border font-medium",
+                  q1WinningSquare 
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" 
+                    : "border-white/10 bg-white/0 text-white/30"
+                )}>
+                  1st Qtr {q1WinningSquare || '--'}
+                </span>
+                <span className="text-white/20">•</span>
+                <span className={cn(
+                  "px-3 py-1 rounded-full border font-medium",
+                  q2WinningSquare 
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" 
+                    : "border-white/10 bg-white/0 text-white/30"
+                )}>
+                  2nd Qtr {q2WinningSquare || '--'}
+                </span>
+                <span className="text-white/20">•</span>
+                <span className={cn(
+                  "px-3 py-1 rounded-full border font-medium",
+                  q3WinningSquare 
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" 
+                    : "border-white/10 bg-white/0 text-white/30"
+                )}>
+                  3rd Qtr {q3WinningSquare || '--'}
+                </span>
+                <span className="text-white/20">•</span>
+                <span className={cn(
+                  "px-3 py-1 rounded-full border font-medium",
+                  finalWinningSquare 
+                    ? "border-amber-500/30 bg-amber-500/10 text-amber-300" 
+                    : "border-white/10 bg-white/0 text-white/30"
+                )}>
+                  FINAL {finalWinningSquare || '--'}
+                </span>
+              </div>
+            </div>
           </div>
 
           {error && <p className="text-center text-red-400 mb-3 bg-red-900/30 p-2 rounded-md">Error: {error}</p>} 
 
           <div className="h-px w-full bg-white/10 mb-3" />
 
-          {/* Winners line (always shows all period chips; empty where unknown) */}
-          <div className="max-w-3xl mx-auto px-2 mb-2">
-            <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-xs">
-              <span className={cn("px-2 py-0.5 rounded-full border", q1WinningSquare ? "border-white/20 bg-white/5" : "border-white/10 bg-white/0 text-white/40")}>Q1 {q1WinningSquare || '--'}</span>
-              <span className={cn("px-2 py-0.5 rounded-full border", q2WinningSquare ? "border-white/20 bg-white/5" : "border-white/10 bg-white/0 text-white/40")}>Q2 {q2WinningSquare || '--'}</span>
-              <span className={cn("px-2 py-0.5 rounded-full border", q3WinningSquare ? "border-white/20 bg-white/5" : "border-white/10 bg-white/0 text-white/40")}>Q3 {q3WinningSquare || '--'}</span>
-              <span className={cn("px-2 py-0.5 rounded-full border", finalWinningSquare ? "border-white/20 bg-white/5" : "border-white/10 bg-white/0 text-white/40")}>FINAL {finalWinningSquare || '--'}</span>
+          {gameDetails && gameDetails.status === 'upcoming' && (
+            <div
+              ref={entryFeeRef}
+              className={cn(
+                "mb-4 p-2 rounded-lg max-w-md md:max-w-lg mx-auto",
+                shakeEntryFee && "animate-shake"
+              )}
+              style={{
+                background: 'radial-gradient(ellipse at center, rgba(20,28,48,0.98) 0%, rgba(20,28,48,0.9) 60%, rgba(20,28,48,0.0) 100%), #0a0e1b'
+              }}
+            >
+              <div className="text-center mb-2">
+                <p className="text-sm font-medium text-slate-300">Entry Fee:</p>
+              </div>
+              <div className="flex justify-center space-x-1 sm:space-x-2 mb-2">
+                {entryAmounts.map(amount => (
+                  <Button
+                    key={amount}
+                    variant={selectedEntryAmount === amount ? "default" : "outline"}
+                    onClick={() => handleEntryAmountClick(amount)}
+                    className={cn(
+                      "h-9 text-sm font-semibold border-slate-600 hover:border-slate-500 px-3",
+                      selectedEntryAmount === amount ?
+                        "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] hover:from-[#108bcc] hover:to-[#0c6ca3] text-white border-[#108bcc] ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-slate-800" :
+                        "bg-gradient-to-br from-slate-700/70 to-slate-800/70 hover:from-slate-600/70 hover:to-slate-700/70 text-slate-300"
+                    )}
+                  >
+                    ${amount}
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div
-            ref={entryFeeRef}
-            className={cn(
-              "mb-4 p-2 rounded-lg max-w-md md:max-w-lg mx-auto",
-              shakeEntryFee && "animate-shake"
-            )}
-            style={{
-              background: 'radial-gradient(ellipse at center, rgba(20,28,48,0.98) 0%, rgba(20,28,48,0.9) 60%, rgba(20,28,48,0.0) 100%), #0a0e1b'
-            }}
-          >
-            <div className="text-center mb-2">
-              <p className="text-sm font-medium text-slate-300">Entry Fee:</p>
+          {gameDetails && gameDetails.status === 'upcoming' && (
+            <div className="mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold mb-3 text-center text-slate-100">Select Your Squares <span className="text-xs text-slate-400">(Max {MAX_SQUARE_SELECTION_LIMIT})</span></h2>
+              {renderGrid()}
             </div>
-            <div className="flex justify-center space-x-1 sm:space-x-2 mb-2">
-              {entryAmounts.map(amount => (
-                <Button
-                  key={amount}
-                  variant={selectedEntryAmount === amount ? "default" : "outline"}
-                  onClick={() => handleEntryAmountClick(amount)}
-                  className={cn(
-                    "h-9 text-sm font-semibold border-slate-600 hover:border-slate-500 px-3",
-                    selectedEntryAmount === amount ?
-                      "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] hover:from-[#108bcc] hover:to-[#0c6ca3] text-white border-[#108bcc] ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-slate-800" :
-                      "bg-gradient-to-br from-slate-700/70 to-slate-800/70 hover:from-slate-600/70 hover:to-slate-700/70 text-slate-300"
-                  )}
-                >
-                  ${amount}
-                </Button>
-              ))}
+          )}
+          {gameDetails && (gameDetails.status === 'live' || gameDetails.status === 'final') && (
+            <div className="mb-6">
+              {renderGrid()}
             </div>
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-lg sm:text-xl font-semibold mb-3 text-center text-slate-100">Select Your Squares <span className="text-xs text-slate-400">(Max {MAX_SQUARE_SELECTION_LIMIT})</span></h2>
-            {renderGrid()}
-          </div>
+          )}
 
           {selectedSquares.size > 0 && currentBoard && currentBoard.status === 'open' && (
              <div className="text-center px-2 mt-8 mb-8" ref={confirmRef}>

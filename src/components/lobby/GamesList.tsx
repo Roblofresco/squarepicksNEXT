@@ -147,7 +147,16 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
                   {!isOver && (
                     <div className="text-[10px] sm:text-xs text-text-secondary mb-0.5"> 
                       {isLive ? (
-                        <span>{game.period || (game.quarter as any) || 'Live'}</span>
+                        <span>{(() => {
+                          const period = game.period || (game.quarter as any);
+                          if (!period) return 'Live';
+                          const periodStr = String(period).toLowerCase();
+                          if (periodStr === '1' || periodStr.includes('1')) return '1st Qtr';
+                          if (periodStr === '2' || periodStr.includes('2')) return '2nd Qtr';
+                          if (periodStr === '3' || periodStr.includes('3')) return '3rd Qtr';
+                          if (periodStr === '4' || periodStr.includes('4')) return '4th Qtr';
+                          return period;
+                        })()}</span>
                       ) : (
                         <span>{timeStr} - {dateStr}</span>
                       )}

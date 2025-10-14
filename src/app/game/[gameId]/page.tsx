@@ -47,6 +47,7 @@ interface GameDetails extends Omit<Game, 'teamA' | 'teamB'> {
   period?: string;
   broadcastProvider?: string;
   broadcast_provider?: string;
+  week?: number;
   away_team_id: DocumentReference;
   home_team_id: DocumentReference;
 }
@@ -185,6 +186,7 @@ function GamePageContent() {
           quarter: gameData.quarter,
           broadcastProvider: gameData.broadcastProvider || gameData.broadcast_provider || undefined,
           broadcast_provider: gameData.broadcast_provider || undefined,
+          week: gameData.week,
           homeScore: typeof gameData.homeScore === 'number' ? gameData.homeScore : (gameData.home_team_score ?? 0),
           awayScore: typeof gameData.awayScore === 'number' ? gameData.awayScore : (gameData.away_team_score ?? 0),
           home_score: typeof gameData.home_team_score === 'number' ? gameData.home_team_score : undefined,

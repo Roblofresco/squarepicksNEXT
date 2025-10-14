@@ -891,7 +891,8 @@ function GamePageContent() {
               </div>
             </div>
 
-            {/* Winners scoreboard */}
+            {/* Winners scoreboard - Only show for live and final games */}
+            {(effectiveView === 'live' || effectiveView === 'final') && (
             <div className="max-w-3xl mx-auto px-2 py-3 rounded-lg bg-slate-900/30 border border-white/5">
               <div className="text-[10px] sm:text-xs text-slate-400 mb-2 text-center font-medium">
                 Winners
@@ -986,6 +987,7 @@ function GamePageContent() {
                 </div>
               </div>
             </div>
+            )}
           </div>
 
           {error && <p className="text-center text-red-400 mb-3 bg-red-900/30 p-2 rounded-md">Error: {error}</p>} 

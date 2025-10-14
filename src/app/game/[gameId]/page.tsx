@@ -11,6 +11,7 @@ import {
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { Game, Board, TeamInfo } from '@/types/lobby';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { ArrowLeft, AlertTriangle, Loader2, Info, CircleDot, Crown } from 'lucide-react';
@@ -826,11 +827,20 @@ function GamePageContent() {
               <div className="text-center px-1 flex flex-col items-center">
                 {effectiveView === 'live' && (
                   <>
+                    <div className="text-xs sm:text-sm text-red-400 animate-pulse font-semibold mb-0.5">
+                      {(() => {
+                        const period = gameDetails.period || gameDetails.quarter;
+                        if (!period) return 'LIVE';
+                        const periodStr = String(period).toLowerCase();
+                        if (periodStr === '1' || periodStr.includes('1')) return '1st Qtr';
+                        if (periodStr === '2' || periodStr.includes('2')) return '2nd Qtr';
+                        if (periodStr === '3' || periodStr.includes('3')) return '3rd Qtr';
+                        if (periodStr === '4' || periodStr.includes('4')) return '4th Qtr';
+                        return period.toUpperCase();
+                      })()}
+                    </div>
                     <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tabular-nums mb-1">
                       {gameDetails.awayScore ?? gameDetails.away_score ?? 0} - {gameDetails.homeScore ?? gameDetails.home_score ?? 0}
-                    </div>
-                    <div className="text-xs sm:text-sm text-red-400 animate-pulse font-semibold mb-0.5">
-                      {gameDetails.period?.toUpperCase() || 'LIVE'}
                     </div>
                   </>
                 )}
@@ -881,47 +891,99 @@ function GamePageContent() {
               </div>
             </div>
 
-            {/* Winners line with badges */}
-            <div className="max-w-3xl mx-auto px-2 py-2 rounded-lg bg-slate-900/30 border border-white/5">
-              <div className="text-[10px] sm:text-xs text-slate-400 mb-1.5 text-center font-medium">
+            {/* Winners scoreboard */}
+            <div className="max-w-3xl mx-auto px-2 py-3 rounded-lg bg-slate-900/30 border border-white/5">
+              <div className="text-[10px] sm:text-xs text-slate-400 mb-2 text-center font-medium">
                 Winners
               </div>
-              <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm">
-                <span className={cn(
-                  "px-3 py-1 rounded-full border font-medium",
+              <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-md mx-auto">
+                {/* Q1 */}
+                <div className={cn(
+                  "px-2 py-2.5 rounded-lg border font-medium flex flex-col items-center justify-center min-h-[64px] transition-all duration-200",
                   q1WinningSquare 
-                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" 
-                    : "border-white/10 bg-white/0 text-white/30"
+                    ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
+                    : "border-slate-700/50 bg-slate-800/30 text-slate-500"
                 )}>
-                  1st Qtr {q1WinningSquare || '--'}
-                </span>
-                <span className="text-white/20">•</span>
-                <span className={cn(
-                  "px-3 py-1 rounded-full border font-medium",
+                  {q1WinningSquare ? (
+                    <>
+                      <div className="text-[10px] mb-1.5 uppercase tracking-wide">1st Qtr</div>
+                      <Separator className="my-0.5 bg-current opacity-30" />
+                      <div className="text-lg font-bold mt-1.5 tabular-nums">{q1WinningSquare}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
+                      <Separator className="my-0.5 bg-current opacity-30" />
+                      <div className="text-[10px] mt-1.5 uppercase tracking-wide">1st Qtr</div>
+                    </>
+                  )}
+                </div>
+                
+                {/* Q2 */}
+                <div className={cn(
+                  "px-2 py-2.5 rounded-lg border font-medium flex flex-col items-center justify-center min-h-[64px] transition-all duration-200",
                   q2WinningSquare 
-                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" 
-                    : "border-white/10 bg-white/0 text-white/30"
+                    ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
+                    : "border-slate-700/50 bg-slate-800/30 text-slate-500"
                 )}>
-                  2nd Qtr {q2WinningSquare || '--'}
-                </span>
-                <span className="text-white/20">•</span>
-                <span className={cn(
-                  "px-3 py-1 rounded-full border font-medium",
+                  {q2WinningSquare ? (
+                    <>
+                      <div className="text-[10px] mb-1.5 uppercase tracking-wide">2nd Qtr</div>
+                      <Separator className="my-0.5 bg-current opacity-30" />
+                      <div className="text-lg font-bold mt-1.5 tabular-nums">{q2WinningSquare}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
+                      <Separator className="my-0.5 bg-current opacity-30" />
+                      <div className="text-[10px] mt-1.5 uppercase tracking-wide">2nd Qtr</div>
+                    </>
+                  )}
+                </div>
+                
+                {/* Q3 */}
+                <div className={cn(
+                  "px-2 py-2.5 rounded-lg border font-medium flex flex-col items-center justify-center min-h-[64px] transition-all duration-200",
                   q3WinningSquare 
-                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" 
-                    : "border-white/10 bg-white/0 text-white/30"
+                    ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
+                    : "border-slate-700/50 bg-slate-800/30 text-slate-500"
                 )}>
-                  3rd Qtr {q3WinningSquare || '--'}
-                </span>
-                <span className="text-white/20">•</span>
-                <span className={cn(
-                  "px-3 py-1 rounded-full border font-medium",
+                  {q3WinningSquare ? (
+                    <>
+                      <div className="text-[10px] mb-1.5 uppercase tracking-wide">3rd Qtr</div>
+                      <Separator className="my-0.5 bg-current opacity-30" />
+                      <div className="text-lg font-bold mt-1.5 tabular-nums">{q3WinningSquare}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
+                      <Separator className="my-0.5 bg-current opacity-30" />
+                      <div className="text-[10px] mt-1.5 uppercase tracking-wide">3rd Qtr</div>
+                    </>
+                  )}
+                </div>
+                
+                {/* FINAL */}
+                <div className={cn(
+                  "px-2 py-2.5 rounded-lg border font-medium flex flex-col items-center justify-center min-h-[64px] transition-all duration-200",
                   finalWinningSquare 
-                    ? "border-amber-500/30 bg-amber-500/10 text-amber-300" 
-                    : "border-white/10 bg-white/0 text-white/30"
+                    ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
+                    : "border-slate-700/50 bg-slate-800/30 text-slate-500"
                 )}>
-                  FINAL {finalWinningSquare || '--'}
-                </span>
+                  {finalWinningSquare ? (
+                    <>
+                      <div className="text-[10px] mb-1.5 uppercase tracking-wide">Final</div>
+                      <Separator className="my-0.5 bg-current opacity-30" />
+                      <div className="text-lg font-bold mt-1.5 tabular-nums">{finalWinningSquare}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
+                      <Separator className="my-0.5 bg-current opacity-30" />
+                      <div className="text-[10px] mt-1.5 uppercase tracking-wide">Final</div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>

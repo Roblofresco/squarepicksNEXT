@@ -141,28 +141,16 @@ function SweepstakesScoreboardComponent({
               )}
             </div>
 
-            {/* Team name */}
+            {/* Divider for all states */}
+            <div className="w-3/4 h-px bg-white/20 my-1"></div>
+
+            {/* Team full name for all states */}
             <span className={cn(
-              "text-xs text-gray-300 font-medium truncate max-w-[100px]",
-              !isLive && "mt-1"
+              "text-sm sm:text-base font-semibold mt-1",
+              isFinal && "text-gray-400"
             )}>
               {awayTeam.fullName}
             </span>
-
-            {/* Divider for non-live */}
-            {!isLive && (
-              <div className="w-3/4 h-px bg-white/20 my-1"></div>
-            )}
-
-            {/* Team name for non-live */}
-            {!isLive && (
-              <span className={cn(
-                "text-sm sm:text-base font-semibold mt-1",
-                isFinal && "text-gray-400"
-              )}>
-                {awayTeam.name}
-              </span>
-            )}
           </div>
         </div>
 
@@ -187,8 +175,8 @@ function SweepstakesScoreboardComponent({
               @
             </span>
           ) : isFinal ? (
-            <span className="text-base sm:text-lg font-semibold text-gray-300 uppercase mt-1">
-              FINAL
+            <span className="text-4xl sm:text-5xl font-semibold text-gray-300 uppercase">
+              F
             </span>
           ) : (
             <span className="text-4xl sm:text-5xl font-mono">-</span>
@@ -232,28 +220,16 @@ function SweepstakesScoreboardComponent({
               )}
             </div>
 
-            {/* Team name */}
+            {/* Divider for all states */}
+            <div className="w-3/4 h-px bg-white/20 my-1"></div>
+
+            {/* Team full name for all states */}
             <span className={cn(
-              "text-xs text-gray-300 font-medium truncate max-w-[100px]",
-              !isLive && "mt-1"
+              "text-sm sm:text-base font-semibold mt-1",
+              isFinal && "text-gray-400"
             )}>
               {homeTeam.fullName}
             </span>
-
-            {/* Divider for non-live */}
-            {!isLive && (
-              <div className="w-3/4 h-px bg-white/20 my-1"></div>
-            )}
-
-            {/* Team name for non-live */}
-            {!isLive && (
-              <span className={cn(
-                "text-sm sm:text-base font-semibold mt-1",
-                isFinal && "text-gray-400"
-              )}>
-                {homeTeam.name}
-              </span>
-            )}
           </div>
         </div>
       </div>

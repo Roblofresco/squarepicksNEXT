@@ -26,6 +26,7 @@ interface SportSelectorProps {
   selectedSportId: string; // Expect selected ID as prop
   onSelectSport: (sportId: string) => void; // Expect callback as prop
   sweepstakesStartTime?: Date | null; 
+  sweepstakesGame?: any; // Add sweepstakes game data for state-based display
   sportSelectorView: 'sweepstakes' | 'allRegularSports'; // New prop
   setSportSelectorView: (view: 'sweepstakes' | 'allRegularSports') => void; // New prop
 }
@@ -55,7 +56,7 @@ const calculateTimeLeft = (targetDate: Date | null): TimeLeft => {
 };
 
 // Use props
-const SportSelector = memo(function SportSelector({ sports, selectedSportId, onSelectSport, sweepstakesStartTime, sportSelectorView, setSportSelectorView }: SportSelectorProps) {
+const SportSelector = memo(function SportSelector({ sports, selectedSportId, onSelectSport, sweepstakesStartTime, sweepstakesGame, sportSelectorView, setSportSelectorView }: SportSelectorProps) {
   // Add isMounted state
   const [isMounted, setIsMounted] = useState(false);
   
@@ -208,11 +209,23 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                 <div className="relative z-10 flex flex-col items-center justify-center space-y-0.5">
                   {/* Update text color */}
                   <span className="text-[10px] text-[#F0E68C] font-semibold uppercase tracking-wider">COUNTDOWN</span> {/* REDUCED text size */}
-                  {/* Update text color and add gold text shadow class */}
-                  <span className="text-xl text-[#F0E68C] font-bold font-mono tracking-tight text-shadow-glow-gold">  {/* REDUCED text size, removed h-7 */}
-                    {/* Display the formatted countdown string */}
-                    {isMounted ? countdownString : "--:--:--:--"} 
-                  </span>
+                  {/* Conditional rendering based on game state */}
+                  {sweepstakesGame?.isLive ? (
+                    // Live badge - matches game card live badge exactly
+                    <span className="text-xl font-bold font-mono tracking-tight text-white bg-red-600 rounded-full px-3 py-1 shadow-[0_0_10px_rgba(248,113,113,0.45)] animate-pulse">
+                      LIVE
+                    </span>
+                  ) : sweepstakesGame?.isOver ? (
+                    // Final badge - matches game card final badge exactly
+                    <span className="text-xl font-bold font-mono tracking-tight text-white bg-gray-600 rounded-full px-3 py-1">
+                      Coming Soon
+                    </span>
+                  ) : (
+                    // Upcoming countdown - keep existing gold style (DO NOT CHANGE)
+                    <span className="text-xl text-[#F0E68C] font-bold font-mono tracking-tight text-shadow-glow-gold">
+                      {isMounted ? countdownString : "--:--:--:--"}
+                    </span>
+                  )}
                 </div>
               </button>
               {/* "More" Button */}

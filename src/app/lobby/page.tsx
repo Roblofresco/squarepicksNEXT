@@ -27,6 +27,7 @@ import { initialSportsData, SWEEPSTAKES_SPORT_ID, FREE_BOARD_ENTRY_FEE, BOARD_ST
 import SweepstakesScoreboard from '@/components/lobby/sweepstakes/SweepstakesScoreboard';
 // StarfieldBackground now imported dynamically above
 import SweepstakesBoardCard from '@/components/lobby/sweepstakes/SweepstakesBoardCard';
+import SweepstakesWinnersScoreboard from '@/components/lobby/sweepstakes/SweepstakesWinnersScoreboard';
 import TourSweepstakesBoardCard from '@/components/lobby/sweepstakes/TourSweepstakesBoardCard';
 import {
   collection, query, where, onSnapshot, doc, getDoc,
@@ -977,6 +978,7 @@ function LobbyContent() {
               selectedSportId={selectedSport} 
               onSelectSport={handleSelectSport} 
               sweepstakesStartTime={sweepstakesStartTime}
+              sweepstakesGame={sweepstakesGame}
               sportSelectorView={sportSelectorView}
               setSportSelectorView={setSportSelectorView}
             />
@@ -1068,19 +1070,30 @@ function LobbyContent() {
                                   highlightedSquare={typeof entryInteraction.selectedNumber === 'number' ? entryInteraction.selectedNumber : undefined}
                                   onMounted={() => setTourContentReady(true)}
                                 />
+                              ) : sweepstakesGame?.isLive || sweepstakesGame?.isOver ? (
+                                // Show winners scoreboard for live/final games
+                                <SweepstakesWinnersScoreboard
+                                  q1WinningSquare={sweepstakesGame.q1WinningSquare}
+                                  q2WinningSquare={sweepstakesGame.q2WinningSquare}
+                                  q3WinningSquare={sweepstakesGame.q3WinningSquare}
+                                  finalWinningSquare={sweepstakesGame.finalWinningSquare}
+                                  isLive={sweepstakesGame.isLive}
+                                  currentQuarter={typeof sweepstakesGame.quarter === 'number' ? sweepstakesGame.quarter : undefined}
+                                />
                               ) : (
-                              <SweepstakesBoardCard 
-                                key={sweepstakesBoard.id}
-                                board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
-                                  user={user}
-                                onProtectedAction={handleProtectedAction}
-                                entryInteraction={entryInteraction}
-                                handleBoardAction={handleBoardAction}
-                                openWalletDialog={openWalletDialog} 
-                                  walletHasWallet={hasWallet}
-                                  walletBalance={balance}
-                                  walletIsLoading={isWalletLoading}
-                          />
+                                // Show board card for upcoming games
+                                <SweepstakesBoardCard 
+                                  key={sweepstakesBoard.id}
+                                  board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
+                                    user={user}
+                                  onProtectedAction={handleProtectedAction}
+                                  entryInteraction={entryInteraction}
+                                  handleBoardAction={handleBoardAction}
+                                  openWalletDialog={openWalletDialog} 
+                                    walletHasWallet={hasWallet}
+                                    walletBalance={balance}
+                                    walletIsLoading={isWalletLoading}
+                            />
                               )}
                           <p className="text-xs text-gray-400 mt-2">Free weekly entry. Numbers assigned at game time.</p>
                         </div>

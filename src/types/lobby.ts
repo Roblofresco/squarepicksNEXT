@@ -84,6 +84,12 @@ export interface Game {
   
   // Time remaining for live games
   timeRemaining?: string;
+  
+  // Winning squares for each period
+  q1WinningSquare?: string;
+  q2WinningSquare?: string;
+  q3WinningSquare?: string;
+  finalWinningSquare?: string;
 }
 
 // Interface for Board data used in BoardsList and LobbyPage

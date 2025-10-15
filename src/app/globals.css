@@ -339,3 +339,44 @@ body.no-scroll {
   box-shadow: 0 0 18px 4px rgba(184, 134, 11, 0.55);
   border-color: rgba(255, 255, 255, 0.85) !important;
 }
+
+/* Custom scrollbar that appears on hover and doesn't affect layout */
+.custom-scrollbar-hover {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: transparent transparent; /* Firefox - hidden by default */
+}
+
+.custom-scrollbar-hover:hover {
+  scrollbar-color: rgba(27, 176, 242, 0.4) rgba(30, 41, 59, 0.5); /* Firefox - show on hover */
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.custom-scrollbar-hover::-webkit-scrollbar {
+  height: 8px;
+  /* Use overlay positioning so content doesn't shift */
+  position: absolute;
+}
+
+.custom-scrollbar-hover::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.custom-scrollbar-hover::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+/* Show scrollbar on hover */
+.custom-scrollbar-hover:hover::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.5);
+}
+
+.custom-scrollbar-hover:hover::-webkit-scrollbar-thumb {
+  background: rgba(27, 176, 242, 0.4);
+}
+
+.custom-scrollbar-hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(27, 176, 242, 0.6);
+}

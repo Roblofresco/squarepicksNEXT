@@ -208,10 +208,23 @@ const GamesList = memo(({ games, user, onProtectedAction }: GamesListProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
     // Reset scroll position to start when games change
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollLeft = 0;
-    }
+    container.scrollLeft = 0;
+
+    // Add wheel event listener to convert vertical scroll to horizontal
+    const handleWheel = (e: WheelEvent) => {
+      // Only intercept if scrolling vertically and container can scroll horizontally
+      if (e.deltaY !== 0 && container.scrollWidth > container.clientWidth) {
+        e.preventDefault();
+        container.scrollLeft += e.deltaY;
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
   }, [games]);
 
   return (
@@ -224,7 +237,10 @@ const GamesList = memo(({ games, user, onProtectedAction }: GamesListProps) => {
           </AlertDescription>
         </Alert>
       ) : (
-        <div className="flex overflow-x-auto gap-2 pr-2 pb-4 scrollbar-hide">
+        <div 
+          ref={scrollContainerRef}
+          className="flex overflow-x-auto gap-2 pr-2 pb-4 custom-scrollbar-hover"
+        >
             {games
               .slice()
               .sort((a, b) => {

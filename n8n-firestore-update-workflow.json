@@ -1,0 +1,196 @@
+{
+  "name": "Firestore Team Enrichment and Game Remapping",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "values": {
+          "teams": [
+            {"docId": "RDnjryTT2mkizKSm9ikl", "espnId": "33", "abbrev": "BAL", "teamName": "Baltimore Ravens"},
+            {"docId": "EQIgUZ28Cf6FrITIxWy7", "espnId": "29", "abbrev": "CAR", "teamName": "Carolina Panthers"},
+            {"docId": "WOItYy5G1yRVG0fESSmF", "espnId": "17", "abbrev": "NE", "teamName": "New England Patriots"},
+            {"docId": "DjbPCyd97B5OqLNRGsym", "espnId": "7", "abbrev": "DEN", "teamName": "Denver Broncos"},
+            {"docId": "NGTMc6cY1ZCdDOJx93RP", "espnId": "28", "abbrev": "WSH", "teamName": "Washington Commanders"},
+            {"docId": "M81pkB3UYIsVdy8YyjlE", "espnId": "34", "abbrev": "HOU", "teamName": "Houston Texans"},
+            {"docId": "pOPmOJG8juYhDHPhABTZ", "espnId": "18", "abbrev": "NO", "teamName": "New Orleans Saints"},
+            {"docId": "KP13Gr1Pcl0v1E4beCZg", "espnId": "8", "abbrev": "DET", "teamName": "Detroit Lions"},
+            {"docId": "kUoV2wNaHKyhoRpzBZZM", "espnId": "3", "abbrev": "CHI", "teamName": "Chicago Bears"},
+            {"docId": "V4yqAwq5XzJFpTsTB4Fe", "espnId": "15", "abbrev": "MIA", "teamName": "Miami Dolphins"},
+            {"docId": "ABZ1RckHosMndz32YZ1e", "espnId": "11", "abbrev": "IND", "teamName": "Indianapolis Colts"},
+            {"docId": "V99Z9G2U2MXSr6E85IBY", "espnId": "14", "abbrev": "LAR", "teamName": "Los Angeles Rams"},
+            {"docId": "ItcC7vuurg0AxNlZylsu", "espnId": "9", "abbrev": "GB", "teamName": "Green Bay Packers"},
+            {"docId": "R2h9AzWrdhqH23x3j3NW", "espnId": "4", "abbrev": "CIN", "teamName": "Cincinnati Bengals"},
+            {"docId": "gVEJIamddUIZtsAPHlXS", "espnId": "27", "abbrev": "TB", "teamName": "Tampa Bay Buccaneers"},
+            {"docId": "LWxconGs3OxmsVyLx8xM", "espnId": "12", "abbrev": "KC", "teamName": "Kansas City Chiefs"},
+            {"docId": "NY4cLLiBKYInCKqdUyeH", "espnId": "22", "abbrev": "ARI", "teamName": "Arizona Cardinals"},
+            {"docId": "aLErKrB7OpP0tEsJHAvQ", "espnId": "16", "abbrev": "MIN", "teamName": "Minnesota Vikings"},
+            {"docId": "apamE1NKkS8ipZLtS158", "espnId": "5", "abbrev": "CLE", "teamName": "Cleveland Browns"},
+            {"docId": "dnaR2Ckv9hDNMsP0vhh3", "espnId": "26", "abbrev": "SEA", "teamName": "Seattle Seahawks"},
+            {"docId": "XlimffsRX1wQd3YFTXeH", "espnId": "10", "abbrev": "TEN", "teamName": "Tennessee Titans"},
+            {"docId": "9cPsRpvGcXcXPPY2ZcK8", "espnId": "20", "abbrev": "NYJ", "teamName": "New York Jets"},
+            {"docId": "p2IVSR62MKaK2IFWX0lU", "espnId": "6", "abbrev": "DAL", "teamName": "Dallas Cowboys"},
+            {"docId": "nfRohFoPZESru1p0ynXG", "espnId": "19", "abbrev": "NYG", "teamName": "New York Giants"},
+            {"docId": "iz2nI7o69RLo2Upbid3N", "espnId": "30", "abbrev": "JAX", "teamName": "Jacksonville Jaguars"},
+            {"docId": "1m0J9SlMFNkNbtubwAX8", "espnId": "21", "abbrev": "PHI", "teamName": "Philadelphia Eagles"},
+            {"docId": "RUIBcaJ0TNPQadLB9iu7", "espnId": "25", "abbrev": "SF", "teamName": "San Francisco 49ers"},
+            {"docId": "ubbWz7RJZNUJbdGY9daA", "espnId": "1", "abbrev": "ATL", "teamName": "Atlanta Falcons"},
+            {"docId": "NfejodWx0OxUQPxBwSfe", "espnId": "23", "abbrev": "PIT", "teamName": "Pittsburgh Steelers"},
+            {"docId": "T222VgdaBavKnSNynsKY", "espnId": "24", "abbrev": "LAC", "teamName": "Los Angeles Chargers"},
+            {"docId": "q6PZdMtP19lVIi7UUQfr", "espnId": "2", "abbrev": "BUF", "teamName": "Buffalo Bills"}
+          ]
+        }
+      },
+      "id": "setTeams",
+      "name": "Set Teams Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "teams",
+        "include": "noOtherFields"
+      },
+      "id": "splitTeams",
+      "name": "Split Out Teams",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "googleFirebaseCloudFirestoreOAuth2Api",
+        "resource": "document",
+        "operation": "upsert",
+        "projectId": "square-picks-vpbb8d",
+        "database": "(default)",
+        "collection": "teams",
+        "updateKey": "={{ $json.docId }}",
+        "columns": "externalIds.espn={{ $json.espnId }},abbrev={{ $json.abbrev }},sport=NFL"
+      },
+      "id": "upsertTeam",
+      "name": "Firestore Upsert Team",
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [840, 300],
+      "credentials": {
+        "googleFirebaseCloudFirestoreOAuth2Api": {
+          "id": "peFFmhqOncia7Ukw",
+          "name": "Google Firebase Cloud Firestore account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "values": {
+          "games": [
+            {"gameId": "401772634", "awayTeamId": "DjbPCyd97B5OqLNRGsym", "homeTeamId": "9cPsRpvGcXcXPPY2ZcK8", "desc": "DEN @ NYJ"},
+            {"gameId": "401772748", "awayTeamId": "apamE1NKkS8ipZLtS158", "homeTeamId": "NfejodWx0OxUQPxBwSfe", "desc": "CLE @ PIT"},
+            {"gameId": "401772749", "awayTeamId": "RUIBcaJ0TNPQadLB9iu7", "homeTeamId": "gVEJIamddUIZtsAPHlXS", "desc": "SF @ TB"},
+            {"gameId": "401772750", "awayTeamId": "T222VgdaBavKnSNynsKY", "homeTeamId": "V4yqAwq5XzJFpTsTB4Fe", "desc": "LAC @ MIA"},
+            {"gameId": "401772751", "awayTeamId": "WOItYy5G1yRVG0fESSmF", "homeTeamId": "pOPmOJG8juYhDHPhABTZ", "desc": "NE @ NO"},
+            {"gameId": "401772752", "awayTeamId": "R2h9AzWrdhqH23x3j3NW", "homeTeamId": "ItcC7vuurg0AxNlZylsu", "desc": "CIN @ GB"},
+            {"gameId": "401772815", "awayTeamId": "q6PZdMtP19lVIi7UUQfr", "homeTeamId": "ubbWz7RJZNUJbdGY9daA", "desc": "BUF @ ATL"},
+            {"gameId": "401772855", "awayTeamId": "V99Z9G2U2MXSr6E85IBY", "homeTeamId": "RDnjryTT2mkizKSm9ikl", "desc": "LAR @ BAL"},
+            {"gameId": "401772856", "awayTeamId": "NY4cLLiBKYInCKqdUyeH", "homeTeamId": "ABZ1RckHosMndz32YZ1e", "desc": "ARI @ IND"},
+            {"gameId": "401772857", "awayTeamId": "dnaR2Ckv9hDNMsP0vhh3", "homeTeamId": "iz2nI7o69RLo2Upbid3N", "desc": "SEA @ JAX"},
+            {"gameId": "401772858", "awayTeamId": "p2IVSR62MKaK2IFWX0lU", "homeTeamId": "EQIgUZ28Cf6FrITIxWy7", "desc": "DAL @ CAR"},
+            {"gameId": "401772859", "awayTeamId": "XlimffsRX1wQd3YFTXeH", "homeTeamId": "14ZKx8KbtUJUPiTtmVD0", "desc": "TEN @ LV"},
+            {"gameId": "401772923", "awayTeamId": "KP13Gr1Pcl0v1E4beCZg", "homeTeamId": "LWxconGs3OxmsVyLx8xM", "desc": "DET @ KC"}
+          ]
+        }
+      },
+      "id": "setGames",
+      "name": "Set Games Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1040, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "games",
+        "include": "noOtherFields"
+      },
+      "id": "splitGames",
+      "name": "Split Out Games",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [1240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const projectId = \"square-picks-vpbb8d\";\nconst awayTeamPath = `projects/${projectId}/databases/(default)/documents/teams/${$input.item.json.awayTeamId}`;\nconst homeTeamPath = `projects/${projectId}/databases/(default)/documents/teams/${$input.item.json.homeTeamId}`;\n\nreturn {\n  json: {\n    gameId: $input.item.json.gameId,\n    awayTeam: { referenceValue: awayTeamPath },\n    homeTeam: { referenceValue: homeTeamPath },\n    desc: $input.item.json.desc\n  }\n};"
+      },
+      "id": "buildRefs",
+      "name": "Build Team Refs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1440, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "googleFirebaseCloudFirestoreOAuth2Api",
+        "resource": "document",
+        "operation": "upsert",
+        "projectId": "square-picks-vpbb8d",
+        "database": "(default)",
+        "collection": "games",
+        "updateKey": "={{ $json.gameId }}",
+        "columns": "awayTeam={{ $json.awayTeam }},homeTeam={{ $json.homeTeam }}"
+      },
+      "id": "upsertGame",
+      "name": "Firestore Upsert Game",
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [1640, 300],
+      "credentials": {
+        "googleFirebaseCloudFirestoreOAuth2Api": {
+          "id": "peFFmhqOncia7Ukw",
+          "name": "Google Firebase Cloud Firestore account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node": "Set Teams Data", "type": "main", "index": 0}]]
+    },
+    "Set Teams Data": {
+      "main": [[{"node": "Split Out Teams", "type": "main", "index": 0}]]
+    },
+    "Split Out Teams": {
+      "main": [[{"node": "Firestore Upsert Team", "type": "main", "index": 0}]]
+    },
+    "Firestore Upsert Team": {
+      "main": [[{"node": "Set Games Data", "type": "main", "index": 0}]]
+    },
+    "Set Games Data": {
+      "main": [[{"node": "Split Out Games", "type": "main", "index": 0}]]
+    },
+    "Split Out Games": {
+      "main": [[{"node": "Build Team Refs", "type": "main", "index": 0}]]
+    },
+    "Build Team Refs": {
+      "main": [[{"node": "Firestore Upsert Game", "type": "main", "index": 0}]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-10-13T00:00:00.000Z",
+  "versionId": "1"
+}
+

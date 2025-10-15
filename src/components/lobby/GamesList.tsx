@@ -145,7 +145,7 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
                     {(isLive || isOver) ? `${(game.awayScore ?? game.away_score) ?? 0} - ${(game.homeScore ?? game.home_score) ?? 0}` : 'VS'}
                   </div>
                   {!isOver && (
-                    <div className="text-[10px] sm:text-xs text-text-secondary mb-0.5"> 
+                    <div className="text-[10px] sm:text-xs text-text-secondary mb-0.5 leading-tight"> 
                       {isLive ? (
                         <span>{(() => {
                           const period = game.period || (game.quarter as any);
@@ -158,7 +158,10 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
                           return period;
                         })()}</span>
                       ) : (
-                        <span>{timeStr} - {dateStr}</span>
+                        <div className="flex flex-col items-center gap-0">
+                          <span className="whitespace-nowrap">{timeStr}</span>
+                          <span className="whitespace-nowrap text-[9px] sm:text-[10px]">{dateStr}</span>
+                        </div>
                       )}
                     </div>
                   )}

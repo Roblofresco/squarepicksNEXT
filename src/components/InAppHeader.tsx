@@ -16,10 +16,9 @@ import { HelpCircle } from 'lucide-react';
 interface InAppHeaderProps {
   showBalancePill?: boolean;
   balance?: number | null;
-  onReplayTour?: (tour: 'sweepstakes' | 'sports') => void;
 }
 
-const InAppHeaderComponent = ({ showBalancePill = false, balance = null, onReplayTour }: InAppHeaderProps) => {
+const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InAppHeaderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -106,7 +105,6 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null, onRepla
           <button
             type="button"
             aria-label="Help"
-            data-tour="header-info"
             onClick={() => setHelpOpen(true)}
             className="h-7 w-7 rounded-full flex items-center justify-center hover:opacity-80"
           >
@@ -154,18 +152,6 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null, onRepla
       <LobbyHelpDrawer
         open={helpOpen}
         onOpenChange={setHelpOpen}
-        onReplayTour={() => {
-          setHelpOpen(false);
-          // Prefer sports vs sweepstakes based on current route query if available
-          try {
-            const url = new URL(window.location.href);
-            const sport = url.searchParams.get('sport');
-            const tour: 'sweepstakes' | 'sports' = sport === 'sweepstakes' ? 'sweepstakes' : 'sports';
-            onReplayTour?.(tour);
-          } catch {
-            onReplayTour?.('sports');
-          }
-        }}
       />
     </div>
   );

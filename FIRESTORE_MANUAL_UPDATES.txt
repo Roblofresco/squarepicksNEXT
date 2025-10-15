@@ -1,0 +1,163 @@
+FIRESTORE MANUAL UPDATES REQUIRED
+==================================
+
+✅ COMPLETED:
+- Cloud Function updated to read-only (deployed)
+- Next.js config updated (images + CSP)
+- Code committed and pushed
+
+⏳ MANUAL FIRESTORE UPDATES NEEDED:
+Due to service account write permissions, you need to manually update Firestore via Firebase Console.
+
+---
+STEP 1: ENRICH OLD TEAMS (31 teams)
+---
+Go to: Firebase Console → Firestore Database → teams collection
+
+For EACH team below, click the doc ID and ADD these fields (click "Add field"):
+- externalIds (map) → espn (string) → [value from table]
+- abbrev (string) → [value from table]
+- sport (string) → NFL
+
+| Doc ID | ESPN ID | Abbrev | Team Name |
+|--------|---------|--------|-----------|
+| RDnjryTT2mkizKSm9ikl | 33 | BAL | Baltimore Ravens |
+| EQIgUZ28Cf6FrITIxWy7 | 29 | CAR | Carolina Panthers |
+| WOItYy5G1yRVG0fESSmF | 17 | NE | New England Patriots |
+| DjbPCyd97B5OqLNRGsym | 7 | DEN | Denver Broncos |
+| NGTMc6cY1ZCdDOJx93RP | 28 | WSH | Washington Commanders |
+| M81pkB3UYIsVdy8YyjlE | 34 | HOU | Houston Texans |
+| pOPmOJG8juYhDHPhABTZ | 18 | NO | New Orleans Saints |
+| KP13Gr1Pcl0v1E4beCZg | 8 | DET | Detroit Lions |
+| kUoV2wNaHKyhoRpzBZZM | 3 | CHI | Chicago Bears |
+| V4yqAwq5XzJFpTsTB4Fe | 15 | MIA | Miami Dolphins |
+| ABZ1RckHosMndz32YZ1e | 11 | IND | Indianapolis Colts |
+| V99Z9G2U2MXSr6E85IBY | 14 | LAR | Los Angeles Rams |
+| ItcC7vuurg0AxNlZylsu | 9 | GB | Green Bay Packers |
+| R2h9AzWrdhqH23x3j3NW | 4 | CIN | Cincinnati Bengals |
+| gVEJIamddUIZtsAPHlXS | 27 | TB | Tampa Bay Buccaneers |
+| LWxconGs3OxmsVyLx8xM | 12 | KC | Kansas City Chiefs |
+| NY4cLLiBKYInCKqdUyeH | 22 | ARI | Arizona Cardinals |
+| aLErKrB7OpP0tEsJHAvQ | 16 | MIN | Minnesota Vikings |
+| apamE1NKkS8ipZLtS158 | 5 | CLE | Cleveland Browns |
+| dnaR2Ckv9hDNMsP0vhh3 | 26 | SEA | Seattle Seahawks |
+| XlimffsRX1wQd3YFTXeH | 10 | TEN | Tennessee Titans |
+| 9cPsRpvGcXcXPPY2ZcK8 | 20 | NYJ | New York Jets |
+| p2IVSR62MKaK2IFWX0lU | 6 | DAL | Dallas Cowboys |
+| nfRohFoPZESru1p0ynXG | 19 | NYG | New York Giants |
+| iz2nI7o69RLo2Upbid3N | 30 | JAX | Jacksonville Jaguars |
+| 1m0J9SlMFNkNbtubwAX8 | 21 | PHI | Philadelphia Eagles |
+| RUIBcaJ0TNPQadLB9iu7 | 25 | SF | San Francisco 49ers |
+| ubbWz7RJZNUJbdGY9daA | 1 | ATL | Atlanta Falcons |
+| NfejodWx0OxUQPxBwSfe | 23 | PIT | Pittsburgh Steelers |
+| T222VgdaBavKnSNynsKY | 24 | LAC | Los Angeles Chargers |
+| q6PZdMtP19lVIi7UUQfr | 2 | BUF | Buffalo Bills |
+
+---
+STEP 2: REMAP GAME TEAM REFS (13 games)
+---
+Go to: Firebase Console → Firestore Database → games collection
+
+For EACH game below, click the doc ID and UPDATE the team references:
+
+Game: 401772634 (DEN @ NYJ)
+  awayTeam: change "HnyE2HWp2WEvQKBbC5rx" → "DjbPCyd97B5OqLNRGsym"
+  homeTeam: change "fuMY59wlDsj3MkdSLW8k" → "9cPsRpvGcXcXPPY2ZcK8"
+
+Game: 401772748 (CLE @ PIT)
+  awayTeam: change "dVCOKGl8IsAP7VxBDWnM" → "apamE1NKkS8ipZLtS158"
+  homeTeam: change "u2a10PlOYLg1l81A0aRw" → "NfejodWx0OxUQPxBwSfe"
+
+Game: 401772749 (SF @ TB)
+  awayTeam: change "qELAttOPcrt5HKk5br3m" → "RUIBcaJ0TNPQadLB9iu7"
+  homeTeam: change "XtTrfHEtD5MJebyeeScK" → "gVEJIamddUIZtsAPHlXS"
+
+Game: 401772750 (LAC @ MIA)
+  awayTeam: change "vTV4SNcKOcdahd6QJHU2" → "T222VgdaBavKnSNynsKY"
+  homeTeam: change "QyusLutREIDJRqOfCA4A" → "V4yqAwq5XzJFpTsTB4Fe"
+
+Game: 401772751 (NE @ NO)
+  awayTeam: change "GG5cJWs1ydU9qHT9qCR4" → "WOItYy5G1yRVG0fESSmF"
+  homeTeam: change "O4j0DXGDapOHYloDP5yI" → "pOPmOJG8juYhDHPhABTZ"
+
+Game: 401772752 (CIN @ GB)
+  awayTeam: change "XTKokiVLJRUXJg2P77Nw" → "R2h9AzWrdhqH23x3j3NW"
+  homeTeam: change "XNOcM3LzgG8xY92l1aId" → "ItcC7vuurg0AxNlZylsu"
+
+Game: 401772815 (BUF @ ATL) - SCHEDULED
+  awayTeam: change "zfhrIPVFLlNIbFU4IKqA" → "q6PZdMtP19lVIi7UUQfr"
+  homeTeam: change "ttlT5U9UcjAJwpY3AcGB" → "ubbWz7RJZNUJbdGY9daA"
+
+Game: 401772855 (LAR @ BAL)
+  awayTeam: change "Vc3rmthzwzHr8RXpZNPp" → "V99Z9G2U2MXSr6E85IBY"
+  homeTeam: change "51vRc3W1qDwSBNVA6LIX" → "RDnjryTT2mkizKSm9ikl"
+
+Game: 401772856 (ARI @ IND)
+  awayTeam: change "a9i8KLcbnJR8J0cmz3hf" → "NY4cLLiBKYInCKqdUyeH"
+  homeTeam: change "UbcwegB0R55c7yX4eW1z" → "ABZ1RckHosMndz32YZ1e"
+
+Game: 401772857 (SEA @ JAX)
+  awayTeam: change "dpPvMTHOaLH9vPlxl6Sl" → "dnaR2Ckv9hDNMsP0vhh3"
+  homeTeam: change "oTnSKRUzrIJDSOdhkF47" → "iz2nI7o69RLo2Upbid3N"
+
+Game: 401772858 (DAL @ CAR)
+  awayTeam: change "iUUnAIgOk5aINUj99Hu0" → "p2IVSR62MKaK2IFWX0lU"
+  homeTeam: change "FwEQvJ2d2NCFZiMP8fQI" → "EQIgUZ28Cf6FrITIxWy7"
+
+Game: 401772859 (TEN @ LV)
+  awayTeam: change "enrtAXUhqGauUoyT8o5n" → "XlimffsRX1wQd3YFTXeH"
+  homeTeam: KEEP AS IS (14ZKx8KbtUJUPiTtmVD0 - already enriched)
+
+Game: 401772923 (DET @ KC) - SCHEDULED
+  awayTeam: change "O80ekrd4Ra0KNUBdnQ3J" → "KP13Gr1Pcl0v1E4beCZg"
+  homeTeam: change "YQbBmODVv5xeaFWMMkrn" → "LWxconGs3OxmsVyLx8xM"
+
+---
+STEP 3: DELETE DUPLICATE TEAMS (30 teams)
+---
+Go to: Firebase Console → Firestore Database → teams collection
+
+DELETE these team docs (click doc ID → Delete document):
+
+51vRc3W1qDwSBNVA6LIX (Ravens - ESPN)
+FwEQvJ2d2NCFZiMP8fQI (Panthers - ESPN)
+GG5cJWs1ydU9qHT9qCR4 (Patriots - ESPN)
+HnyE2HWp2WEvQKBbC5rx (Broncos - ESPN)
+L2jzyVnm82FshlVqOXAz (Commanders - ESPN)
+LytgR0vWia3xCsbX5SAw (Texans - ESPN)
+O4j0DXGDapOHYloDP5yI (Saints - ESPN)
+O80ekrd4Ra0KNUBdnQ3J (Lions - ESPN)
+OxpvLA5Oxl9LY560v7zP (Bears - ESPN)
+QyusLutREIDJRqOfCA4A (Dolphins - ESPN)
+UbcwegB0R55c7yX4eW1z (Colts - ESPN)
+Vc3rmthzwzHr8RXpZNPp (Rams - ESPN)
+XNOcM3LzgG8xY92l1aId (Packers - ESPN)
+XTKokiVLJRUXJg2P77Nw (Bengals - ESPN)
+XtTrfHEtD5MJebyeeScK (Buccaneers - ESPN)
+YQbBmODVv5xeaFWMMkrn (Chiefs - ESPN)
+a9i8KLcbnJR8J0cmz3hf (Cardinals - ESPN)
+ahlbQv4L0aUNd8TmUqUP (Vikings - ESPN)
+dVCOKGl8IsAP7VxBDWnM (Browns - ESPN)
+dpPvMTHOaLH9vPlxl6Sl (Seahawks - ESPN)
+enrtAXUhqGauUoyT8o5n (Titans - ESPN)
+fuMY59wlDsj3MkdSLW8k (Jets - ESPN)
+iUUnAIgOk5aINUj99Hu0 (Cowboys - ESPN)
+kygW1kEawhvqzDnzlAOq (Giants - ESPN)
+oTnSKRUzrIJDSOdhkF47 (Jaguars - ESPN)
+qBJ0nB1huKhUbgKd1fTd (Eagles - ESPN)
+qELAttOPcrt5HKk5br3m (49ers - ESPN)
+ttlT5U9UcjAJwpY3AcGB (Falcons - ESPN)
+u2a10PlOYLg1l81A0aRw (Steelers - ESPN)
+vTV4SNcKOcdahd6QJHU2 (Chargers - ESPN)
+zfhrIPVFLlNIbFU4IKqA (Bills - ESPN)
+
+KEEP: 14ZKx8KbtUJUPiTtmVD0 (Raiders - already enriched with both logos)
+
+---
+VALIDATION
+---
+1. Visit: https://squarepicks.com/lobby?sport=NFL
+2. Verify team logos render (Storage URLs, not ESPN CDN)
+3. Monday game should show BUF/ATL with correct logos
+4. Next week's ingest (Tue 05:00 ET) should not create new teams
+

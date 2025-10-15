@@ -900,9 +900,8 @@ function GamePageContent() {
                   </>
                 )}
                 {(gameDetails.broadcastProvider || gameDetails.broadcast_provider) && (
-                  <div className="text-[10px] sm:text-xs text-slate-500 hover:text-accent-1 mt-1 transition-colors cursor-pointer group">
-                    <span className="group-hover:underline">{gameDetails.broadcastProvider || gameDetails.broadcast_provider}</span>
-                    {' • '}Week {gameDetails.week} • {gameDetails.sport}
+                  <div className="text-[10px] sm:text-xs text-slate-500 mt-1">
+                    {gameDetails.broadcastProvider || gameDetails.broadcast_provider} • Week {gameDetails.week}
                   </div>
                 )}
               </div>

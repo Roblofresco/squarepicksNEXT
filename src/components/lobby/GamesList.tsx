@@ -177,12 +177,9 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
                     </div>
                   )}
                   {(game.broadcastProvider || game.broadcast_provider) && (
-                    <div 
-                      className="text-[0.55rem] sm:text-[0.65rem] text-gray-400 hover:text-accent-1 font-medium truncate w-full transition-colors cursor-pointer group"
-                      title="Watch this game"
-                    >
-                      <span className="group-hover:underline">{game.broadcastProvider || game.broadcast_provider}</span>
-                    </div>
+                    <span className="text-[0.55rem] sm:text-[0.65rem] text-gray-400 font-medium truncate w-full">
+                      {game.broadcastProvider || game.broadcast_provider}
+                    </span>
                   )}
                 </div>
                 {/* Right Column: Team B */}

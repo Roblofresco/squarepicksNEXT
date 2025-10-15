@@ -487,12 +487,18 @@ function GamePageContent() {
       scrollDownTimerRef.current = null;
     }
     if (prev === 0 && selectedSquares.size > 0) {
-      // wait for layout/confirm mount before scrolling
+      // Brief delay to let button render, then scroll and hero animation happen together
       scrollDownTimerRef.current = window.setTimeout(() => {
-        const el = confirmRef.current;
-        if (!el) return;
-        el.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }, 120);
+        // Scroll to absolute bottom of page to ensure everything is visible
+        const scrollHeight = document.documentElement.scrollHeight;
+        const windowHeight = window.innerHeight;
+        const maxScroll = scrollHeight - windowHeight;
+        
+        window.scrollTo({
+          top: maxScroll,
+          behavior: 'smooth'
+        });
+      }, 150); // 150ms: button renders, then scroll + hero animation start together
     }
   }, [selectedSquares.size]);
 
@@ -895,9 +901,7 @@ function GamePageContent() {
                 )}
                 {(gameDetails.broadcastProvider || gameDetails.broadcast_provider) && (
                   <div className="text-[10px] sm:text-xs text-slate-500 hover:text-accent-1 mt-1 transition-colors cursor-pointer group">
-                    <span className="group-hover:underline">
-                      Watch on {gameDetails.broadcastProvider || gameDetails.broadcast_provider}
-                    </span>
+                    <span className="group-hover:underline">{gameDetails.broadcastProvider || gameDetails.broadcast_provider}</span>
                     {' • '}Week {gameDetails.week} • {gameDetails.sport}
                   </div>
                 )}

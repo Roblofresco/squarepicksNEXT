@@ -181,7 +181,7 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
                       className="text-[0.55rem] sm:text-[0.65rem] text-gray-400 hover:text-accent-1 font-medium truncate w-full transition-colors cursor-pointer group"
                       title="Watch this game"
                     >
-                      Watch on <span className="group-hover:underline">{game.broadcastProvider || game.broadcast_provider}</span>
+                      <span className="group-hover:underline">{game.broadcastProvider || game.broadcast_provider}</span>
                     </div>
                   )}
                 </div>

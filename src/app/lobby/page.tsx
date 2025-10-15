@@ -620,6 +620,16 @@ function LobbyContent() {
   const [activeTour, setActiveTour] = useState<'sweepstakes' | 'sports' | null>(null);
   const [sweepstakesTourSeen, setSweepstakesTourSeen] = useState<UserTourState>({ done: false, loading: true });
   const [sportsTourSeen, setSportsTourSeen] = useState<UserTourState>({ done: false, loading: true });
+
+  const handleReplayTour = useCallback(() => {
+    if (activeTour === 'sweepstakes') {
+      setTourStep(0);
+      setActiveTour('sweepstakes');
+    } else if (activeTour === 'sports') {
+      setTourStep(0);
+      setActiveTour('sports');
+    }
+  }, [activeTour]);
   const [sweepstakesTourAutoTriggered, setSweepstakesTourAutoTriggered] = useState(false);
   const [sportsTourAutoTriggered, setSportsTourAutoTriggered] = useState(false);
   const tourOpenFrameRef = useRef<number | null>(null);
@@ -647,7 +657,16 @@ function LobbyContent() {
     { id: 'enter', anchor: '[data-tour="sweepstakes-enter"]', title: 'Enter Sweepstakes', description: 'Click Enter.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-enter"]', holePadding: 16, popoverOffsetY: 18 },
     { id: 'confirm', anchor: '[data-tour="sweepstakes-confirm"]', title: 'Confirm Entry', description: 'Review and confirm your pick.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-confirm"]', holePadding: 16, popoverOffsetY: 18 },
     { id: 'response', anchor: '[data-tour="sweepstakes-response"]', title: 'Entry Response', description: 'See the confirmation message.', side: 'top', scroll: 'popoverTop', arrowTarget: '[data-tour="sweepstakes-response"]', holePadding: 16, popoverOffsetY: 18 },
-    { id: 'info', anchor: '[data-tour="header-info"]', title: 'Info & Support', description: 'Tap the info icon for How to Play, Account Guide, FAQ, or to replay this tour.', side: 'bottom', scroll: 'popoverTop', holePadding: 12 }
+    { 
+      id: 'info', 
+      anchor: '[data-tour="header-info"]', 
+      title: 'Info & Support', 
+      description: 'Tap the info icon for How to Play, Account Guide, FAQ, or to replay this tour.', 
+      side: 'bottom', 
+      scroll: 'popoverTop', 
+      holePadding: 8,
+      popoverOffsetY: 12
+    }
   ]), []);
   const sportsTourSteps: LobbyTourStep[] = useMemo(() => ([
     {
@@ -759,6 +778,16 @@ function LobbyContent() {
       scroll: 'center',
       holePadding: 18,
     },
+    { 
+      id: 'info', 
+      anchor: '[data-tour="header-info"]', 
+      title: 'Info & Support', 
+      description: 'Tap the info icon for How to Play, Account Guide, FAQ, or to replay this tour.', 
+      side: 'bottom', 
+      scroll: 'popoverTop', 
+      holePadding: 8,
+      popoverOffsetY: 12
+    }
   ]), []);
   const [moreClicked, setMoreClicked] = useState(false);
   const [sweepstakesClicked, setSweepstakesClicked] = useState(false);
@@ -960,7 +989,7 @@ function LobbyContent() {
   return (
     <div className="relative w-full min-h-screen flex flex-col bg-background-primary">
       <Toaster position="top-center" />
-      <div className={`sticky top-0 ${entryInteraction.stage === 'confirming' ? 'z-50' : 'z-20'}`}><InAppHeader showBalancePill={entryInteraction.stage !== 'idle'} balance={balance} /></div>
+      <div className={`sticky top-0 ${entryInteraction.stage === 'confirming' ? 'z-50' : 'z-20'}`}><InAppHeader showBalancePill={entryInteraction.stage !== 'idle'} balance={balance} onReplayTour={handleReplayTour} /></div>
       <div className="flex-grow pb-20">
         <main className="px-4 py-2"> 
           <div className="w-full">

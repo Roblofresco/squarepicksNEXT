@@ -39,7 +39,17 @@ export default function LobbyHelpDrawer({ open, onOpenChange, onReplayTour }: Lo
           </section>
           <div className="pt-2 flex gap-3">
             <Button type="button" onClick={() => onOpenChange(false)} className="flex-1">Close</Button>
-            <Button type="button" variant="outline" onClick={onReplayTour} className="flex-1">Replay tour</Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => {
+                onReplayTour?.();
+                onOpenChange(false);
+              }} 
+              className="flex-1"
+            >
+              Replay tour
+            </Button>
           </div>
         </div>
       </SheetContent>

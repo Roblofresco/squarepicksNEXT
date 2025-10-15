@@ -16,9 +16,10 @@ import { HelpCircle } from 'lucide-react';
 interface InAppHeaderProps {
   showBalancePill?: boolean;
   balance?: number | null;
+  onReplayTour?: () => void;
 }
 
-const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InAppHeaderProps) => {
+const InAppHeaderComponent = ({ showBalancePill = false, balance = null, onReplayTour }: InAppHeaderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -105,6 +106,7 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InApp
           <button
             type="button"
             aria-label="Help"
+            data-tour="header-info"
             onClick={() => setHelpOpen(true)}
             className="h-7 w-7 rounded-full flex items-center justify-center hover:opacity-80"
           >
@@ -152,6 +154,7 @@ const InAppHeaderComponent = ({ showBalancePill = false, balance = null }: InApp
       <LobbyHelpDrawer
         open={helpOpen}
         onOpenChange={setHelpOpen}
+        onReplayTour={onReplayTour}
       />
     </div>
   );

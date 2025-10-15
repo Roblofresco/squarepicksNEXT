@@ -850,6 +850,10 @@ function GamePageContent() {
               <div className="text-center px-1 flex flex-col items-center">
                 {effectiveView === 'live' && (
                   <>
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tabular-nums mb-1">
+                      {gameDetails.awayScore ?? gameDetails.away_score ?? 0} - {gameDetails.homeScore ?? gameDetails.home_score ?? 0}
+                    </div>
+                    
                     <div className="text-xs sm:text-sm text-red-400 animate-pulse font-semibold mb-0.5">
                       {(() => {
                         const period = gameDetails.period || gameDetails.quarter;
@@ -871,10 +875,6 @@ function GamePageContent() {
                         </span>
                       </div>
                     )}
-                    
-                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tabular-nums mb-1">
-                      {gameDetails.awayScore ?? gameDetails.away_score ?? 0} - {gameDetails.homeScore ?? gameDetails.home_score ?? 0}
-                    </div>
                   </>
                 )}
                 {effectiveView === 'upcoming' && (

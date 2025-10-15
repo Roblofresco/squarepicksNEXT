@@ -160,7 +160,9 @@ function LobbyContent() {
 
   // Active Firestore listeners cleanup refs
   const unsubscribeGamesListenerRef = useRef<(() => void) | null>(null);
-  const unsubscribeSweepstakesListenerRef = useRef<(() => void) | null>(); // Single listener for combined sweepstakes board/game
+  const unsubscribeSweepstakesListenerRef = useRef<(() => void) | null>(); // Main sweepstakes coordinator
+  const unsubscribeBoardListenerRef = useRef<(() => void) | null>(null); // Board real-time updates
+  const unsubscribeGameListenerRef = useRef<(() => void) | null>(null); // Game real-time updates
 
   // Effect to synchronize LobbyPage's local user state with Firebase auth state
   useEffect(() => {
@@ -209,9 +211,19 @@ function LobbyContent() {
       unsubscribeGamesListenerRef.current = null;
     }
     if (unsubscribeSweepstakesListenerRef.current) {
-      debugLog("[LobbyPage] Cleaning up previous sweepstakes (board/game) listener.");
+      debugLog("[LobbyPage] Cleaning up previous sweepstakes listener.");
       unsubscribeSweepstakesListenerRef.current();
       unsubscribeSweepstakesListenerRef.current = null;
+    }
+    if (unsubscribeBoardListenerRef.current) {
+      debugLog("[LobbyPage] Cleaning up previous board listener.");
+      unsubscribeBoardListenerRef.current();
+      unsubscribeBoardListenerRef.current = null;
+    }
+    if (unsubscribeGameListenerRef.current) {
+      debugLog("[LobbyPage] Cleaning up previous game listener.");
+      unsubscribeGameListenerRef.current();
+      unsubscribeGameListenerRef.current = null;
     }
 
     const startTransition = () => {
@@ -228,147 +240,159 @@ function LobbyContent() {
       setIsLoadingSweepstakesData(true);
       setIsLoadingGamesAndTeams(false);
 
-      const sweepstakesBoardQuery = query(
-        collection(db, 'boards'),
-        where("amount", "==", FREE_BOARD_ENTRY_FEE),
-        where("status", "==", BOARD_STATUS_OPEN),
+      // Query active sweepstakes (single active at a time)
+      const sweepstakesQuery = query(
+        collection(db, 'sweepstakes'),
+        where("status", "==", "active"),
         limit(1)
       );
 
-      unsubscribeSweepstakesListenerRef.current = onSnapshot(sweepstakesBoardQuery, async (boardSnapshot) => {
-        debugLog("[LobbyPage] SWEEPSTAKES BOARD snapshot. Empty:", boardSnapshot.empty);
-        if (boardSnapshot.empty) {
-          debugLog("[LobbyPage] No active sweepstakes board found.");
-          setSweepstakesBoard(null);
-          setSweepstakesGame(null);
-          setSweepstakesTeams({});
-          setSweepstakesStartTime(null);
-          setSweepstakesDataError("No active sweepstakes board available.");
-          setIsLoadingSweepstakesData(false);
-          setIsTransitioning(false);
-          return;
-        }
-        
-        const boardDoc = boardSnapshot.docs[0];
-        const boardDataFirestore = boardDoc.data();
-        let sweepstakesIdString: string | undefined = undefined;
-        const firestoreSweepstakesID = boardDataFirestore.sweepstakesID;
-        if (firestoreSweepstakesID) {
-            if (typeof firestoreSweepstakesID === 'string') {
-                if (firestoreSweepstakesID.includes('/')) {
-                    const parts = firestoreSweepstakesID.split('/');
-                    sweepstakesIdString = parts[parts.length - 1];
-                } else {
-                    sweepstakesIdString = firestoreSweepstakesID;
-                }
-            } else if (firestoreSweepstakesID instanceof DocumentReference) {
-                sweepstakesIdString = firestoreSweepstakesID.id;
-            } else if (typeof firestoreSweepstakesID === 'object' && firestoreSweepstakesID.path && typeof firestoreSweepstakesID.path === 'string') {
-                const parts = firestoreSweepstakesID.path.split('/');
-                sweepstakesIdString = parts[parts.length - 1];
+      unsubscribeSweepstakesListenerRef.current = onSnapshot(
+        sweepstakesQuery,
+        async (sweepstakesSnapshot) => {
+          debugLog("[LobbyPage] SWEEPSTAKES snapshot. Empty:", sweepstakesSnapshot.empty);
+          
+          if (sweepstakesSnapshot.empty) {
+            // Clean up sub-listeners
+            if (unsubscribeBoardListenerRef.current) {
+              unsubscribeBoardListenerRef.current();
+              unsubscribeBoardListenerRef.current = null;
             }
-        }
-
-        const typedBoardData = {
-          id: boardDoc.id,
-          gameID: boardDataFirestore.gameID as DocumentReference,
-          entryFee: boardDataFirestore.amount !== undefined ? boardDataFirestore.amount : DEFAULT_BOARD_ENTRY_FEE,
-          amount: boardDataFirestore.amount,
-          status: boardDataFirestore.status,
-          selected_indexes: boardDataFirestore.selected_indexes || [],
-          sweepstakes_select: boardDataFirestore.sweepstakes_select,
-          isFreeEntry: boardDataFirestore.amount === 0 || boardDataFirestore.sweepstakes_select === true,
-          sweepstakesID: sweepstakesIdString,
-        } as BoardType;
-        setSweepstakesBoard(typedBoardData);
-        debugLog("[LobbyPage] Sweepstakes board data set:", typedBoardData);
-
-        if (typedBoardData.gameID && typedBoardData.gameID instanceof DocumentReference) {
-          debugLog("[LobbyPage] Sweepstakes board has gameID. Fetching game:", typedBoardData.gameID.id);
-          try {
-            const gameSnap = await getDoc(typedBoardData.gameID);
-              if (gameSnap.exists()) {
-              const gameDataFirestore = gameSnap.data();
-              const gameTeamRefs: DocumentReference[] = [];
-              const awayRef = gameDataFirestore.awayTeam instanceof DocumentReference ? gameDataFirestore.awayTeam : null;
-              const homeRef = gameDataFirestore.homeTeam instanceof DocumentReference ? gameDataFirestore.homeTeam : null;
-              if (awayRef) gameTeamRefs.push(awayRef);
-              if (homeRef) gameTeamRefs.push(homeRef);
-              
-              const fetchedTeams = await fetchMultipleTeams(gameTeamRefs);
-              setSweepstakesTeams(fetchedTeams);
-
-              const typedGameData = {
-                id: gameSnap.id, ...gameDataFirestore,
-                teamA: awayRef ? fetchedTeams[awayRef.id] : undefined,
-                teamB: homeRef ? fetchedTeams[homeRef.id] : undefined,
-                // Times
-                startTime: (gameDataFirestore.startTime as Timestamp) || (gameDataFirestore.start_time as Timestamp),
-                start_time: (gameDataFirestore.start_time as Timestamp) || undefined,
-                // Team refs (normalized)
-                away_team_id: (awayRef as DocumentReference | undefined),
-                home_team_id: (homeRef as DocumentReference | undefined),
-                // Scores with robust fallbacks
-                awayScore: typeof gameDataFirestore.awayScore === 'number' ? gameDataFirestore.awayScore : gameDataFirestore.away_team_score,
-                homeScore: typeof gameDataFirestore.homeScore === 'number' ? gameDataFirestore.homeScore : gameDataFirestore.home_team_score,
-                away_score: typeof gameDataFirestore.away_team_score === 'number' ? gameDataFirestore.away_team_score : (typeof gameDataFirestore.awayScore === 'number' ? gameDataFirestore.awayScore : undefined),
-                home_score: typeof gameDataFirestore.home_team_score === 'number' ? gameDataFirestore.home_team_score : (typeof gameDataFirestore.homeScore === 'number' ? gameDataFirestore.homeScore : undefined),
-                // Live flags (prefer camelCase)
-                isLive: gameDataFirestore.isLive ?? gameDataFirestore.is_live ?? false,
-                isOver: gameDataFirestore.isOver ?? gameDataFirestore.is_over ?? false,
-                is_live: gameDataFirestore.is_live ?? undefined,
-                is_over: gameDataFirestore.is_over ?? undefined,
-                // Period
-                period: gameDataFirestore.quarter || '',
-                quarter: gameDataFirestore.quarter || '',
-                sport: gameDataFirestore.sport || SWEEPSTAKES_SPORT_ID,
-                status: gameDataFirestore.status || 'scheduled',
-                // Broadcast (prefer camelCase)
-                broadcastProvider: gameDataFirestore.broadcastProvider || gameDataFirestore.broadcast_provider,
-                broadcast_provider: gameDataFirestore.broadcast_provider ?? undefined,
-              } as GameType;
-              setSweepstakesGame(typedGameData);
-              {
-                const ts = typedGameData.startTime || typedGameData.start_time;
-                setSweepstakesStartTime(ts ? ts.toDate() : null);
-              }
-              debugLog("[LobbyPage] Sweepstakes game data set:", typedGameData);
-              setSweepstakesDataError(null);
-                } else {
-              console.warn("[LobbyPage] Sweepstakes game document not found for ID:", typedBoardData.gameID.id);
-              setSweepstakesGame(null);
-              setSweepstakesTeams({});
-              setSweepstakesStartTime(null);
-              setSweepstakesDataError(`Game data not found for sweepstakes board ${typedBoardData.id}.`);
+            if (unsubscribeGameListenerRef.current) {
+              unsubscribeGameListenerRef.current();
+              unsubscribeGameListenerRef.current = null;
             }
-          } catch (gameError) {
-            console.error("[LobbyPage] Error fetching sweepstakes game:", gameError);
+            
+            setSweepstakesBoard(null);
             setSweepstakesGame(null);
             setSweepstakesTeams({});
             setSweepstakesStartTime(null);
-            setSweepstakesDataError("Error fetching game data for sweepstakes.");
-          } finally {
+            setSweepstakesDataError("No active sweepstakes available.");
+            setIsLoadingSweepstakesData(false);
+            setIsTransitioning(false);
+            return;
+          }
+
+          const sweepstakesDoc = sweepstakesSnapshot.docs[0];
+          const sweepstakesData = sweepstakesDoc.data();
+          
+          debugLog("[LobbyPage] Active sweepstakes found:", sweepstakesDoc.id);
+
+          try {
+            const boardRef = sweepstakesData.boardIDs?.[0];
+            const gameRef = sweepstakesData.gameID;
+
+            if (!boardRef || !gameRef) {
+              throw new Error("Sweepstakes missing board or game reference");
+            }
+
+            // Set up board listener (real-time square updates)
+            if (unsubscribeBoardListenerRef.current) {
+              unsubscribeBoardListenerRef.current();
+            }
+            
+            unsubscribeBoardListenerRef.current = onSnapshot(
+              boardRef,
+              (boardSnapshot: any) => {
+                if (boardSnapshot.exists()) {
+                  const boardDataFirestore = boardSnapshot.data();
+                  const typedBoardData = {
+                    id: boardSnapshot.id,
+                    gameID: gameRef,
+                    entryFee: boardDataFirestore.amount !== undefined ? boardDataFirestore.amount : DEFAULT_BOARD_ENTRY_FEE,
+                    amount: boardDataFirestore.amount,
+                    status: boardDataFirestore.status,
+                    selected_indexes: boardDataFirestore.selected_indexes || [],
+                    sweepstakes_select: boardDataFirestore.sweepstakes_select,
+                    isFreeEntry: boardDataFirestore.amount === 0 || boardDataFirestore.sweepstakes_select === true,
+                    sweepstakesID: sweepstakesDoc.id,
+                  } as BoardType;
+                  setSweepstakesBoard(typedBoardData);
+                  debugLog("[LobbyPage] Board updated:", typedBoardData.selected_indexes?.length || 0, "squares");
+                }
+              },
+              (error: any) => {
+                console.error("[LobbyPage] Board listener error:", error);
+              }
+            );
+
+            // Set up game listener (real-time score updates)
+            if (unsubscribeGameListenerRef.current) {
+              unsubscribeGameListenerRef.current();
+            }
+
+            unsubscribeGameListenerRef.current = onSnapshot(
+              gameRef,
+              async (gameSnapshot: any) => {
+                if (gameSnapshot.exists()) {
+                  const gameDataFirestore = gameSnapshot.data();
+                  
+                  // Extract team references
+                  const awayRef = gameDataFirestore.awayTeam instanceof DocumentReference ? gameDataFirestore.awayTeam : null;
+                  const homeRef = gameDataFirestore.homeTeam instanceof DocumentReference ? gameDataFirestore.homeTeam : null;
+                  
+                  // Fetch teams (only on first load or if changed)
+                  const gameTeamRefs: DocumentReference[] = [];
+                  if (awayRef) gameTeamRefs.push(awayRef);
+                  if (homeRef) gameTeamRefs.push(homeRef);
+                  const fetchedTeams = await fetchMultipleTeams(gameTeamRefs);
+                  setSweepstakesTeams(fetchedTeams);
+
+                  // Build typed game data
+                  const typedGameData = {
+                    id: gameSnapshot.id,
+                    ...gameDataFirestore,
+                    teamA: awayRef ? fetchedTeams[awayRef.id] : undefined,
+                    teamB: homeRef ? fetchedTeams[homeRef.id] : undefined,
+                    startTime: (gameDataFirestore.startTime as Timestamp) || (gameDataFirestore.start_time as Timestamp),
+                    start_time: (gameDataFirestore.start_time as Timestamp) || undefined,
+                    away_team_id: (awayRef as DocumentReference | undefined),
+                    home_team_id: (homeRef as DocumentReference | undefined),
+                    awayScore: typeof gameDataFirestore.awayScore === 'number' ? gameDataFirestore.awayScore : gameDataFirestore.away_team_score,
+                    homeScore: typeof gameDataFirestore.homeScore === 'number' ? gameDataFirestore.homeScore : gameDataFirestore.home_team_score,
+                    away_score: typeof gameDataFirestore.away_team_score === 'number' ? gameDataFirestore.away_team_score : (typeof gameDataFirestore.awayScore === 'number' ? gameDataFirestore.awayScore : undefined),
+                    home_score: typeof gameDataFirestore.home_team_score === 'number' ? gameDataFirestore.home_team_score : (typeof gameDataFirestore.homeScore === 'number' ? gameDataFirestore.homeScore : undefined),
+                    isLive: gameDataFirestore.isLive ?? gameDataFirestore.is_live ?? false,
+                    isOver: gameDataFirestore.isOver ?? gameDataFirestore.is_over ?? false,
+                    is_live: gameDataFirestore.is_live ?? undefined,
+                    is_over: gameDataFirestore.is_over ?? undefined,
+                    period: gameDataFirestore.quarter || '',
+                    quarter: gameDataFirestore.quarter || '',
+                    sport: gameDataFirestore.sport || SWEEPSTAKES_SPORT_ID,
+                    status: gameDataFirestore.status || 'scheduled',
+                    broadcastProvider: gameDataFirestore.broadcastProvider || gameDataFirestore.broadcast_provider,
+                    broadcast_provider: gameDataFirestore.broadcast_provider ?? undefined,
+                    timeRemaining: gameDataFirestore.timeRemaining || '',
+                  } as GameType;
+
+                  setSweepstakesGame(typedGameData);
+                  setSweepstakesStartTime(typedGameData.startTime?.toDate() || null);
+                  debugLog("[LobbyPage] Game updated - Score:", typedGameData.awayScore, "-", typedGameData.homeScore, "Status:", typedGameData.status);
+                  setSweepstakesDataError(null);
+                }
+              },
+              (error: any) => {
+                console.error("[LobbyPage] Game listener error:", error);
+              }
+            );
+
+            setIsLoadingSweepstakesData(false);
+            setIsTransitioning(false);
+
+          } catch (error) {
+            console.error("[LobbyPage] Error setting up listeners:", error);
+            setSweepstakesDataError("Failed to load sweepstakes data.");
             setIsLoadingSweepstakesData(false);
             setIsTransitioning(false);
           }
-        } else {
-          console.warn("[LobbyPage] Sweepstakes board has no valid gameID.");
-          setSweepstakesGame(null);
-          setSweepstakesTeams({});
-          setSweepstakesStartTime(null);
-            setIsLoadingSweepstakesData(false);
-            setIsTransitioning(false);
+        },
+        (error) => {
+          console.error("[LobbyPage] Sweepstakes listener error:", error);
+          setSweepstakesDataError("Failed to load sweepstakes.");
+          setIsLoadingSweepstakesData(false);
+          setIsTransitioning(false);
         }
-      }, (error) => {
-        console.error("[LobbyPage] Error fetching sweepstakes board:", error);
-        setSweepstakesBoard(null);
-        setSweepstakesGame(null);
-        setSweepstakesTeams({});
-        setSweepstakesStartTime(null);
-        setSweepstakesDataError("Failed to load sweepstakes data. Please try again.");
-        setIsLoadingSweepstakesData(false);
-        setIsTransitioning(false);
-      });
+      );
     } else { // Regular Sport
       debugLog(`[LobbyPage] Fetching data for REGULAR SPORT: ${selectedSport}.`);
       setIsLoadingGamesAndTeams(true);
@@ -459,6 +483,8 @@ function LobbyContent() {
     return () => {
       if (unsubscribeGamesListenerRef.current) unsubscribeGamesListenerRef.current();
       if (unsubscribeSweepstakesListenerRef.current) unsubscribeSweepstakesListenerRef.current();
+      if (unsubscribeBoardListenerRef.current) unsubscribeBoardListenerRef.current();
+      if (unsubscribeGameListenerRef.current) unsubscribeGameListenerRef.current();
     };
   }, [selectedSport]);
 
@@ -1030,10 +1056,11 @@ function LobbyContent() {
                                 awayTeam={sweepstakesTeams[sweepstakesGame.teamA.id]!}
                                 homeTeam={sweepstakesTeams[sweepstakesGame.teamB.id]!}
                                 status={sweepstakesGame.status}
-                            gameTime={sweepstakesGame.period} // Assuming period is gameTime string
-                            quarter={sweepstakesGame.quarter} // Assuming quarter is also relevant
+                                gameTime={sweepstakesGame.period} // Assuming period is gameTime string
+                                quarter={sweepstakesGame.quarter} // Assuming quarter is also relevant
                                 awayScore={sweepstakesGame.away_score}
                                 homeScore={sweepstakesGame.home_score}
+                                timeRemaining={sweepstakesGame.timeRemaining}
                               />
                               {activeTour === 'sweepstakes' ? (
                                 <TourSweepstakesBoardCard

@@ -11,6 +11,7 @@ interface SweepstakesScoreboardProps {
   quarter?: number | string; // Accept both types maybe?
   awayScore?: number;
   homeScore?: number;
+  timeRemaining?: string; // Add timeRemaining prop
 }
 
 // Define the component as a named function first
@@ -22,6 +23,7 @@ function SweepstakesScoreboardComponent({
   quarter,
   awayScore,
   homeScore,
+  timeRemaining,
 }: SweepstakesScoreboardProps) {
   const isLive = status === 'live';
   const isUpcoming = status === 'upcoming';
@@ -54,107 +56,205 @@ function SweepstakesScoreboardComponent({
     return 'Live'; // Default live status
   };
 
+  // Helper function to format quarter display
+  const formatQuarter = (quarter: number | string): string => {
+    if (typeof quarter === 'number') {
+      const quarters = ['1st Qtr', '2nd Qtr', '3rd Qtr', '4th Qtr'];
+      return quarters[quarter - 1] || `Q${quarter}`;
+    }
+    return quarter; // "Halftime", "OT", etc.
+  };
+
   // Team logo rendering logic (handles undefined logo)
-  const renderTeamLogo = (team: TeamInfo, align: 'left' | 'right') => {
+  const renderTeamLogo = (team: TeamInfo, score: number | undefined) => {
     const shadowColorHex = team.seccolor || team.color;
     const shadowColorRgba = shadowColorHex ? `${shadowColorHex}80` : 'rgba(255,255,255,0.4)';
     const logoFilterStyle = { filter: `drop-shadow(0 0 4px ${shadowColorRgba})` };
 
     return (
-      <div className={`flex flex-col items-center ${align === 'left' ? 'items-start' : 'items-end'}`}>
+      <div className="relative w-16 h-16 mb-2">
         {team.logo ? (
           <Image 
             src={team.logo} 
-            alt={`${team.fullName} logo`} 
-            width={40} 
-            height={40} 
-            className="object-contain mb-1" 
+            alt={`${team.fullName} logo`}
+            fill
+            className="object-contain"
             style={logoFilterStyle}
           />
         ) : (
-          (<div className="w-10 h-10 bg-gray-700 rounded-full mb-1 flex items-center justify-center text-white text-xs italic">?</div>) // Placeholder
+          <div className="w-full h-full bg-gray-700 rounded-full flex items-center justify-center text-white text-xs">?</div>
         )}
-        <span className="text-xs text-gray-300 font-medium mt-1 truncate max-w-[100px]">{team.fullName}</span>
+        
+        {/* Score overlay for live games */}
+        {isLive && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span 
+              className="text-5xl sm:text-6xl font-mono font-bold"
+              style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
+            >
+              {String(score ?? 0).padStart(2, '0')}
+            </span>
+          </div>
+        )}
       </div>
     );
   };
 
   return (
     <div className="bg-gradient-to-b from-background-primary to-accent-2 p-4 sm:p-6 rounded-lg shadow-lg glow-border-blue w-full">
-      <div className="flex items-stretch justify-between text-white font-bold min-h-[150px]"> {/* Use items-stretch and min-height */} 
+      <div className="flex items-stretch justify-between text-white font-bold min-h-[150px]">
         
         {/* Away Team Section */}
-        <div className={teamSectionBaseStyle}>
-          {/* Indented Container - Make relative for score overlay */}
-          <div className="relative bg-black/10 rounded-lg p-2 shadow-inner w-full flex flex-col items-center flex-grow"> {/* Add relative and flex-grow */} 
-              {renderTeamLogo(awayTeam, 'left')}
-              
-              {/* Divider (only shown when not live) */}
-              {!isLive && (
-                <div className="w-3/4 h-px bg-white/20 my-1"></div> 
-              )}
-              
-              {/* Conditional Display: Score (Live Overlay) vs Name (Upcoming/Final) */}
-              {isLive ? (
-                <span 
-                    className="absolute inset-0 flex items-center justify-center text-4xl sm:text-5xl font-mono mt-1" // Absolute positioning
-                    style={textShadowStyle} 
-                >
-                    {String(awayScore ?? 0).padStart(2, '0')}
-                </span>
-              ) : isUpcoming ? (
-                <span className="text-sm sm:text-base font-semibold mt-1">{awayTeam.name}</span>
+        <div className="flex flex-col items-center text-center flex-1">
+          <div className="relative bg-black/10 rounded-lg p-2 shadow-inner w-full flex flex-col items-center flex-grow">
+            {/* Logo with 30% opacity for live games */}
+            <div className={cn(
+              "relative w-16 h-16 mb-2",
+              isLive && "opacity-30"  // 30% opacity for live games
+            )}>
+              {awayTeam.logo ? (
+                <Image 
+                  src={awayTeam.logo} 
+                  alt={`${awayTeam.fullName} logo`}
+                  fill
+                  className="object-contain"
+                  style={{
+                    filter: awayTeam.seccolor 
+                      ? `drop-shadow(0 0 4px ${awayTeam.seccolor}80)` 
+                      : 'none'
+                  }}
+                />
               ) : (
-                <span className="text-sm sm:text-base font-semibold mt-1 text-gray-400">{awayTeam.name}</span>
+                <div className="w-full h-full bg-gray-700 rounded-full flex items-center justify-center text-white text-xs">?</div>
               )}
+              
+              {/* Score overlay for live games */}
+              {isLive && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span 
+                    className="text-5xl sm:text-6xl font-mono font-bold"
+                    style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
+                  >
+                    {String(awayScore ?? 0).padStart(2, '0')}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Team name */}
+            <span className={cn(
+              "text-xs text-gray-300 font-medium truncate max-w-[100px]",
+              !isLive && "mt-1"
+            )}>
+              {awayTeam.fullName}
+            </span>
+
+            {/* Divider for non-live */}
+            {!isLive && (
+              <div className="w-3/4 h-px bg-white/20 my-1"></div>
+            )}
+
+            {/* Team name for non-live */}
+            {!isLive && (
+              <span className={cn(
+                "text-sm sm:text-base font-semibold mt-1",
+                isFinal && "text-gray-400"
+              )}>
+                {awayTeam.name}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Center Section (Time/Status) */}
+        {/* Center Section - Game Info */}
         <div className="flex flex-col items-center justify-center text-center w-auto px-4 h-full min-h-[150px]">
           {isLive ? (
-            <div className="flex flex-col items-center"> {/* Container for column layout */} 
-               <span className="text-4xl sm:text-5xl font-mono mb-1" style={textShadowStyle}>-</span>
-               <span className="text-base sm:text-lg text-gray-300 uppercase bg-black/20 px-2 py-1 rounded">
-                   {formatGameTime()}
-               </span>
+            <div className="flex flex-col items-center space-y-2">
+              {/* Quarter/Period */}
+              <span className="text-base sm:text-lg text-gray-300 uppercase bg-black/30 px-3 py-1 rounded-md">
+                {formatQuarter(quarter || '')}
+              </span>
+              
+              {/* Time Remaining */}
+              {timeRemaining && (
+                <span className="text-sm text-gray-400 bg-black/20 px-2 py-0.5 rounded">
+                  {timeRemaining}
+                </span>
+              )}
             </div>
           ) : isUpcoming ? (
-            <span className="text-4xl sm:text-5xl font-sans" style={textShadowStyle}>
-               @
+            <span className="text-4xl sm:text-5xl font-sans" style={{ textShadow: '1px 1px 3px rgba(0, 0, 0, 0.5)' }}>
+              @
             </span>
           ) : isFinal ? (
-            <span className="text-base sm:text-lg font-semibold text-gray-300 uppercase mt-1">FINAL</span>
+            <span className="text-base sm:text-lg font-semibold text-gray-300 uppercase mt-1">
+              FINAL
+            </span>
           ) : (
-            <span className="text-4xl sm:text-5xl font-mono">-</span> 
+            <span className="text-4xl sm:text-5xl font-mono">-</span>
           )}
         </div>
 
         {/* Home Team Section */}
-        <div className={teamSectionBaseStyle}>
-           {/* Indented Container - Make relative */}
-           <div className="relative bg-black/10 rounded-lg p-2 shadow-inner w-full flex flex-col items-center flex-grow"> {/* Add relative and flex-grow */} 
-               {renderTeamLogo(homeTeam, 'right')}
-              
-              {/* Divider (only shown when not live) */}
-              {!isLive && (
-                <div className="w-3/4 h-px bg-white/20 my-1"></div> 
-              )}
-              
-              {/* Conditional Display: Score (Live Overlay) vs Name (Upcoming/Final) */}
-              {isLive ? (
-                <span 
-                    className="absolute inset-0 flex items-center justify-center text-4xl sm:text-5xl font-mono mt-1" // Absolute positioning
-                    style={textShadowStyle} 
-                >
-                    {String(homeScore ?? 0).padStart(2, '0')}
-                </span>
-              ) : isUpcoming ? (
-                <span className="text-sm sm:text-base font-semibold mt-1">{homeTeam.name}</span>
+        <div className="flex flex-col items-center text-center flex-1">
+          <div className="relative bg-black/10 rounded-lg p-2 shadow-inner w-full flex flex-col items-center flex-grow">
+            {/* Logo with 30% opacity for live games */}
+            <div className={cn(
+              "relative w-16 h-16 mb-2",
+              isLive && "opacity-30"  // 30% opacity for live games
+            )}>
+              {homeTeam.logo ? (
+                <Image 
+                  src={homeTeam.logo} 
+                  alt={`${homeTeam.fullName} logo`}
+                  fill
+                  className="object-contain"
+                  style={{
+                    filter: homeTeam.seccolor 
+                      ? `drop-shadow(0 0 4px ${homeTeam.seccolor}80)` 
+                      : 'none'
+                  }}
+                />
               ) : (
-                <span className="text-sm sm:text-base font-semibold mt-1 text-gray-400">{homeTeam.name}</span>
+                <div className="w-full h-full bg-gray-700 rounded-full flex items-center justify-center text-white text-xs">?</div>
               )}
-           </div>
+              
+              {/* Score overlay for live games */}
+              {isLive && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span 
+                    className="text-5xl sm:text-6xl font-mono font-bold"
+                    style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
+                  >
+                    {String(homeScore ?? 0).padStart(2, '0')}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Team name */}
+            <span className={cn(
+              "text-xs text-gray-300 font-medium truncate max-w-[100px]",
+              !isLive && "mt-1"
+            )}>
+              {homeTeam.fullName}
+            </span>
+
+            {/* Divider for non-live */}
+            {!isLive && (
+              <div className="w-3/4 h-px bg-white/20 my-1"></div>
+            )}
+
+            {/* Team name for non-live */}
+            {!isLive && (
+              <span className={cn(
+                "text-sm sm:text-base font-semibold mt-1",
+                isFinal && "text-gray-400"
+              )}>
+                {homeTeam.name}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

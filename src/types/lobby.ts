@@ -81,6 +81,9 @@ export interface Game {
   broadcastProvider?: string;
   // Backward-compat field
   broadcast_provider?: string;
+  
+  // Time remaining for live games
+  timeRemaining?: string;
 }
 
 // Interface for Board data used in BoardsList and LobbyPage

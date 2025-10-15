@@ -147,16 +147,27 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
                   {!isOver && (
                     <div className="text-[10px] sm:text-xs text-text-secondary mb-0.5 leading-tight"> 
                       {isLive ? (
-                        <span>{(() => {
-                          const period = game.period || (game.quarter as any);
-                          if (!period) return 'Live';
-                          const periodStr = String(period).toLowerCase();
-                          if (periodStr === '1' || periodStr.includes('1')) return '1st Qtr';
-                          if (periodStr === '2' || periodStr.includes('2')) return '2nd Qtr';
-                          if (periodStr === '3' || periodStr.includes('3')) return '3rd Qtr';
-                          if (periodStr === '4' || periodStr.includes('4')) return '4th Qtr';
-                          return period;
-                        })()}</span>
+                        <div className="flex flex-col items-center gap-1">
+                          <span>{(() => {
+                            const period = game.period || (game.quarter as any);
+                            if (!period) return 'Live';
+                            const periodStr = String(period).toLowerCase();
+                            if (periodStr === '1' || periodStr.includes('1')) return '1st Qtr';
+                            if (periodStr === '2' || periodStr.includes('2')) return '2nd Qtr';
+                            if (periodStr === '3' || periodStr.includes('3')) return '3rd Qtr';
+                            if (periodStr === '4' || periodStr.includes('4')) return '4th Qtr';
+                            return period;
+                          })()}</span>
+                          
+                          {/* Time Remaining - Indented Container */}
+                          {((game as any).timeRemaining || (game as any).time_remaining) && (
+                            <div className="px-2 py-0.5 rounded-md border border-white/10 bg-slate-950/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">
+                              <span className="text-[9px] sm:text-[10px] text-slate-300 font-mono tabular-nums">
+                                {(game as any).timeRemaining || (game as any).time_remaining}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <div className="flex flex-col items-center gap-0">
                           <span className="whitespace-nowrap">{timeStr}</span>
@@ -166,9 +177,12 @@ const GameCard = memo(({ game, user, onProtectedAction }: GameCardProps) => {
                     </div>
                   )}
                   {(game.broadcastProvider || game.broadcast_provider) && (
-                    <span className="text-[0.55rem] sm:text-[0.65rem] text-gray-400 font-medium truncate w-full">
-                      {game.broadcastProvider || game.broadcast_provider}
-                    </span>
+                    <div 
+                      className="text-[0.55rem] sm:text-[0.65rem] text-gray-400 hover:text-accent-1 font-medium truncate w-full transition-colors cursor-pointer group"
+                      title="Watch this game"
+                    >
+                      Watch on <span className="group-hover:underline">{game.broadcastProvider || game.broadcast_provider}</span>
+                    </div>
                   )}
                 </div>
                 {/* Right Column: Team B */}

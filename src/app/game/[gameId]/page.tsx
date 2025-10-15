@@ -862,6 +862,16 @@ function GamePageContent() {
                         return period.toUpperCase();
                       })()}
                     </div>
+                    
+                    {/* Time Remaining - Indented Container */}
+                    {((gameDetails as any).timeRemaining || (gameDetails as any).time_remaining) && (
+                      <div className="mb-1 px-3 py-1 rounded-md border border-white/10 bg-slate-950/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">
+                        <span className="text-[10px] sm:text-xs text-slate-300 font-mono tabular-nums">
+                          {(gameDetails as any).timeRemaining || (gameDetails as any).time_remaining}
+                        </span>
+                      </div>
+                    )}
+                    
                     <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tabular-nums mb-1">
                       {gameDetails.awayScore ?? gameDetails.away_score ?? 0} - {gameDetails.homeScore ?? gameDetails.home_score ?? 0}
                     </div>
@@ -884,8 +894,11 @@ function GamePageContent() {
                   </>
                 )}
                 {(gameDetails.broadcastProvider || gameDetails.broadcast_provider) && (
-                  <div className="text-[10px] sm:text-xs text-slate-500 mt-1">
-                    {gameDetails.broadcastProvider || gameDetails.broadcast_provider} • Week {gameDetails.week} • {gameDetails.sport}
+                  <div className="text-[10px] sm:text-xs text-slate-500 hover:text-accent-1 mt-1 transition-colors cursor-pointer group">
+                    <span className="group-hover:underline">
+                      Watch on {gameDetails.broadcastProvider || gameDetails.broadcast_provider}
+                    </span>
+                    {' • '}Week {gameDetails.week} • {gameDetails.sport}
                   </div>
                 )}
               </div>

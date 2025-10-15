@@ -214,12 +214,16 @@ const GamesList = memo(({ games, user, onProtectedAction }: GamesListProps) => {
     // Reset scroll position to start when games change
     container.scrollLeft = 0;
 
-    // Add wheel event listener to convert vertical scroll to horizontal
+    // Add wheel event listener to convert vertical scroll to horizontal with smooth scrolling
     const handleWheel = (e: WheelEvent) => {
       // Only intercept if scrolling vertically and container can scroll horizontally
       if (e.deltaY !== 0 && container.scrollWidth > container.clientWidth) {
         e.preventDefault();
-        container.scrollLeft += e.deltaY;
+        // Use scrollBy with smooth behavior for smoother scrolling
+        container.scrollBy({
+          left: e.deltaY,
+          behavior: 'auto' // 'auto' is instant but feels natural, 'smooth' adds animation
+        });
       }
     };
 

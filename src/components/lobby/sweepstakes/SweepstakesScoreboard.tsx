@@ -89,8 +89,8 @@ function SweepstakesScoreboardComponent({
         {isLive && (
           <div className="absolute inset-0 flex items-center justify-center">
             <span 
-              className="text-5xl sm:text-6xl font-mono font-bold"
-              style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
+              className="text-4xl sm:text-5xl font-mono font-bold text-white"
+              style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.9)' }}
             >
               {String(score ?? 0).padStart(2, '0')}
             </span>
@@ -132,8 +132,8 @@ function SweepstakesScoreboardComponent({
               {isLive && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span 
-                    className="text-5xl sm:text-6xl font-mono font-bold"
-                    style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
+                    className="text-4xl sm:text-5xl font-mono font-bold text-white"
+                    style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.9)' }}
                   >
                     {String(awayScore ?? 0).padStart(2, '0')}
                   </span>
@@ -211,8 +211,8 @@ function SweepstakesScoreboardComponent({
               {isLive && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span 
-                    className="text-5xl sm:text-6xl font-mono font-bold"
-                    style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
+                    className="text-4xl sm:text-5xl font-mono font-bold text-white"
+                    style={{ textShadow: '2px 2px 6px rgba(0, 0, 0, 0.9)' }}
                   >
                     {String(homeScore ?? 0).padStart(2, '0')}
                   </span>

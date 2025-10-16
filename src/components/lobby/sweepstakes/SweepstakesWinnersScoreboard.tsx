@@ -83,7 +83,7 @@ export default function SweepstakesWinnersScoreboard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               className={cn(
-                "relative flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all shadow-lg shadow-black/40",
+                "relative flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all",
                 colors.bg,
                 colors.border,
                 isCurrent && "ring-2 ring-[#B8860B] ring-offset-2 ring-offset-transparent"

@@ -241,10 +241,15 @@ function LobbyContent() {
       setIsLoadingSweepstakesData(true);
       setIsLoadingGamesAndTeams(false);
 
-      // Query active sweepstakes (single active at a time)
+      // Get current NFL week number
+      const { weekNumber: currentWeekNumber } = getNFLWeekRange();
+      debugLog(`[LobbyPage] Current NFL week: ${currentWeekNumber}`);
+
+      // Query active sweepstakes for current week
       const sweepstakesQuery = query(
         collection(db, 'sweepstakes'),
         where("status", "==", "active"),
+        where("week", "==", currentWeekNumber),
         limit(1)
       );
 
@@ -360,15 +365,20 @@ function LobbyContent() {
                     period: gameDataFirestore.quarter || '',
                     quarter: gameDataFirestore.quarter || '',
                     sport: gameDataFirestore.sport || SWEEPSTAKES_SPORT_ID,
-                    status: gameDataFirestore.status || 'scheduled',
+                    status: gameDataFirestore.status === 'scheduled' ? 'upcoming' : (gameDataFirestore.status || 'upcoming'),
                     broadcastProvider: gameDataFirestore.broadcastProvider || gameDataFirestore.broadcast_provider,
                     broadcast_provider: gameDataFirestore.broadcast_provider ?? undefined,
                     timeRemaining: gameDataFirestore.timeRemaining || '',
                   } as GameType;
 
                   setSweepstakesGame(typedGameData);
-                  setSweepstakesStartTime(typedGameData.startTime?.toDate() || null);
+                  // Convert Firestore Timestamp to Date for countdown
+                  const startTimeDate = typedGameData.startTime?.toDate ? typedGameData.startTime.toDate() : 
+                                      (typedGameData.startTime instanceof Date ? typedGameData.startTime : null);
+                  setSweepstakesStartTime(startTimeDate);
                   debugLog("[LobbyPage] Game updated - Score:", typedGameData.awayScore, "-", typedGameData.homeScore, "Status:", typedGameData.status);
+                  debugLog("[LobbyPage] Game isLive:", typedGameData.isLive, "isOver:", typedGameData.isOver);
+                  debugLog("[LobbyPage] StartTime:", startTimeDate);
                   setSweepstakesDataError(null);
                 }
               },
@@ -1003,6 +1013,7 @@ function LobbyContent() {
               />
             ) : (
             <SportSelector 
+              key={`sport-selector-${sweepstakesGame?.isLive ? 'live' : 'upcoming'}`}
               sports={initialSportsData} 
               selectedSportId={selectedSport} 
               onSelectSport={handleSelectSport} 
@@ -1083,24 +1094,19 @@ function LobbyContent() {
                       {sweepstakesGame && sweepstakesBoard && sweepstakesGame.teamA && sweepstakesGame.teamB && sweepstakesTeams[sweepstakesGame.teamA.id] && sweepstakesTeams[sweepstakesGame.teamB.id] ? (
                         <div data-tour="sweepstakes">
                           {/* Primary condition: we have all necessary data */}
-                              <SweepstakesScoreboard 
-                                awayTeam={sweepstakesTeams[sweepstakesGame.teamA.id]!}
-                                homeTeam={sweepstakesTeams[sweepstakesGame.teamB.id]!}
-                                status={sweepstakesGame.status}
-                                gameTime={sweepstakesGame.period} // Assuming period is gameTime string
-                                quarter={sweepstakesGame.quarter} // Assuming quarter is also relevant
-                                awayScore={sweepstakesGame.away_score}
-                                homeScore={sweepstakesGame.home_score}
-                                timeRemaining={sweepstakesGame.timeRemaining}
-                              />
-                              {activeTour === 'sweepstakes' ? (
+                          {(() => {
+                            console.log("[LobbyPage] Conditional logic - activeTour:", activeTour, "isLive:", sweepstakesGame?.isLive, "isOver:", sweepstakesGame?.isOver);
+                            if (activeTour === 'sweepstakes') {
+                              return (
                                 <TourSweepstakesBoardCard
                                   tourStepId={stepsForRender[tourStep]?.id}
                                   highlightedSquare={typeof entryInteraction.selectedNumber === 'number' ? entryInteraction.selectedNumber : undefined}
                                   onMounted={() => setTourContentReady(true)}
                                 />
-                              ) : sweepstakesGame?.isLive || sweepstakesGame?.isOver ? (
-                                // Show winners scoreboard for live/final games
+                              );
+                            } else if (sweepstakesGame?.isLive || sweepstakesGame?.isOver) {
+                              console.log("[LobbyPage] Rendering SweepstakesWinnersScoreboard");
+                              return (
                                 <SweepstakesWinnersScoreboard
                                   q1WinningSquare={sweepstakesGame.q1WinningSquare}
                                   q2WinningSquare={sweepstakesGame.q2WinningSquare}
@@ -1109,21 +1115,23 @@ function LobbyContent() {
                                   isLive={sweepstakesGame.isLive}
                                   currentQuarter={typeof sweepstakesGame.quarter === 'number' ? sweepstakesGame.quarter : undefined}
                                 />
-                              ) : (
-                                // Show board card for upcoming games
-                                <SweepstakesBoardCard 
-                                  key={sweepstakesBoard.id}
-                                  board={{...sweepstakesBoard, teamA: sweepstakesTeams[sweepstakesGame.teamA.id]!, teamB: sweepstakesTeams[sweepstakesGame.teamB.id]! }}
-                                    user={user}
-                                  onProtectedAction={handleProtectedAction}
-                                  entryInteraction={entryInteraction}
-                                  handleBoardAction={handleBoardAction}
-                                  openWalletDialog={openWalletDialog} 
-                                    walletHasWallet={hasWallet}
-                                    walletBalance={balance}
-                                    walletIsLoading={isWalletLoading}
-                            />
-                              )}
+                              );
+                            } else {
+                              console.log("[LobbyPage] Rendering SweepstakesScoreboard with status:", sweepstakesGame?.status);
+                              return (
+                                <SweepstakesScoreboard 
+                                  awayTeam={sweepstakesTeams[sweepstakesGame.teamA.id]!}
+                                  homeTeam={sweepstakesTeams[sweepstakesGame.teamB.id]!}
+                                  status={sweepstakesGame.status}
+                                  gameTime={sweepstakesGame.period} // Assuming period is gameTime string
+                                  quarter={sweepstakesGame.quarter} // Assuming quarter is also relevant
+                                  awayScore={sweepstakesGame.away_score}
+                                  homeScore={sweepstakesGame.home_score}
+                                  timeRemaining={sweepstakesGame.timeRemaining}
+                                />
+                              );
+                            }
+                          })()}
                           <p className="text-xs text-gray-400 mt-2">Free weekly entry. Numbers assigned at game time.</p>
                         </div>
                       ) : (

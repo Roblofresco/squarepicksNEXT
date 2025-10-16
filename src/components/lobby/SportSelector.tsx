@@ -56,7 +56,7 @@ const calculateTimeLeft = (targetDate: Date | null): TimeLeft => {
 };
 
 // Use props
-const SportSelector = memo(function SportSelector({ sports, selectedSportId, onSelectSport, sweepstakesStartTime, sweepstakesGame, sportSelectorView, setSportSelectorView }: SportSelectorProps) {
+const SportSelector = function SportSelector({ sports, selectedSportId, onSelectSport, sweepstakesStartTime, sweepstakesGame, sportSelectorView, setSportSelectorView }: SportSelectorProps) {
   // Add isMounted state
   const [isMounted, setIsMounted] = useState(false);
   
@@ -165,6 +165,11 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
 
   const countdownString = formatCountdown(timeLeft, targetDate);
 
+  // Debug log to check sweepstakesGame state
+  console.log('[SportSelector] sweepstakesGame:', sweepstakesGame);
+  console.log('[SportSelector] isLive:', sweepstakesGame?.isLive);
+  console.log('[SportSelector] sweepstakesGame && sweepstakesGame.isLive:', sweepstakesGame && sweepstakesGame.isLive);
+
   // Framer motion variants for fade transition
   const variants = {
     hidden: { opacity: 0, transition: { duration: 0.2 } },
@@ -193,11 +198,12 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                   transition-all duration-200 ease-in-out 
                   relative group 
                   flex-grow basis-3/4 
-                  border border-[#F0E68C] 
-                  bg-gradient-to-b from-background-primary via-[#B8860B]/50 via-[12%] to-[#B8860B] 
-                  shadow-[0_0_15px_0px_rgba(184,134,11,0.5)] 
-                  hover:brightness-110 hover:shadow-[0_0_20px_2px_rgba(184,134,11,0.7)] hover:border-white
-                `)}
+                `,
+                  sweepstakesGame && sweepstakesGame.isLive 
+                    ? 'border border-red-500 bg-gradient-to-b from-background-primary to-red-600 shadow-[0_0_15px_0px_rgba(239,68,68,0.5)] hover:brightness-110 hover:shadow-[0_0_20px_2px_rgba(239,68,68,0.7)]'
+                    : 'border border-[#F0E68C] bg-gradient-to-b from-background-primary via-[#B8860B]/50 via-[12%] to-[#B8860B] shadow-[0_0_15px_0px_rgba(184,134,11,0.5)] hover:brightness-110 hover:shadow-[0_0_20px_2px_rgba(184,134,11,0.7)]',
+                  'hover:border-white'
+                )}
               >
                 {/* Add style for gold text shadow */}
                 <style jsx>{`
@@ -208,16 +214,16 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
                 {/* Content Layer */}
                 <div className="relative z-10 flex flex-col items-center justify-center space-y-0.5">
                   {/* Update text color */}
-                  <span className="text-[10px] text-[#F0E68C] font-semibold uppercase tracking-wider">COUNTDOWN</span> {/* REDUCED text size */}
+                  <span className="text-[10px] text-[#F0E68C] font-semibold uppercase tracking-wider">
+                    {sweepstakesGame && sweepstakesGame.isLive ? 'LIVE' : 'COUNTDOWN'}
+                  </span> {/* REDUCED text size */}
                   {/* Conditional rendering based on game state */}
-                  {sweepstakesGame?.isLive ? (
-                    // Live badge - matches game card live badge exactly
-                    <span className="text-xl font-bold font-mono tracking-tight text-white bg-red-600 rounded-full px-3 py-1 shadow-[0_0_10px_rgba(248,113,113,0.45)] animate-pulse">
+                  {sweepstakesGame && sweepstakesGame.isLive ? (
+                    <span className="text-xl font-bold font-mono tracking-tight text-white text-shadow-glow-gold">
                       LIVE
                     </span>
-                  ) : sweepstakesGame?.isOver ? (
-                    // Final badge - matches game card final badge exactly
-                    <span className="text-xl font-bold font-mono tracking-tight text-white bg-gray-600 rounded-full px-3 py-1">
+                  ) : sweepstakesGame && sweepstakesGame.isOver ? (
+                    <span className="text-xl font-bold font-mono tracking-tight text-white">
                       Coming Soon
                     </span>
                   ) : (
@@ -348,6 +354,6 @@ const SportSelector = memo(function SportSelector({ sports, selectedSportId, onS
       </div>
     </div>
   );
-});
+};
 
 export default SportSelector;

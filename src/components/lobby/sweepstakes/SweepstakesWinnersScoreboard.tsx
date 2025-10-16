@@ -35,7 +35,7 @@ export default function SweepstakesWinnersScoreboard({
   const getPillColor = (period: string, isAssigned: boolean) => {
     if (!isAssigned) {
       return {
-        bg: 'bg-black/30',
+        bg: '', // Remove bg-black/30, gradient is now inline
         border: 'border-black/40',
         text: 'text-gray-600'
       };
@@ -83,7 +83,7 @@ export default function SweepstakesWinnersScoreboard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               className={cn(
-                "relative flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all",
+                "relative flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all shadow-lg shadow-black/40",
                 colors.bg,
                 colors.border,
                 isCurrent && "ring-2 ring-[#B8860B] ring-offset-2 ring-offset-transparent"
@@ -103,13 +103,15 @@ export default function SweepstakesWinnersScoreboard({
               ) : (
                 <>
                   {/* Unassigned: -- top, Label bottom */}
-                  <span className={cn("text-2xl font-bold", colors.text)}>
+                  <span className="text-2xl font-bold text-gray-500">
                     --
                   </span>
                   <Separator className="my-1 w-full bg-white/20" />
-                  <span className={cn("text-xs font-semibold uppercase", colors.text)}>
-                    {pill.label}
-                  </span>
+                  <div className="w-full rounded-b-lg bg-gradient-to-br from-[#B8860B]/40 to-[#A0740A]/40 flex items-center justify-center py-1 px-2">
+                    <span className="text-xs font-semibold uppercase text-gray-400">
+                      {pill.label}
+                    </span>
+                  </div>
                 </>
               )}
             </motion.div>

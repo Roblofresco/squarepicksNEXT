@@ -215,7 +215,7 @@ const SportSelector = function SportSelector({ sports, selectedSportId, onSelect
                 <div className="relative z-10 flex flex-col items-center justify-center space-y-0.5">
                   {/* Update text color */}
                   <span className="text-[10px] text-[#F0E68C] font-semibold uppercase tracking-wider">
-                    {sweepstakesGame && sweepstakesGame.isLive ? 'LIVE' : 'COUNTDOWN'}
+                    {sweepstakesGame && sweepstakesGame.isLive ? '' : 'COUNTDOWN'}
                   </span> {/* REDUCED text size */}
                   {/* Conditional rendering based on game state */}
                   {sweepstakesGame && sweepstakesGame.isLive ? (
@@ -279,8 +279,11 @@ const SportSelector = function SportSelector({ sports, selectedSportId, onSelect
                   relative group border px-2 // REDUCED padding
                   flex-grow flex-basis-0 // ADDED flex-grow and flex-basis-0
                   border-gray-600 bg-gradient-to-b from-gray-700 to-gray-800 text-gray-300
-                  hover:shadow-[0_0_15px_0px_rgba(184,134,11,0.5)] hover:border-[#F0E68C] hover:text-[#F0E68C] hover:bg-gradient-to-b hover:from-[#B8860B]/40 hover:to-[#B8860B]/90
-                `)}
+                `,
+                  sweepstakesGame && sweepstakesGame.isLive
+                    ? 'hover:shadow-[0_0_15px_0px_rgba(239,68,68,0.5)] hover:border-red-500 hover:text-red-400 hover:bg-gradient-to-b hover:from-red-600/40 hover:to-red-600/90'
+                    : 'hover:shadow-[0_0_15px_0px_rgba(184,134,11,0.5)] hover:border-[#F0E68C] hover:text-[#F0E68C] hover:bg-gradient-to-b hover:from-[#B8860B]/40 hover:to-[#B8860B]/90'
+                )}
                 data-tour-allow="sweepstakes"
               >
                  <div className="relative z-10 flex flex-col items-center justify-center">

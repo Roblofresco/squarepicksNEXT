@@ -25,7 +25,7 @@ function SweepstakesScoreboardComponent({
   homeScore,
   timeRemaining,
 }: SweepstakesScoreboardProps) {
-  const isLive = status === 'live';
+  const isLive = status === 'live' || status === 'in_progress';
   const isUpcoming = status === 'upcoming';
   const isFinal = status === 'final';
 

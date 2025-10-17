@@ -940,217 +940,169 @@ function GamePageContent() {
                 {/* Q1 */}
                 <div 
                   className={cn(
-                    "px-2 py-2.5 rounded-lg border font-medium min-h-[64px] transition-all duration-300 relative overflow-hidden",
+                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all",
                     q1WinningSquare 
-                      ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
-                      : "border-slate-700/50 bg-slate-800/30 text-slate-500"
+                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
+                      : "bg-black/30"
                   )}
-                  style={{ perspective: "1000px" }}
                 >
-                  <motion.div
-                    initial="off"
-                    animate={q1WinningSquare && showWinnerAnimation ? "on" : "off"}
-                    variants={switchVariants}
-                    transition={{ delay: 0 }}
-                    style={{ 
-                      transformStyle: "preserve-3d",
-                      position: "relative",
-                    }}
-                    className="flex flex-col items-center justify-center"
-                  >
-                    {/* Front face - UNASSIGNED */}
-                    <motion.div
-                      style={{ 
-                        backfaceVisibility: "hidden",
-                        position: q1WinningSquare ? "absolute" : "relative",
-                        width: "100%",
-                      }}
-                      className="flex flex-col items-center justify-center"
-                    >
-                      <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
-                      <Separator className="my-0.5 bg-current opacity-30" />
-                      <div className="text-[10px] mt-1.5 uppercase tracking-wide">1st Qtr</div>
-                    </motion.div>
-
-                    {/* Back face - ASSIGNED */}
-                    {q1WinningSquare && (
-                      <motion.div
-                        style={{ 
-                          backfaceVisibility: "hidden",
-                          transform: "rotateX(180deg)",
-                          position: "absolute",
-                          width: "100%",
-                        }}
-                        className="flex flex-col items-center justify-center"
-                      >
-                        <div className="text-[10px] mb-1.5 uppercase tracking-wide">1st Qtr</div>
-                        <Separator className="my-0.5 bg-current opacity-30" />
-                        <div className="text-lg font-bold mt-1.5 tabular-nums">{q1WinningSquare}</div>
-                      </motion.div>
-                    )}
-                  </motion.div>
+                  {q1WinningSquare ? (
+                    <>
+                      {/* Assigned: Label container top, Number container bottom */}
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-xs font-semibold uppercase text-white">
+                          Q1
+                        </span>
+                      </div>
+                      <Separator className="my-1 w-full bg-white/20" />
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-2xl font-bold font-mono text-white">
+                          {q1WinningSquare}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Unassigned: Dashes container top, Label container bottom */}
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-2xl font-bold text-gray-500">
+                          --
+                        </span>
+                      </div>
+                      <Separator className="my-1 w-full bg-white/20" />
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-xs font-semibold uppercase text-gray-400">
+                          Q1
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 
                 {/* Q2 */}
                 <div 
                   className={cn(
-                    "px-2 py-2.5 rounded-lg border font-medium min-h-[64px] transition-all duration-300 relative overflow-hidden",
+                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all",
                     q2WinningSquare 
-                      ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
-                      : "border-slate-700/50 bg-slate-800/30 text-slate-500"
+                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
+                      : "bg-black/30"
                   )}
-                  style={{ perspective: "1000px" }}
                 >
-                  <motion.div
-                    initial="off"
-                    animate={q2WinningSquare && showWinnerAnimation ? "on" : "off"}
-                    variants={switchVariants}
-                    transition={{ delay: 0.15 }}
-                    style={{ 
-                      transformStyle: "preserve-3d",
-                      position: "relative",
-                    }}
-                    className="flex flex-col items-center justify-center"
-                  >
-                    {/* Front face - UNASSIGNED */}
-                    <motion.div
-                      style={{ 
-                        backfaceVisibility: "hidden",
-                        position: q2WinningSquare ? "absolute" : "relative",
-                        width: "100%",
-                      }}
-                      className="flex flex-col items-center justify-center"
-                    >
-                      <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
-                      <Separator className="my-0.5 bg-current opacity-30" />
-                      <div className="text-[10px] mt-1.5 uppercase tracking-wide">2nd Qtr</div>
-                    </motion.div>
-
-                    {/* Back face - ASSIGNED */}
-                    {q2WinningSquare && (
-                      <motion.div
-                        style={{ 
-                          backfaceVisibility: "hidden",
-                          transform: "rotateX(180deg)",
-                          position: "absolute",
-                          width: "100%",
-                        }}
-                        className="flex flex-col items-center justify-center"
-                      >
-                        <div className="text-[10px] mb-1.5 uppercase tracking-wide">2nd Qtr</div>
-                        <Separator className="my-0.5 bg-current opacity-30" />
-                        <div className="text-lg font-bold mt-1.5 tabular-nums">{q2WinningSquare}</div>
-                      </motion.div>
-                    )}
-                  </motion.div>
+                  {q2WinningSquare ? (
+                    <>
+                      {/* Assigned: Label container top, Number container bottom */}
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-xs font-semibold uppercase text-white">
+                          Q2
+                        </span>
+                      </div>
+                      <Separator className="my-1 w-full bg-white/20" />
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-2xl font-bold font-mono text-white">
+                          {q2WinningSquare}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Unassigned: Dashes container top, Label container bottom */}
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-2xl font-bold text-gray-500">
+                          --
+                        </span>
+                      </div>
+                      <Separator className="my-1 w-full bg-white/20" />
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-xs font-semibold uppercase text-gray-400">
+                          Q2
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 
                 {/* Q3 */}
                 <div 
                   className={cn(
-                    "px-2 py-2.5 rounded-lg border font-medium min-h-[64px] transition-all duration-300 relative overflow-hidden",
+                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all",
                     q3WinningSquare 
-                      ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
-                      : "border-slate-700/50 bg-slate-800/30 text-slate-500"
+                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
+                      : "bg-black/30"
                   )}
-                  style={{ perspective: "1000px" }}
                 >
-                  <motion.div
-                    initial="off"
-                    animate={q3WinningSquare && showWinnerAnimation ? "on" : "off"}
-                    variants={switchVariants}
-                    transition={{ delay: 0.3 }}
-                    style={{ 
-                      transformStyle: "preserve-3d",
-                      position: "relative",
-                    }}
-                    className="flex flex-col items-center justify-center"
-                  >
-                    {/* Front face - UNASSIGNED */}
-                    <motion.div
-                      style={{ 
-                        backfaceVisibility: "hidden",
-                        position: q3WinningSquare ? "absolute" : "relative",
-                        width: "100%",
-                      }}
-                      className="flex flex-col items-center justify-center"
-                    >
-                      <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
-                      <Separator className="my-0.5 bg-current opacity-30" />
-                      <div className="text-[10px] mt-1.5 uppercase tracking-wide">3rd Qtr</div>
-                    </motion.div>
-
-                    {/* Back face - ASSIGNED */}
-                    {q3WinningSquare && (
-                      <motion.div
-                        style={{ 
-                          backfaceVisibility: "hidden",
-                          transform: "rotateX(180deg)",
-                          position: "absolute",
-                          width: "100%",
-                        }}
-                        className="flex flex-col items-center justify-center"
-                      >
-                        <div className="text-[10px] mb-1.5 uppercase tracking-wide">3rd Qtr</div>
-                        <Separator className="my-0.5 bg-current opacity-30" />
-                        <div className="text-lg font-bold mt-1.5 tabular-nums">{q3WinningSquare}</div>
-                      </motion.div>
-                    )}
-                  </motion.div>
+                  {q3WinningSquare ? (
+                    <>
+                      {/* Assigned: Label container top, Number container bottom */}
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-xs font-semibold uppercase text-white">
+                          Q3
+                        </span>
+                      </div>
+                      <Separator className="my-1 w-full bg-white/20" />
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-2xl font-bold font-mono text-white">
+                          {q3WinningSquare}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Unassigned: Dashes container top, Label container bottom */}
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-2xl font-bold text-gray-500">
+                          --
+                        </span>
+                      </div>
+                      <Separator className="my-1 w-full bg-white/20" />
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-xs font-semibold uppercase text-gray-400">
+                          Q3
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 
                 {/* FINAL */}
                 <div 
                   className={cn(
-                    "px-2 py-2.5 rounded-lg border font-medium min-h-[64px] transition-all duration-300 relative overflow-hidden",
+                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all",
                     finalWinningSquare 
-                      ? "border-accent-1/40 bg-accent-1/15 text-accent-1 shadow-[0_0_12px_rgba(27,176,242,0.15)]" 
-                      : "border-slate-700/50 bg-slate-800/30 text-slate-500"
+                      ? "bg-gradient-to-br from-[#DAA520] to-[#B8860B] border-2 border-[#B8860B]" 
+                      : "bg-black/30"
                   )}
-                  style={{ perspective: "1000px" }}
                 >
-                  <motion.div
-                    initial="off"
-                    animate={finalWinningSquare && showWinnerAnimation ? "on" : "off"}
-                    variants={switchVariants}
-                    transition={{ delay: 0.45 }}
-                    style={{ 
-                      transformStyle: "preserve-3d",
-                      position: "relative",
-                    }}
-                    className="flex flex-col items-center justify-center"
-                  >
-                    {/* Front face - UNASSIGNED */}
-                    <motion.div
-                      style={{ 
-                        backfaceVisibility: "hidden",
-                        position: finalWinningSquare ? "absolute" : "relative",
-                        width: "100%",
-                      }}
-                      className="flex flex-col items-center justify-center"
-                    >
-                      <div className="text-lg font-bold mb-1.5 tabular-nums">--</div>
-                      <Separator className="my-0.5 bg-current opacity-30" />
-                      <div className="text-[10px] mt-1.5 uppercase tracking-wide">Final</div>
-                    </motion.div>
-
-                    {/* Back face - ASSIGNED */}
-                    {finalWinningSquare && (
-                      <motion.div
-                        style={{ 
-                          backfaceVisibility: "hidden",
-                          transform: "rotateX(180deg)",
-                          position: "absolute",
-                          width: "100%",
-                        }}
-                        className="flex flex-col items-center justify-center"
-                      >
-                        <div className="text-[10px] mb-1.5 uppercase tracking-wide">Final</div>
-                        <Separator className="my-0.5 bg-current opacity-30" />
-                        <div className="text-lg font-bold mt-1.5 tabular-nums">{finalWinningSquare}</div>
-                      </motion.div>
-                    )}
-                  </motion.div>
+                  {finalWinningSquare ? (
+                    <>
+                      {/* Assigned: Label container top, Number container bottom */}
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-xs font-semibold uppercase text-white">
+                          Final
+                        </span>
+                      </div>
+                      <Separator className="my-1 w-full bg-white/20" />
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-2xl font-bold font-mono text-white">
+                          {finalWinningSquare}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Unassigned: Dashes container top, Label container bottom */}
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-2xl font-bold text-gray-500">
+                          --
+                        </span>
+                      </div>
+                      <Separator className="my-1 w-full bg-white/20" />
+                      <div className="w-full flex items-center justify-center">
+                        <span className="text-xs font-semibold uppercase text-gray-400">
+                          Final
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

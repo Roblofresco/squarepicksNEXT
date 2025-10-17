@@ -91,23 +91,29 @@ export default function SweepstakesWinnersScoreboard({
             >
               {isAssigned ? (
                 <>
-                  {/* Assigned: Label top, Number bottom */}
-                  <span className={cn("text-xs font-semibold uppercase", colors.text)}>
-                    {pill.label}
-                  </span>
+                  {/* Assigned: Label container top, Number container bottom */}
+                  <div className="w-full flex items-center justify-center">
+                    <span className={cn("text-xs font-semibold uppercase", colors.text)}>
+                      {pill.label}
+                    </span>
+                  </div>
                   <Separator className="my-1 w-full bg-white/20" />
-                  <span className={cn("text-2xl font-bold font-mono", colors.text)}>
-                    {pill.number}
-                  </span>
+                  <div className="w-full flex items-center justify-center">
+                    <span className={cn("text-2xl font-bold font-mono", colors.text)}>
+                      {pill.number}
+                    </span>
+                  </div>
                 </>
               ) : (
                 <>
-                  {/* Unassigned: -- top, Label bottom */}
-                  <span className="text-2xl font-bold text-gray-500">
-                    --
-                  </span>
+                  {/* Unassigned: Dashes container top, Label container bottom with gold gradient */}
+                  <div className="w-full flex items-center justify-center">
+                    <span className="text-2xl font-bold text-gray-500">
+                      --
+                    </span>
+                  </div>
                   <Separator className="my-1 w-full bg-white/20" />
-                  <div className="w-full rounded-b-lg bg-gradient-to-br from-[#B8860B]/40 to-[#A0740A]/40 flex items-center justify-center py-1 px-2">
+                  <div className="w-full bg-gradient-to-br from-[#B8860B]/40 to-[#A0740A]/40 flex items-center justify-center py-1 px-2">
                     <span className="text-xs font-semibold uppercase text-gray-400">
                       {pill.label}
                     </span>

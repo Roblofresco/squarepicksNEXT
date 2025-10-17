@@ -108,27 +108,29 @@ function SweepstakesScoreboardComponent({
         <div className="flex flex-col items-center text-center flex-1">
           <div className="relative bg-black/10 rounded-lg p-2 shadow-inner w-full flex flex-col items-center flex-grow">
             {/* Logo with 30% opacity for live games */}
-            <div className={cn(
-              "relative w-16 h-16 mb-2",
-              isLive && "opacity-30"  // 30% opacity for live games
-            )}>
-              {awayTeam.logo ? (
-                <Image 
-                  src={awayTeam.logo} 
-                  alt={`${awayTeam.fullName} logo`}
-                  fill
-                  className="object-contain"
-                  style={{
-                    filter: awayTeam.seccolor 
-                      ? `drop-shadow(0 0 4px ${awayTeam.seccolor}80)` 
-                      : 'none'
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-700 rounded-full flex items-center justify-center text-white text-xs">?</div>
-              )}
+            <div className="relative w-16 h-16 mb-2">
+              <div className={cn(
+                "w-full h-full",
+                isLive && "opacity-30"  // 30% opacity for live games
+              )}>
+                {awayTeam.logo ? (
+                  <Image 
+                    src={awayTeam.logo} 
+                    alt={`${awayTeam.fullName} logo`}
+                    fill
+                    className="object-contain"
+                    style={{
+                      filter: awayTeam.seccolor 
+                        ? `drop-shadow(0 0 4px ${awayTeam.seccolor}80)` 
+                        : 'none'
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-700 rounded-full flex items-center justify-center text-white text-xs">?</div>
+                )}
+              </div>
               
-              {/* Score overlay for live games */}
+              {/* Score overlay for live games - outside logo container to avoid opacity inheritance */}
               {isLive && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span 
@@ -187,27 +189,29 @@ function SweepstakesScoreboardComponent({
         <div className="flex flex-col items-center text-center flex-1">
           <div className="relative bg-black/10 rounded-lg p-2 shadow-inner w-full flex flex-col items-center flex-grow">
             {/* Logo with 30% opacity for live games */}
-            <div className={cn(
-              "relative w-16 h-16 mb-2",
-              isLive && "opacity-30"  // 30% opacity for live games
-            )}>
-              {homeTeam.logo ? (
-                <Image 
-                  src={homeTeam.logo} 
-                  alt={`${homeTeam.fullName} logo`}
-                  fill
-                  className="object-contain"
-                  style={{
-                    filter: homeTeam.seccolor 
-                      ? `drop-shadow(0 0 4px ${homeTeam.seccolor}80)` 
-                      : 'none'
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-700 rounded-full flex items-center justify-center text-white text-xs">?</div>
-              )}
+            <div className="relative w-16 h-16 mb-2">
+              <div className={cn(
+                "w-full h-full",
+                isLive && "opacity-30"  // 30% opacity for live games
+              )}>
+                {homeTeam.logo ? (
+                  <Image 
+                    src={homeTeam.logo} 
+                    alt={`${homeTeam.fullName} logo`}
+                    fill
+                    className="object-contain"
+                    style={{
+                      filter: homeTeam.seccolor 
+                        ? `drop-shadow(0 0 4px ${homeTeam.seccolor}80)` 
+                        : 'none'
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-700 rounded-full flex items-center justify-center text-white text-xs">?</div>
+                )}
+              </div>
               
-              {/* Score overlay for live games */}
+              {/* Score overlay for live games - outside logo container to avoid opacity inheritance */}
               {isLive && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span 

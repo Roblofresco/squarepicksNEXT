@@ -49,14 +49,10 @@ export default function SweepstakesWinnersScoreboard({
   };
 
   const accentGlowRgb = '184, 134, 11'; // Same as SweepstakesBoardCard
-  const gradientStyle = { 
-    background: `linear-gradient(to bottom, rgb(var(--color-background-primary)) 0%, #B8860B 15%, #B8860B 100%)` 
-  };
 
   return (
     <div 
-      className="p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 mb-20"
-      style={gradientStyle}
+      className="bg-gradient-to-b from-background-primary to-[#B8860B] p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 mb-20"
     >
       <h3 className="text-white text-lg font-bold mb-4 text-center">
         Winning Squares

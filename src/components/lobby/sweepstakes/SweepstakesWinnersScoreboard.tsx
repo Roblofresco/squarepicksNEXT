@@ -66,7 +66,7 @@ export default function SweepstakesWinnersScoreboard({
         {pills.map((pill, idx) => {
           const isAssigned = !!pill.number;
           const colors = getPillColor(pill.period, isAssigned);
-          const isCurrent = isLive && currentQuarter === idx + 1;
+          const isCurrent = isLive && !isAssigned && currentQuarter === idx + 1;
 
           return (
             <motion.div

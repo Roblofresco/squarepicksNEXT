@@ -18,8 +18,6 @@ export default function Footer() {
           <div className="flex flex-col items-center space-y-2 text-xs sm:text-sm text-slate-400">
             <div className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-4">
               <span>© 2025 SquarePicks</span>
-              <span className="hidden sm:inline">•</span>
-              <span className="text-slate-500">Play Responsibly. 21+</span>
             </div>
           </div>
         </div>

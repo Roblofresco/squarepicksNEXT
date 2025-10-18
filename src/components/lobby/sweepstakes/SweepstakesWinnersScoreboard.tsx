@@ -37,11 +37,12 @@ export default function SweepstakesWinnersScoreboard({
 
   useEffect(() => {
     pills.forEach((pill, idx) => {
-      if (pill.number) {  // Only for assigned pills
-        setTimeout(() => {
+      setTimeout(() => {
+        // Check if pill has a number when timeout fires
+        if (pill.number) {
           setShowingAssigned(prev => ({ ...prev, [pill.period]: true }));
-        }, idx * 150 + 400);  // Q1: 400ms, Q2: 550ms, Q3: 700ms, Final: 850ms
-      }
+        }
+      }, idx * 150 + 400);  // Q1: 400ms, Q2: 550ms, Q3: 700ms, Final: 850ms
     });
   }, [q1WinningSquare, q2WinningSquare, q3WinningSquare, finalWinningSquare]);
 
@@ -77,7 +78,6 @@ export default function SweepstakesWinnersScoreboard({
           const colors = getPillColor(pill.period, isAssigned);
           const isCurrent = isLive && !isAssigned && currentQuarter === idx + 1;
           const shouldShowAssigned = showingAssigned[pill.period];
-          const displayAsAssigned = isAssigned && shouldShowAssigned;
 
           return (
             <div
@@ -93,12 +93,10 @@ export default function SweepstakesWinnersScoreboard({
               )}
             >
               <AnimatePresence mode="wait">
-                {!displayAsAssigned ? (
+                {!shouldShowAssigned ? (
                   // UNASSIGNED VIEW (initial state for assigned pills)
-                  <motion.div
+                  <div
                     key="unassigned"
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.25 }}
                     className="absolute top-0 left-0 right-0 bottom-0 flex flex-col"
                   >
                     <div className="flex-1 flex items-center justify-center">
@@ -110,7 +108,7 @@ export default function SweepstakesWinnersScoreboard({
                         {pill.label}
                       </span>
                     </div>
-                  </motion.div>
+                  </div>
                 ) : (
                   // ASSIGNED VIEW (after animation triggers)
                   <motion.div

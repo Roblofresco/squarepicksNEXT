@@ -52,7 +52,7 @@ export default function SweepstakesWinnersScoreboard({
 
   return (
     <div 
-      className="bg-gradient-to-b from-background-primary from-0% to-[#B8860B] to-10% p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 mb-20"
+      className="bg-gradient-to-b from-background-primary from-0% to-[#B8860B] to-15% p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 mb-20"
     >
       <h3 className="text-white text-lg font-bold mb-4 text-center">
         Winning Squares

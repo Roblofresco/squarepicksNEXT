@@ -21,9 +21,6 @@ export default function Footer() {
               <span className="hidden sm:inline">•</span>
               <span className="text-slate-500">Play Responsibly. 21+</span>
             </div>
-            <div className="text-slate-500 text-xs">
-              Licensed and regulated gaming platform
-            </div>
           </div>
         </div>
       </div>

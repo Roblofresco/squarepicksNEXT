@@ -930,223 +930,6 @@ function GamePageContent() {
               </div>
             </div>
 
-            {/* Winners scoreboard - Only show for live and final games */}
-            {(effectiveView === 'live' || effectiveView === 'final') && (
-            <div className="max-w-3xl mx-auto px-2 py-3 rounded-lg bg-slate-900/30 border border-white/5">
-              <div className="text-[10px] sm:text-xs text-slate-400 mb-2 text-center font-medium">
-                Winners
-              </div>
-              <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-md mx-auto">
-                {/* Q1 */}
-                {(() => {
-                  const isQ1Current = gameDetails?.status === 'live' && !q1WinningSquare && Number(gameDetails.quarter) === 1;
-                  return (
-                <div 
-                  className={cn(
-                        "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
-                        "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
-                        "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                    q1WinningSquare 
-                          ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
-                          : "bg-black/30",
-                        isQ1Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
-                      )}
-                    >
-                      {q1WinningSquare ? (
-                    <>
-                      {/* Assigned: Label container top, Number container bottom */}
-                      <div className="w-full flex items-center justify-center">
-                        <span className="text-xs font-semibold uppercase text-white">
-                          Q1
-                        </span>
-                      </div>
-                      <Separator className="my-1 w-full bg-white/20" />
-                      <div className="w-full flex items-center justify-center">
-                        <span className="text-2xl font-bold font-mono text-white">
-                          {q1WinningSquare}
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Unassigned: Dashes container top, Label container bottom */}
-                      <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
-                        <div className="flex-1 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-gray-500">
-                            --
-                          </span>
-                        </div>
-                        <Separator className="w-full bg-white/20" />
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
-                          <span className="text-xs font-semibold uppercase text-gray-400">
-                            Q1
-                          </span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-                  );
-                })()}
-                
-                {/* Q2 */}
-                {(() => {
-                  const isQ2Current = gameDetails?.status === 'live' && !q2WinningSquare && Number(gameDetails.quarter) === 2;
-                  return (
-                <div 
-                  className={cn(
-                        "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
-                        "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
-                        "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                    q2WinningSquare 
-                          ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
-                          : "bg-black/30",
-                        isQ2Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
-                      )}
-                    >
-                      {q2WinningSquare ? (
-                    <>
-                      {/* Assigned: Label container top, Number container bottom */}
-                      <div className="w-full flex items-center justify-center">
-                        <span className="text-xs font-semibold uppercase text-white">
-                          Q2
-                        </span>
-                      </div>
-                      <Separator className="my-1 w-full bg-white/20" />
-                      <div className="w-full flex items-center justify-center">
-                        <span className="text-2xl font-bold font-mono text-white">
-                          {q2WinningSquare}
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Unassigned: Dashes container top, Label container bottom */}
-                      <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
-                        <div className="flex-1 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-gray-500">
-                            --
-                          </span>
-                        </div>
-                        <Separator className="w-full bg-white/20" />
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
-                          <span className="text-xs font-semibold uppercase text-gray-400">
-                            Q2
-                          </span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-                  );
-                })()}
-                
-                {/* Q3 */}
-                {(() => {
-                  const isQ3Current = gameDetails?.status === 'live' && !q3WinningSquare && Number(gameDetails.quarter) === 3;
-                  return (
-                <div 
-                  className={cn(
-                        "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
-                        "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
-                        "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                    q3WinningSquare 
-                          ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
-                          : "bg-black/30",
-                        isQ3Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
-                      )}
-                    >
-                      {q3WinningSquare ? (
-                    <>
-                      {/* Assigned: Label container top, Number container bottom */}
-                      <div className="w-full flex items-center justify-center">
-                        <span className="text-xs font-semibold uppercase text-white">
-                          Q3
-                        </span>
-                      </div>
-                      <Separator className="my-1 w-full bg-white/20" />
-                      <div className="w-full flex items-center justify-center">
-                        <span className="text-2xl font-bold font-mono text-white">
-                          {q3WinningSquare}
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Unassigned: Dashes container top, Label container bottom */}
-                      <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
-                        <div className="flex-1 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-gray-500">
-                            --
-                          </span>
-                        </div>
-                        <Separator className="w-full bg-white/20" />
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
-                          <span className="text-xs font-semibold uppercase text-gray-400">
-                            Q3
-                          </span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-                  );
-                })()}
-                
-                {/* FINAL */}
-                {(() => {
-                  const isFinalCurrent = gameDetails?.status === 'live' && !finalWinningSquare && Number(gameDetails.quarter) === 4;
-                  return (
-                <div 
-                  className={cn(
-                        "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
-                        "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
-                        "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                    finalWinningSquare 
-                          ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
-                          : "bg-black/30",
-                        isFinalCurrent && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
-                      )}
-                    >
-                      {finalWinningSquare ? (
-                    <>
-                      {/* Assigned: Label container top, Number container bottom */}
-                      <div className="w-full flex items-center justify-center">
-                        <span className="text-xs font-semibold uppercase text-white">
-                          Final
-                        </span>
-                      </div>
-                      <Separator className="my-1 w-full bg-white/20" />
-                      <div className="w-full flex items-center justify-center">
-                        <span className="text-2xl font-bold font-mono text-white">
-                          {finalWinningSquare}
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Unassigned: Dashes container top, Label container bottom */}
-                      <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
-                        <div className="flex-1 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-gray-500">
-                            --
-                          </span>
-                        </div>
-                        <Separator className="w-full bg-white/20" />
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
-                          <span className="text-xs font-semibold uppercase text-gray-400">
-                            Final
-                          </span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-                  );
-                })()}
-              </div>
-            </div>
-            )}
           </div>
 
           {error && <p className="text-center text-red-400 mb-3 bg-red-900/30 p-2 rounded-md">Error: {error}</p>} 
@@ -1193,7 +976,226 @@ function GamePageContent() {
               {renderGrid()}
             </div>
           )}
-          {gameDetails && (gameDetails.status === 'live' || gameDetails.status === 'final') && (
+          {gameDetails && gameDetails.status === 'live' && (
+            <div className="mb-6">
+              {/* Winners scoreboard */}
+              <div className="max-w-3xl mx-auto px-2 py-3 rounded-lg bg-slate-900/30 border border-white/5">
+                <div className="text-[10px] sm:text-xs text-slate-400 mb-2 text-center font-medium">
+                  Winners
+                </div>
+                <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-md mx-auto">
+                  {/* Q1 */}
+                  {(() => {
+                    const isQ1Current = gameDetails?.status === 'live' && !q1WinningSquare && Number(gameDetails.quarter) === 1;
+                    return (
+                  <div 
+                    className={cn(
+                          "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                          "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                          "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+                      q1WinningSquare 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            : "bg-black/30",
+                          isQ1Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
+                        )}
+                      >
+                        {q1WinningSquare ? (
+                      <>
+                        {/* Assigned: Label container top, Number container bottom */}
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-xs font-semibold uppercase text-white">
+                            Q1
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold font-mono text-white">
+                            {q1WinningSquare}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Unassigned: Dashes container top, Label container bottom */}
+                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
+                          <div className="flex-1 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-gray-500">
+                              --
+                            </span>
+                          </div>
+                          <Separator className="w-full bg-white/20" />
+                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                            <span className="text-xs font-semibold uppercase text-gray-400">
+                              Q1
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                    );
+                  })()}
+                  
+                  {/* Q2 */}
+                  {(() => {
+                    const isQ2Current = gameDetails?.status === 'live' && !q2WinningSquare && Number(gameDetails.quarter) === 2;
+                    return (
+                  <div 
+                    className={cn(
+                          "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                          "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                          "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+                      q2WinningSquare 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            : "bg-black/30",
+                          isQ2Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
+                        )}
+                      >
+                        {q2WinningSquare ? (
+                      <>
+                        {/* Assigned: Label container top, Number container bottom */}
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-xs font-semibold uppercase text-white">
+                            Q2
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold font-mono text-white">
+                            {q2WinningSquare}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Unassigned: Dashes container top, Label container bottom */}
+                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
+                          <div className="flex-1 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-gray-500">
+                              --
+                            </span>
+                          </div>
+                          <Separator className="w-full bg-white/20" />
+                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                            <span className="text-xs font-semibold uppercase text-gray-400">
+                              Q2
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                    );
+                  })()}
+                  
+                  {/* Q3 */}
+                  {(() => {
+                    const isQ3Current = gameDetails?.status === 'live' && !q3WinningSquare && Number(gameDetails.quarter) === 3;
+                    return (
+                  <div 
+                    className={cn(
+                          "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                          "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                          "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+                      q3WinningSquare 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            : "bg-black/30",
+                          isQ3Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
+                        )}
+                      >
+                        {q3WinningSquare ? (
+                      <>
+                        {/* Assigned: Label container top, Number container bottom */}
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-xs font-semibold uppercase text-white">
+                            Q3
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold font-mono text-white">
+                            {q3WinningSquare}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Unassigned: Dashes container top, Label container bottom */}
+                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
+                          <div className="flex-1 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-gray-500">
+                              --
+                            </span>
+                          </div>
+                          <Separator className="w-full bg-white/20" />
+                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                            <span className="text-xs font-semibold uppercase text-gray-400">
+                              Q3
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                    );
+                  })()}
+                  
+                  {/* FINAL */}
+                  {(() => {
+                    const isFinalCurrent = gameDetails?.status === 'live' && !finalWinningSquare && Number(gameDetails.quarter) === 4;
+                    return (
+                  <div 
+                    className={cn(
+                          "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                          "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                          "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+                      finalWinningSquare 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            : "bg-black/30",
+                          isFinalCurrent && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
+                        )}
+                      >
+                        {finalWinningSquare ? (
+                      <>
+                        {/* Assigned: Label container top, Number container bottom */}
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-xs font-semibold uppercase text-white">
+                            Final
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold font-mono text-white">
+                            {finalWinningSquare}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Unassigned: Dashes container top, Label container bottom */}
+                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
+                          <div className="flex-1 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-gray-500">
+                              --
+                            </span>
+                          </div>
+                          <Separator className="w-full bg-white/20" />
+                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                            <span className="text-xs font-semibold uppercase text-gray-400">
+                              Final
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
+          {gameDetails && gameDetails.status === 'final' && (
             <div className="mb-6">
               {renderGrid()}
             </div>

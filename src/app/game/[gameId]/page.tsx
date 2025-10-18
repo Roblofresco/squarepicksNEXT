@@ -944,7 +944,7 @@ function GamePageContent() {
                     "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                     "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     q1WinningSquare 
-                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
+                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                       : "bg-black/30"
                   )}
                 >
@@ -990,7 +990,7 @@ function GamePageContent() {
                     "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                     "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     q2WinningSquare 
-                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
+                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                       : "bg-black/30"
                   )}
                 >
@@ -1036,7 +1036,7 @@ function GamePageContent() {
                     "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                     "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     q3WinningSquare 
-                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
+                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                       : "bg-black/30"
                   )}
                 >
@@ -1082,7 +1082,7 @@ function GamePageContent() {
                     "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                     "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     finalWinningSquare 
-                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
+                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                       : "bg-black/30"
                   )}
                 >

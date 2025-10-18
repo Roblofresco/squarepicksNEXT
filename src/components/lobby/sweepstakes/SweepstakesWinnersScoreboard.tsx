@@ -43,7 +43,7 @@ export default function SweepstakesWinnersScoreboard({
     
     return {
       bg: 'bg-gradient-to-br from-[#B8860B] to-[#A0740A]',
-      border: 'border-[#B8860B]',
+      border: '',
       text: 'text-white'
     };
   };

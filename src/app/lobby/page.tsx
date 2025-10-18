@@ -1000,7 +1000,7 @@ function LobbyContent() {
     <div className="relative w-full min-h-screen flex flex-col bg-background-primary">
       <Toaster position="top-center" />
       <div className={`sticky top-0 ${entryInteraction.stage === 'confirming' ? 'z-50' : 'z-20'}`}><InAppHeader showBalancePill={entryInteraction.stage !== 'idle'} balance={balance} onReplayTour={handleReplayTour} /></div>
-      <div className="flex-grow pb-20">
+      <div className="flex-grow pb-4">
         <main className="px-4 py-2"> 
           <div className="w-full">
             <div data-tour="sport-selector">
@@ -1144,7 +1144,6 @@ function LobbyContent() {
                               );
                             }
                           })()}
-                          <p className="text-xs text-gray-400 mt-2">Free weekly entry. Numbers assigned at game time.</p>
                         </div>
                       ) : (
                          <div className="text-center text-gray-400 py-10 mt-6">

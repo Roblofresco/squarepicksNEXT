@@ -939,14 +939,14 @@ function GamePageContent() {
               <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-md mx-auto">
                 {/* Q1 */}
                 {(() => {
-                  const isQ1Current = gameDetails?.status === 'live' && !q1WinningSquare && gameDetails.quarter === 1;
+                  const isQ1Current = gameDetails?.status === 'live' && !q1WinningSquare && Number(gameDetails.quarter) === 1;
                   return (
-                    <div 
-                      className={cn(
+                <div 
+                  className={cn(
                         "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
                         "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                         "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                        q1WinningSquare 
+                    q1WinningSquare 
                           ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                           : "bg-black/30",
                         isQ1Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
@@ -985,20 +985,20 @@ function GamePageContent() {
                       </div>
                     </>
                   )}
-                    </div>
+                </div>
                   );
                 })()}
                 
                 {/* Q2 */}
                 {(() => {
-                  const isQ2Current = gameDetails?.status === 'live' && !q2WinningSquare && gameDetails.quarter === 2;
+                  const isQ2Current = gameDetails?.status === 'live' && !q2WinningSquare && Number(gameDetails.quarter) === 2;
                   return (
-                    <div 
-                      className={cn(
+                <div 
+                  className={cn(
                         "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
                         "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                         "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                        q2WinningSquare 
+                    q2WinningSquare 
                           ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                           : "bg-black/30",
                         isQ2Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
@@ -1037,20 +1037,20 @@ function GamePageContent() {
                       </div>
                     </>
                   )}
-                    </div>
+                </div>
                   );
                 })()}
                 
                 {/* Q3 */}
                 {(() => {
-                  const isQ3Current = gameDetails?.status === 'live' && !q3WinningSquare && gameDetails.quarter === 3;
+                  const isQ3Current = gameDetails?.status === 'live' && !q3WinningSquare && Number(gameDetails.quarter) === 3;
                   return (
-                    <div 
-                      className={cn(
+                <div 
+                  className={cn(
                         "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
                         "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                         "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                        q3WinningSquare 
+                    q3WinningSquare 
                           ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                           : "bg-black/30",
                         isQ3Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
@@ -1089,20 +1089,20 @@ function GamePageContent() {
                       </div>
                     </>
                   )}
-                    </div>
+                </div>
                   );
                 })()}
                 
                 {/* FINAL */}
                 {(() => {
-                  const isFinalCurrent = gameDetails?.status === 'live' && !finalWinningSquare && gameDetails.quarter === 4;
+                  const isFinalCurrent = gameDetails?.status === 'live' && !finalWinningSquare && Number(gameDetails.quarter) === 4;
                   return (
-                    <div 
-                      className={cn(
+                <div 
+                  className={cn(
                         "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
                         "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                         "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                        finalWinningSquare 
+                    finalWinningSquare 
                           ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                           : "bg-black/30",
                         isFinalCurrent && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
@@ -1141,7 +1141,7 @@ function GamePageContent() {
                       </div>
                     </>
                   )}
-                    </div>
+                </div>
                   );
                 })()}
               </div>

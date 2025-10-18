@@ -1,11 +1,15 @@
 // Centralized types for MyBoards
 
 export interface TeamInfo {
+  id?: string;
   name: string;
+  fullName?: string;
+  initials: string;
+  record?: string;
   logo?: string;
   color?: string;
+  seccolor?: string;
   textColor?: string;
-  initials?: string;
 }
 
 export interface BoardSquare {

@@ -12,7 +12,7 @@ import BottomNav from '@/components/lobby/BottomNav'; // Corrected Import Bottom
 import { auth, db } from '@/lib/firebase'; // Import auth and db
 import { User as FirebaseUser } from 'firebase/auth'; // Firebase user type
 import { 
-  collection, query, where, getDocs, doc, getDoc, DocumentData, Timestamp, onSnapshot 
+  collection, query, where, getDocs, doc, getDoc, DocumentData, Timestamp, onSnapshot, DocumentReference
 } from 'firebase/firestore'; // Firestore imports
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import {
@@ -25,6 +25,38 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
  
 
 // Remove interface/type definitions from this file (move to types/myBoards.ts)
+
+// Helper to fetch multiple team documents by their DocumentReferences
+const fetchMultipleTeams = async (teamRefs: DocumentReference[]): Promise<Record<string, TeamInfo>> => {
+  const uniqueTeamRefs = teamRefs.filter((ref, index, self) => 
+    ref && self.findIndex(r => r && r.id === ref.id) === index
+  );
+  if (uniqueTeamRefs.length === 0) return {};
+  
+  const teamsMap: Record<string, TeamInfo> = {};
+  const teamPromises = uniqueTeamRefs.map(async (teamRef) => {
+    try {
+      const teamSnap = await getDoc(teamRef);
+      if (teamSnap.exists()) {
+        const data = teamSnap.data();
+        teamsMap[teamSnap.id] = {
+          id: teamSnap.id,
+          name: data.name || 'N/A',
+          fullName: data.full_name || data.name || 'N/A',
+          initials: data.initials || 'N/A',
+          record: data.record || '0-0',
+          logo: data.logo || undefined,
+          color: data.color || undefined,
+          seccolor: data.seccolor || undefined,
+        };
+      }
+    } catch (error) {
+      console.error(`Failed to fetch team ${teamRef.id}`, error);
+    }
+  });
+  await Promise.all(teamPromises);
+  return teamsMap;
+};
 
 export default function MyBoardsPage() {
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
@@ -105,6 +137,22 @@ export default function MyBoardsPage() {
         return;
       }
 
+      // Collect all team references for bulk fetching
+      const allTeamRefs: DocumentReference[] = [];
+      for (const boardDoc of Array.from(combinedDocs.values())) {
+        const boardData = boardDoc.data();
+        if (boardData.gameID) {
+          const gameDocSnap = await getDoc(doc(db, boardData.gameID.path));
+          if (gameDocSnap.exists()) {
+            const gameData = gameDocSnap.data();
+            if (gameData.home_team_id) allTeamRefs.push(gameData.home_team_id);
+            if (gameData.away_team_id) allTeamRefs.push(gameData.away_team_id);
+          }
+        }
+      }
+
+      const teamsMap = await fetchMultipleTeams(allTeamRefs);
+
       const userRelevantBoardsPromises = Array.from(combinedDocs.values()).map(async (boardDoc: any) => {
         const boardData = boardDoc.data();
         console.log(`[MyBoardsPage] Checking board ID: ${boardDoc.id}, Status: ${boardData.status}`);
@@ -150,20 +198,8 @@ export default function MyBoardsPage() {
           const gameDocSnap = await getDoc(doc(db, boardData.gameID.path));
           if (gameDocSnap.exists()) {
             gameData = gameDocSnap.data();
-            if (gameData.home_team_id && typeof gameData.home_team_id.path === 'string') {
-              const homeTeamSnap = await getDoc(doc(db, gameData.home_team_id.path));
-              if (homeTeamSnap.exists()) {
-                const htData = homeTeamSnap.data(); 
-                homeTeamData = { name: htData.name || "N/A", logo: htData.logo || undefined, initials: htData.initials || "N/A" };
-              }
-            }
-            if (gameData.away_team_id && typeof gameData.away_team_id.path === 'string') {
-              const awayTeamSnap = await getDoc(doc(db, gameData.away_team_id.path));
-              if (awayTeamSnap.exists()) {
-                 const atData = awayTeamSnap.data(); 
-                awayTeamData = { name: atData.name || "N/A", logo: atData.logo || undefined, initials: atData.initials || "N/A" };
-              }
-            }
+            homeTeamData = gameData.home_team_id ? teamsMap[gameData.home_team_id.id] : undefined;
+            awayTeamData = gameData.away_team_id ? teamsMap[gameData.away_team_id.id] : undefined;
           } else {
             console.warn(`[MyBoardsPage] Game document not found for gameID: ${boardData.gameID.path} (Board: ${boardDoc.id})`);
           }
@@ -310,6 +346,23 @@ export default function MyBoardsPage() {
       const finalStatuses: BoardStatus[] = ['FINAL_WON', 'FINAL_LOST', 'CANCELLED'];
       const boardsQuery = query(collection(db, 'boards'), where('status', 'in', finalStatuses));
       const boardSnapshots = await getDocs(boardsQuery);
+      
+      // Collect all team references for bulk fetching
+      const allTeamRefs: DocumentReference[] = [];
+      for (const boardDoc of boardSnapshots.docs) {
+        const boardData = boardDoc.data();
+        if (boardData.gameID) {
+          const gameDocSnap = await getDoc(doc(db, boardData.gameID.path));
+          if (gameDocSnap.exists()) {
+            const gameData = gameDocSnap.data();
+            if (gameData.home_team_id) allTeamRefs.push(gameData.home_team_id);
+            if (gameData.away_team_id) allTeamRefs.push(gameData.away_team_id);
+          }
+        }
+      }
+
+      const teamsMap = await fetchMultipleTeams(allTeamRefs);
+      
       const userBoards: AppBoard[] = [];
       for (const boardDoc of boardSnapshots.docs) {
         const boardData = boardDoc.data();
@@ -336,21 +389,8 @@ export default function MyBoardsPage() {
             const gameDocSnap = await getDoc(doc(db, boardData.gameID.path));
             if (gameDocSnap.exists()) {
               gameData = gameDocSnap.data();
-              // Populate team data as before...
-              if (gameData.home_team_id && typeof gameData.home_team_id.path === 'string') {
-                const homeTeamSnap = await getDoc(doc(db, gameData.home_team_id.path));
-                if (homeTeamSnap.exists()) {
-                  const htData = homeTeamSnap.data(); 
-                  homeTeamData = { name: htData.name || "N/A", logo: htData.logo || undefined, initials: htData.initials || "N/A" };
-                }
-              }
-              if (gameData.away_team_id && typeof gameData.away_team_id.path === 'string') {
-                const awayTeamSnap = await getDoc(doc(db, gameData.away_team_id.path));
-                if (awayTeamSnap.exists()) {
-                   const atData = awayTeamSnap.data(); 
-                  awayTeamData = { name: atData.name || "N/A", logo: atData.logo || undefined, initials: atData.initials || "N/A" };
-                }
-              }
+              homeTeamData = gameData.home_team_id ? teamsMap[gameData.home_team_id.id] : undefined;
+              awayTeamData = gameData.away_team_id ? teamsMap[gameData.away_team_id.id] : undefined;
             } else {
               console.warn(`[MyBoardsPage] Game document not found for gameID: ${boardData.gameID.path} (Board: ${boardDoc.id})`);
             }

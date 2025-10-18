@@ -940,7 +940,9 @@ function GamePageContent() {
                 {/* Q1 */}
                 <div 
                   className={cn(
-                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all",
+                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                    "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                    "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     q1WinningSquare 
                       ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
                       : "bg-black/30"
@@ -971,7 +973,7 @@ function GamePageContent() {
                           </span>
                         </div>
                         <Separator className="w-full bg-white/20" />
-                        <div className="bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg">
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-gray-400">
                             Q1
                           </span>
@@ -984,7 +986,9 @@ function GamePageContent() {
                 {/* Q2 */}
                 <div 
                   className={cn(
-                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all",
+                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                    "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                    "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     q2WinningSquare 
                       ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
                       : "bg-black/30"
@@ -1015,7 +1019,7 @@ function GamePageContent() {
                           </span>
                         </div>
                         <Separator className="w-full bg-white/20" />
-                        <div className="bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg">
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-gray-400">
                             Q2
                           </span>
@@ -1028,7 +1032,9 @@ function GamePageContent() {
                 {/* Q3 */}
                 <div 
                   className={cn(
-                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all",
+                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                    "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                    "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     q3WinningSquare 
                       ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
                       : "bg-black/30"
@@ -1059,7 +1065,7 @@ function GamePageContent() {
                           </span>
                         </div>
                         <Separator className="w-full bg-white/20" />
-                        <div className="bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg">
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-gray-400">
                             Q3
                           </span>
@@ -1072,9 +1078,11 @@ function GamePageContent() {
                 {/* FINAL */}
                 <div 
                   className={cn(
-                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all",
+                    "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                    "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                    "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     finalWinningSquare 
-                      ? "bg-gradient-to-br from-[#DAA520] to-[#B8860B] border-2 border-[#B8860B]" 
+                      ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] border-2 border-[#108bcc]" 
                       : "bg-black/30"
                   )}
                 >
@@ -1103,7 +1111,7 @@ function GamePageContent() {
                           </span>
                         </div>
                         <Separator className="w-full bg-white/20" />
-                        <div className="bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg">
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-gray-400">
                             Final
                           </span>

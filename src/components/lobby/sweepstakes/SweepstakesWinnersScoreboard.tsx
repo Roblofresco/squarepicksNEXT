@@ -75,7 +75,9 @@ export default function SweepstakesWinnersScoreboard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               className={cn(
-                "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all",
+                "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                 colors.bg,
                 colors.border && "border-2",
                 colors.border,
@@ -107,11 +109,11 @@ export default function SweepstakesWinnersScoreboard({
                       </span>
                     </div>
                     <Separator className="w-full bg-white/20" />
-                    <div className="bg-gradient-to-br from-[#B8860B] to-[#A0740A] flex items-center justify-center py-3 rounded-b-lg">
-                      <span className="text-xs font-semibold uppercase text-gray-400">
-                        {pill.label}
-                      </span>
-                    </div>
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#B8860B] to-[#A0740A] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                          <span className="text-xs font-semibold uppercase text-gray-400">
+                            {pill.label}
+                          </span>
+                        </div>
                   </div>
                 </>
               )}

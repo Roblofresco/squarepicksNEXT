@@ -21,6 +21,7 @@ import TourGamesList from '@/components/lobby/TourGamesList';
 import TourBoardCard from '@/components/lobby/TourBoardCard';
 import BoardsList from '@/components/lobby/BoardsList';
 import BottomNav from '@/components/lobby/BottomNav';
+import Footer from '@/components/Footer';
 import InAppHeader from '@/components/InAppHeader';
 import { Game as GameType, Board as BoardType, TeamInfo } from '@/types/lobby';
 import { initialSportsData, SWEEPSTAKES_SPORT_ID, FREE_BOARD_ENTRY_FEE, BOARD_STATUS_OPEN, DEFAULT_BOARD_ENTRY_FEE } from '@/config/lobbyConfig';
@@ -1362,6 +1363,7 @@ function LobbyContent() {
         </main>
       </div>
       <BottomNav user={user} onProtectedAction={handleProtectedAction} />
+      <Footer />
       {(isLoginModalOpen || isWalletSetupDialogOpen || isDepositDialogOpen) && <StarfieldBackground className="z-40" />}
       {tourOpen && activeTour && (
         <TourOverlay

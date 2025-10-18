@@ -106,7 +106,7 @@ export default function SweepstakesWinnersScoreboard({
                     </span>
                   </div>
                   <Separator className="my-1 w-full bg-white/20" />
-                  <div className="w-full bg-gradient-to-br from-[#B8860B] to-[#A0740A] flex items-center justify-center -mx-3 -mb-3 px-3 py-2 rounded-b-lg">
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-br from-[#B8860B] to-[#A0740A] flex items-center justify-center py-3 rounded-b-lg">
                     <span className="text-xs font-semibold uppercase text-gray-400">
                       {pill.label}
                     </span>

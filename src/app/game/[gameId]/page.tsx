@@ -979,7 +979,12 @@ function GamePageContent() {
           {gameDetails && gameDetails.status === 'live' && (
             <div className="mb-6">
               {/* Winners scoreboard */}
-              <div className="max-w-3xl mx-auto px-2 py-3 rounded-lg bg-slate-900/30 border border-white/5">
+              <div 
+                className="max-w-3xl mx-auto px-2 py-3 rounded-lg"
+                style={{
+                  background: 'radial-gradient(ellipse at center, rgba(20,28,48,0.98) 0%, rgba(20,28,48,0.9) 60%, rgba(20,28,48,0.0) 100%), #0a0e1b'
+                }}
+              >
                 <div className="text-[10px] sm:text-xs text-slate-400 mb-2 text-center font-medium">
                   Winners
                 </div>

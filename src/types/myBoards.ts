@@ -60,4 +60,14 @@ export interface AppBoard {
   q2_winning_index?: number;
   q3_winning_index?: number;
   q4_winning_index?: number;
+  // Optional winning squares passed from page listener
+  q1_winning_square?: string;
+  q2_winning_square?: string;
+  q3_winning_square?: string;
+  q4_winning_square?: string;
+  // Optional flags set by page
+  userWon_q1?: boolean;
+  userWon_q2?: boolean;
+  userWon_q3?: boolean;
+  userWon_final?: boolean;
 } 

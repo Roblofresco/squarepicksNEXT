@@ -389,7 +389,6 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
   }, [handleBoardAction, board.id]);
 
   const accentGlowRgb = '184, 134, 11';
-  const gradientStyle = { background: `linear-gradient(to bottom, rgb(var(--color-background-primary)) 0%, #B8860B 15%, #B8860B 100%)` };
 
   const sweepstakesGridTheme: SweepstakesMiniGridThemeProps = {
     gridLineColor: 'bg-black/10',
@@ -409,8 +408,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
 
   return (
     <div 
-      className={`p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20 ${isActive ? 'ring-2 ring-[#5855e0] z-40' : ''}`}
-      style={gradientStyle}
+      className={`bg-gradient-to-b from-background-primary to-[#B8860B] p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20 ${isActive ? 'ring-2 ring-[#5855e0] z-40' : ''}`}
     >
       <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
         <span className="text-sm sm:text-base text-white font-semibold select-none min-w-0">

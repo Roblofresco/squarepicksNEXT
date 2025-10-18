@@ -80,11 +80,8 @@ export default function SweepstakesWinnersScoreboard({
           const displayAsAssigned = isAssigned && shouldShowAssigned;
 
           return (
-            <motion.div
+            <div
               key={pill.period}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
               className={cn(
                 "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
                 "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
@@ -147,7 +144,7 @@ export default function SweepstakesWinnersScoreboard({
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
+            </div>
           );
         })}
       </div>

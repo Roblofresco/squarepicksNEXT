@@ -100,16 +100,18 @@ export default function SweepstakesWinnersScoreboard({
               ) : (
                 <>
                   {/* Unassigned: Dashes container top, Label container bottom */}
-                  <div className="w-full flex-1 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-gray-500">
-                      --
-                    </span>
-                  </div>
-                  <Separator className="my-1 w-full bg-white/20" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-br from-[#B8860B] to-[#A0740A] flex items-center justify-center py-3 rounded-b-lg">
-                    <span className="text-xs font-semibold uppercase text-gray-400">
-                      {pill.label}
-                    </span>
+                  <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
+                    <div className="flex-1 flex items-center justify-center">
+                      <span className="text-2xl font-bold text-gray-500">
+                        --
+                      </span>
+                    </div>
+                    <Separator className="w-full bg-white/20" />
+                    <div className="bg-gradient-to-br from-[#B8860B] to-[#A0740A] flex items-center justify-center py-3 rounded-b-lg">
+                      <span className="text-xs font-semibold uppercase text-gray-400">
+                        {pill.label}
+                      </span>
+                    </div>
                   </div>
                 </>
               )}

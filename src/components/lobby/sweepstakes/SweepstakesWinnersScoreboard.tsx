@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 
@@ -25,12 +26,24 @@ export default function SweepstakesWinnersScoreboard({
   isLive,
   currentQuarter
 }: SweepstakesWinnersScoreboardProps) {
+  const [showingAssigned, setShowingAssigned] = useState<Record<string, boolean>>({});
+  
   const pills: WinnerPill[] = [
     { label: 'Q1', number: q1WinningSquare || null, period: 'q1' },
     { label: 'Q2', number: q2WinningSquare || null, period: 'q2' },
     { label: 'Q3', number: q3WinningSquare || null, period: 'q3' },
     { label: 'Final', number: finalWinningSquare || null, period: 'final' },
   ];
+
+  useEffect(() => {
+    pills.forEach((pill, idx) => {
+      if (pill.number) {  // Only for assigned pills
+        setTimeout(() => {
+          setShowingAssigned(prev => ({ ...prev, [pill.period]: true }));
+        }, idx * 150 + 400);  // Q1: 400ms, Q2: 550ms, Q3: 700ms, Final: 850ms
+      }
+    });
+  }, [q1WinningSquare, q2WinningSquare, q3WinningSquare, finalWinningSquare]);
 
   const getPillColor = (period: string, isAssigned: boolean) => {
     if (!isAssigned) {
@@ -63,6 +76,8 @@ export default function SweepstakesWinnersScoreboard({
           const isAssigned = !!pill.number;
           const colors = getPillColor(pill.period, isAssigned);
           const isCurrent = isLive && !isAssigned && currentQuarter === idx + 1;
+          const shouldShowAssigned = showingAssigned[pill.period];
+          const displayAsAssigned = isAssigned && shouldShowAssigned;
 
           return (
             <motion.div
@@ -80,39 +95,58 @@ export default function SweepstakesWinnersScoreboard({
                 isCurrent && "ring-2 ring-[#B8860B] ring-offset-2 ring-offset-transparent"
               )}
             >
-              {isAssigned ? (
-                <>
-                  {/* Assigned: Label container top, Number container bottom */}
-                  <div className="w-full flex items-center justify-center">
-                    <span className={cn("text-xs font-semibold uppercase", colors.text)}>
-                      {pill.label}
-                    </span>
-                  </div>
-                  <Separator className="my-1 w-full bg-white/20" />
-                  <div className="w-full flex items-center justify-center">
-                    <span className={cn("text-2xl font-bold font-mono", colors.text)}>
-                      {pill.number}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* Unassigned: Dashes container top, Label container bottom */}
-                  <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
+              <AnimatePresence mode="wait">
+                {!displayAsAssigned ? (
+                  // UNASSIGNED VIEW (initial state for assigned pills)
+                  <motion.div
+                    key="unassigned"
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.25 }}
+                    className="absolute top-0 left-0 right-0 bottom-0 flex flex-col"
+                  >
                     <div className="flex-1 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-gray-500">
-                        --
-                      </span>
+                      <span className="text-2xl font-bold text-gray-500">--</span>
                     </div>
                     <Separator className="w-full bg-white/20" />
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#B8860B] to-[#A0740A] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
-                          <span className="text-xs font-semibold uppercase text-gray-400">
-                            {pill.label}
-                          </span>
-                        </div>
-                  </div>
-                </>
-              )}
+                    <div className="relative overflow-hidden bg-gradient-to-br from-[#B8860B] to-[#A0740A] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                      <span className="text-xs font-semibold uppercase text-gray-400">
+                        {pill.label}
+                      </span>
+                    </div>
+                  </motion.div>
+                ) : (
+                  // ASSIGNED VIEW (after animation triggers)
+                  <motion.div
+                    key="assigned"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full flex flex-col items-center justify-center"
+                  >
+                    <motion.div
+                      className="w-full flex items-center justify-center"
+                      initial={{ y: 15, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.1, duration: 0.3, ease: "easeOut" }}
+                    >
+                      <span className={cn("text-xs font-semibold uppercase", colors.text)}>
+                        {pill.label}
+                      </span>
+                    </motion.div>
+                    <Separator className="my-1 w-full bg-white/20" />
+                    <motion.div
+                      className="w-full flex items-center justify-center"
+                      initial={{ y: 20, opacity: 0, scale: 0.9 }}
+                      animate={{ y: 0, opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.2, duration: 0.35, ease: "easeOut" }}
+                    >
+                      <span className={cn("text-2xl font-bold font-mono", colors.text)}>
+                        {pill.number}
+                      </span>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           );
         })}

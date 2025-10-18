@@ -137,21 +137,34 @@ export default function MyBoardsPage() {
         return;
       }
 
-      // Collect all team references for bulk fetching
+      // Collect all team references AND cache game data for bulk fetching
       const allTeamRefs: DocumentReference[] = [];
+      const gameDataCache = new Map<string, DocumentData>();
+
       for (const boardDoc of Array.from(combinedDocs.values())) {
         const boardData = boardDoc.data();
-        if (boardData.gameID) {
+        if (boardData.gameID && typeof boardData.gameID.path === 'string') {
           const gameDocSnap = await getDoc(doc(db, boardData.gameID.path));
           if (gameDocSnap.exists()) {
             const gameData = gameDocSnap.data();
-            if (gameData.home_team_id) allTeamRefs.push(gameData.home_team_id);
-            if (gameData.away_team_id) allTeamRefs.push(gameData.away_team_id);
+            // Cache game data by board ID
+            gameDataCache.set(boardDoc.id, gameData);
+            
+            if (gameData.home_team_id) {
+              console.log(`[MyBoardsPage] Adding home team ref: ${gameData.home_team_id.id}`);
+              allTeamRefs.push(gameData.home_team_id);
+            }
+            if (gameData.away_team_id) {
+              console.log(`[MyBoardsPage] Adding away team ref: ${gameData.away_team_id.id}`);
+              allTeamRefs.push(gameData.away_team_id);
+            }
           }
         }
       }
 
+      console.log(`[MyBoardsPage] Collected ${allTeamRefs.length} team references`);
       const teamsMap = await fetchMultipleTeams(allTeamRefs);
+      console.log(`[MyBoardsPage] Fetched ${Object.keys(teamsMap).length} teams:`, Object.keys(teamsMap));
 
       const userRelevantBoardsPromises = Array.from(combinedDocs.values()).map(async (boardDoc: any) => {
         const boardData = boardDoc.data();
@@ -194,17 +207,22 @@ export default function MyBoardsPage() {
         let homeTeamData: TeamInfo | undefined = undefined;
         let awayTeamData: TeamInfo | undefined = undefined;
 
-        if (boardData.gameID && typeof boardData.gameID.path === 'string') { 
-          const gameDocSnap = await getDoc(doc(db, boardData.gameID.path));
-          if (gameDocSnap.exists()) {
-            gameData = gameDocSnap.data();
-            homeTeamData = gameData.home_team_id ? teamsMap[gameData.home_team_id.id] : undefined;
-            awayTeamData = gameData.away_team_id ? teamsMap[gameData.away_team_id.id] : undefined;
-          } else {
-            console.warn(`[MyBoardsPage] Game document not found for gameID: ${boardData.gameID.path} (Board: ${boardDoc.id})`);
-          }
+        // Use cached game data instead of fetching again
+        gameData = gameDataCache.get(boardDoc.id) || null;
+
+        if (gameData) {
+          const homeTeamId = gameData.home_team_id?.id;
+          const awayTeamId = gameData.away_team_id?.id;
+          
+          console.log(`[MyBoardsPage] Board ${boardDoc.id}: Looking up home team ${homeTeamId}, away team ${awayTeamId}`);
+          
+          homeTeamData = homeTeamId ? teamsMap[homeTeamId] : undefined;
+          awayTeamData = awayTeamId ? teamsMap[awayTeamId] : undefined;
+          
+          if (!homeTeamData) console.warn(`[MyBoardsPage] Home team ${homeTeamId} not found in teamsMap`);
+          if (!awayTeamData) console.warn(`[MyBoardsPage] Away team ${awayTeamId} not found in teamsMap`);
         } else {
-          console.warn(`[MyBoardsPage] Board ${boardDoc.id} is missing gameID or gameID.path is not a string. gameID: ${boardData.gameID}`);
+          console.warn(`[MyBoardsPage] No cached game data for board ${boardDoc.id}`);
         }
         
         let gameDateTimeStr = new Date().toISOString(); 
@@ -347,21 +365,34 @@ export default function MyBoardsPage() {
       const boardsQuery = query(collection(db, 'boards'), where('status', 'in', finalStatuses));
       const boardSnapshots = await getDocs(boardsQuery);
       
-      // Collect all team references for bulk fetching
+      // Collect all team references AND cache game data for bulk fetching
       const allTeamRefs: DocumentReference[] = [];
+      const gameDataCache = new Map<string, DocumentData>();
+
       for (const boardDoc of boardSnapshots.docs) {
         const boardData = boardDoc.data();
-        if (boardData.gameID) {
+        if (boardData.gameID && typeof boardData.gameID.path === 'string') {
           const gameDocSnap = await getDoc(doc(db, boardData.gameID.path));
           if (gameDocSnap.exists()) {
             const gameData = gameDocSnap.data();
-            if (gameData.home_team_id) allTeamRefs.push(gameData.home_team_id);
-            if (gameData.away_team_id) allTeamRefs.push(gameData.away_team_id);
+            // Cache game data by board ID
+            gameDataCache.set(boardDoc.id, gameData);
+            
+            if (gameData.home_team_id) {
+              console.log(`[MyBoardsPage] Historical - Adding home team ref: ${gameData.home_team_id.id}`);
+              allTeamRefs.push(gameData.home_team_id);
+            }
+            if (gameData.away_team_id) {
+              console.log(`[MyBoardsPage] Historical - Adding away team ref: ${gameData.away_team_id.id}`);
+              allTeamRefs.push(gameData.away_team_id);
+            }
           }
         }
       }
 
+      console.log(`[MyBoardsPage] Historical - Collected ${allTeamRefs.length} team references`);
       const teamsMap = await fetchMultipleTeams(allTeamRefs);
+      console.log(`[MyBoardsPage] Historical - Fetched ${Object.keys(teamsMap).length} teams:`, Object.keys(teamsMap));
       
       const userBoards: AppBoard[] = [];
       for (const boardDoc of boardSnapshots.docs) {
@@ -385,17 +416,22 @@ export default function MyBoardsPage() {
           let homeTeamData: TeamInfo | undefined = undefined;
           let awayTeamData: TeamInfo | undefined = undefined;
 
-          if (boardData.gameID && typeof boardData.gameID.path === 'string') { 
-            const gameDocSnap = await getDoc(doc(db, boardData.gameID.path));
-            if (gameDocSnap.exists()) {
-              gameData = gameDocSnap.data();
-              homeTeamData = gameData.home_team_id ? teamsMap[gameData.home_team_id.id] : undefined;
-              awayTeamData = gameData.away_team_id ? teamsMap[gameData.away_team_id.id] : undefined;
-            } else {
-              console.warn(`[MyBoardsPage] Game document not found for gameID: ${boardData.gameID.path} (Board: ${boardDoc.id})`);
-            }
+          // Use cached game data instead of fetching again
+          gameData = gameDataCache.get(boardDoc.id) || null;
+
+          if (gameData) {
+            const homeTeamId = gameData.home_team_id?.id;
+            const awayTeamId = gameData.away_team_id?.id;
+            
+            console.log(`[MyBoardsPage] Historical Board ${boardDoc.id}: Looking up home team ${homeTeamId}, away team ${awayTeamId}`);
+            
+            homeTeamData = homeTeamId ? teamsMap[homeTeamId] : undefined;
+            awayTeamData = awayTeamId ? teamsMap[awayTeamId] : undefined;
+            
+            if (!homeTeamData) console.warn(`[MyBoardsPage] Historical - Home team ${homeTeamId} not found in teamsMap`);
+            if (!awayTeamData) console.warn(`[MyBoardsPage] Historical - Away team ${awayTeamId} not found in teamsMap`);
           } else {
-            console.warn(`[MyBoardsPage] Board ${boardDoc.id} is missing gameID or gameID.path is not a string. gameID: ${boardData.gameID}`);
+            console.warn(`[MyBoardsPage] Historical - No cached game data for board ${boardDoc.id}`);
           }
           
           let gameDateTimeStr = new Date().toISOString(); 

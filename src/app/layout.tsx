@@ -1,5 +1,6 @@
 import './globals.css'
 import { Providers } from '@/components/providers'
+import Footer from '@/components/Footer'
 import { Epilogue } from 'next/font/google'
 
 // Configure Epilogue font with better Edge compatibility
@@ -116,8 +117,13 @@ export default function RootLayout({
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
       </head>
-      <body>
-        <Providers>{children}</Providers>
+      <body className="flex flex-col min-h-screen">
+        <Providers>
+          <div className="flex-1">
+            {children}
+          </div>
+          <Footer />
+        </Providers>
       </body>
     </html>
   )

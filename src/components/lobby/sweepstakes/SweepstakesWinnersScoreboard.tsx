@@ -36,15 +36,22 @@ export default function SweepstakesWinnersScoreboard({
   ];
 
   useEffect(() => {
-    pills.forEach((pill, idx) => {
-      setTimeout(() => {
-        // Check if pill has a number when timeout fires
-        if (pill.number) {
+    // Only run once on mount, use initial values
+    const initialPills = [
+      { label: 'Q1', number: q1WinningSquare || null, period: 'q1' },
+      { label: 'Q2', number: q2WinningSquare || null, period: 'q2' },
+      { label: 'Q3', number: q3WinningSquare || null, period: 'q3' },
+      { label: 'Final', number: finalWinningSquare || null, period: 'final' },
+    ];
+    
+    initialPills.forEach((pill, idx) => {
+      if (pill.number) {  // Only set timeout for pills that have numbers
+        setTimeout(() => {
           setShowingAssigned(prev => ({ ...prev, [pill.period]: true }));
-        }
-      }, idx * 150 + 400);  // Q1: 400ms, Q2: 550ms, Q3: 700ms, Final: 850ms
+        }, idx * 150 + 400);  // Q1: 400ms, Q2: 550ms, Q3: 700ms, Final: 850ms
+      }
     });
-  }, [q1WinningSquare, q2WinningSquare, q3WinningSquare, finalWinningSquare]);
+  }, []); // Empty dependency array - only run once on mount
 
   const getPillColor = (period: string, isAssigned: boolean) => {
     if (!isAssigned) {

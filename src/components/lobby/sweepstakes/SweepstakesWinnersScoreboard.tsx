@@ -100,7 +100,7 @@ export default function SweepstakesWinnersScoreboard({
               ) : (
                 <>
                   {/* Unassigned: Dashes container top, Label container bottom */}
-                  <div className="w-full flex items-center justify-center">
+                  <div className="w-full flex-1 flex items-center justify-center">
                     <span className="text-2xl font-bold text-gray-500">
                       --
                     </span>

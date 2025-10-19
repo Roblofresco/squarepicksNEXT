@@ -245,71 +245,35 @@ export default function MyBoardsPage() {
     }
 
       return (
-    <div className="min-h-screen bg-background-primary">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-3">
-            <Image
-              src="/logo.png"
-              alt="SquarePicks"
-              width={40}
-              height={40}
-              className="rounded-lg"
-            />
-            <h1 className="text-2xl font-bold text-slate-100">My Boards</h1>
-          </div>
-          </div>
+    <div className="flex flex-col min-h-screen bg-background-primary pb-16">
+      <main className="flex-grow container mx-auto pt-2 md:pt-3 px-4">
+        <header className="mb-3 flex items-center gap-3">
+          <Image src="/brandkit/logos/sp-logo-icon-default.svg" alt="SquarePicks" width={28} height={28} priority />
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text-primary">My Boards</h1>
+        </header>
 
-        {/* Filters and Search */}
-        <div className="mb-6 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Search by team or sport..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-slate-800/50 border-slate-600 text-slate-200"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-32 bg-slate-800/50 border-slate-600">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="full">Full</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-32 bg-slate-800/50 border-slate-600">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="date">Date</SelectItem>
-                  <SelectItem value="amount">Amount</SelectItem>
-                  <SelectItem value="status">Status</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
 
-        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-800/50">
-            <TabsTrigger value="active" className="data-[state=active]:bg-accent-1">
-              Active ({filteredActiveBoards.length})
+          <div className="flex items-center justify-between">
+            <TabsList className="inline-flex gap-2">
+            <TabsTrigger 
+              value="active"
+              className="px-3 py-1.5 rounded-md text-text-secondary transition-colors hover:text-text-primary hover:bg-black/10 data-[state=active]:text-white data-[state=active]:bg-[radial-gradient(ellipse_at_center,rgba(20,28,48,0.6)_0%,rgba(20,28,48,0.35)_65%,rgba(20,28,48,0)_100%)]"
+            >
+              Active
             </TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=active]:bg-accent-1">
-              History ({filteredHistoricalBoards.length})
+            <TabsTrigger 
+              value="history"
+              className="px-3 py-1.5 rounded-md text-text-secondary transition-colors hover:text-text-primary hover:bg-black/10 data-[state=active]:text-white data-[state=active]:bg-[radial-gradient(ellipse_at_center,rgba(20,28,48,0.6)_0%,rgba(20,28,48,0.35)_65%,rgba(20,28,48,0)_100%)]"
+            >
+              History
             </TabsTrigger>
           </TabsList>
             
-          <TabsContent value="active" className="mt-6">
+          </div>
+          <div className="border-b border-white/10 mt-1 mb-6" />
+            
+          <TabsContent value="active" className="mt-0">
             {filteredActiveBoards.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <ListChecks className="h-16 w-16 text-slate-600 mb-4" />
@@ -336,7 +300,7 @@ export default function MyBoardsPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="history" className="mt-6">
+          <TabsContent value="history" className="mt-0">
             {filteredHistoricalBoards.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Trophy className="h-16 w-16 text-slate-600 mb-4" />
@@ -358,7 +322,7 @@ export default function MyBoardsPage() {
             )}
           </TabsContent>
         </Tabs>
-            </div>
+      </main>
       <BottomNav 
         user={user} 
         onProtectedAction={() => router.push('/login')} 

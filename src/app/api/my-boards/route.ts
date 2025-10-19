@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initAdmin } from '@/lib/firebase-admin';
-import { getAuth } from 'firebase-admin/auth';
+import { getAuth, getFirestore } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin
-const admin = initAdmin();
-const db = admin.firestore();
+const adminApp = initAdmin();
+const db = getFirestore(adminApp);
 
 // Helper function to fetch team data
 async function fetchTeamData(teamRef: any) {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     // Verify the Firebase ID token
     let decodedToken;
     try {
-      decodedToken = await getAuth().verifyIdToken(idToken);
+      decodedToken = await getAuth(adminApp).verifyIdToken(idToken);
     } catch (error) {
       console.error('Error verifying token:', error);
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });

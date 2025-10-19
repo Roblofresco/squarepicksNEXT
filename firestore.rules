@@ -42,16 +42,16 @@ service cloud.firestore {
 
     // --- boards Collection ---
     match /boards/{boardId} {
-      // Boards visible if open, or to any signed-in user
-      allow read: if resource.data.status == "open" || signedIn();
+      // Boards visible if open, or to any signed-in user, or to service accounts
+      allow read: if resource.data.status == "open" || signedIn() || request.auth.token.admin == true;
       allow create: if signedIn();
       allow update, delete: if false;
 
       // Squares subcollection
       match /squares/{squareId} {
         // Publicly readable while board is open (for grid rendering)
-        // Otherwise only the square owner can read
-        allow read: if boardIsOpen(boardId) || isSquareOwner();
+        // Otherwise only the square owner can read, or service accounts
+        allow read: if boardIsOpen(boardId) || isSquareOwner() || request.auth.token.admin == true;
         allow create, update, delete: if false;
       }
 

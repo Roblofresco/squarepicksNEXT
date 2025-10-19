@@ -397,7 +397,7 @@ export default function MyBoardsPage() {
               awayTeamIdType: typeof gameData.away_team_id,
               homeTeamIdValue: gameData.home_team_id,
               awayTeamIdValue: gameData.away_team_id,
-              allKeys: Object.keys(gameData)
+              allKeys: Object.keys(gameData).join(', ')
             });
             
             if (gameData.home_team_id) {

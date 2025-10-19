@@ -150,6 +150,17 @@ export default function MyBoardsPage() {
             // Cache game data by board ID
             gameDataCache.set(boardDoc.id, gameData);
             
+            // Debug: Log the game data structure to see what fields are available
+            console.log(`[MyBoardsPage] Game data for board ${boardDoc.id}:`, {
+              hasHomeTeamId: !!gameData.home_team_id,
+              hasAwayTeamId: !!gameData.away_team_id,
+              homeTeamIdType: typeof gameData.home_team_id,
+              awayTeamIdType: typeof gameData.away_team_id,
+              homeTeamIdValue: gameData.home_team_id,
+              awayTeamIdValue: gameData.away_team_id,
+              allKeys: Object.keys(gameData)
+            });
+            
             if (gameData.home_team_id) {
               console.log(`[MyBoardsPage] Adding home team ref: ${gameData.home_team_id.id}`);
               allTeamRefs.push(gameData.home_team_id);

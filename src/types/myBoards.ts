@@ -43,6 +43,8 @@ export interface AppBoard {
   // For Active tab sorting by purchase time
   purchasedAt?: string;
   status: BoardStatus;
+  amount?: number;
+  pot?: number;
   is_live?: boolean;
   broadcast_provider?: string;
   stake?: number;

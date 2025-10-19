@@ -930,7 +930,7 @@ function GamePageContent() {
               </div>
             </div>
 
-          </div>
+              </div>
 
           {error && <p className="text-center text-red-400 mb-3 bg-red-900/30 p-2 rounded-md">Error: {error}</p>} 
 
@@ -939,11 +939,11 @@ function GamePageContent() {
           {gameDetails && gameDetails.status === 'upcoming' && (
             <div
               ref={entryFeeRef}
-              className={cn(
+                  className={cn(
                 "mb-4 p-2 rounded-lg max-w-md md:max-w-lg mx-auto",
                 shakeEntryFee && "animate-shake"
               )}
-              style={{
+                    style={{ 
                 background: 'radial-gradient(ellipse at center, rgba(20,28,48,0.98) 0%, rgba(20,28,48,0.9) 60%, rgba(20,28,48,0.0) 100%), #0a0e1b'
               }}
             >
@@ -981,7 +981,7 @@ function GamePageContent() {
               {/* Winners scoreboard */}
               <div 
                 className="max-w-3xl mx-auto px-2 py-3 rounded-lg"
-                style={{
+                        style={{ 
                   background: 'radial-gradient(ellipse at center, rgba(20,28,48,0.98) 0%, rgba(20,28,48,0.9) 60%, rgba(20,28,48,0.0) 100%), #0a0e1b'
                 }}
               >
@@ -1011,7 +1011,7 @@ function GamePageContent() {
                           <span className="text-xs font-semibold uppercase text-white">
                             Q1
                           </span>
-                        </div>
+                </div>
                         <Separator className="my-1 w-full bg-white/20" />
                         <div className="w-full flex items-center justify-center">
                           <span className="text-2xl font-bold font-mono text-white">
@@ -1040,17 +1040,17 @@ function GamePageContent() {
                   </div>
                     );
                   })()}
-                  
-                  {/* Q2 */}
+                
+                {/* Q2 */}
                   {(() => {
                     const isQ2Current = gameDetails?.status === 'live' && !q2WinningSquare && Number(gameDetails.quarter) === 2;
                     return (
-                  <div 
-                    className={cn(
+                <div 
+                  className={cn(
                           "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
                           "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                      q2WinningSquare 
+                    q2WinningSquare 
                             ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                             : "bg-black/30",
                           isQ2Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
@@ -1089,20 +1089,20 @@ function GamePageContent() {
                         </div>
                       </>
                     )}
-                  </div>
+                </div>
                     );
                   })()}
-                  
-                  {/* Q3 */}
+                
+                {/* Q3 */}
                   {(() => {
                     const isQ3Current = gameDetails?.status === 'live' && !q3WinningSquare && Number(gameDetails.quarter) === 3;
                     return (
-                  <div 
-                    className={cn(
+                <div 
+                  className={cn(
                           "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
                           "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                      q3WinningSquare 
+                    q3WinningSquare 
                             ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                             : "bg-black/30",
                           isQ3Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
@@ -1141,20 +1141,20 @@ function GamePageContent() {
                         </div>
                       </>
                     )}
-                  </div>
+                </div>
                     );
                   })()}
-                  
-                  {/* FINAL */}
+                
+                {/* FINAL */}
                   {(() => {
                     const isFinalCurrent = gameDetails?.status === 'live' && !finalWinningSquare && Number(gameDetails.quarter) === 4;
                     return (
-                  <div 
-                    className={cn(
+                <div 
+                  className={cn(
                           "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
                           "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                      finalWinningSquare 
+                    finalWinningSquare 
                             ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
                             : "bg-black/30",
                           isFinalCurrent && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
@@ -1167,13 +1167,13 @@ function GamePageContent() {
                           <span className="text-xs font-semibold uppercase text-white">
                             Final
                           </span>
-                        </div>
+                </div>
                         <Separator className="my-1 w-full bg-white/20" />
                         <div className="w-full flex items-center justify-center">
                           <span className="text-2xl font-bold font-mono text-white">
                             {finalWinningSquare}
                           </span>
-                        </div>
+              </div>
                       </>
                     ) : (
                       <>
@@ -1183,20 +1183,20 @@ function GamePageContent() {
                             <span className="text-2xl font-bold text-gray-500">
                               --
                             </span>
-                          </div>
+            </div>
                           <Separator className="w-full bg-white/20" />
                           <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                             <span className="text-xs font-semibold uppercase text-gray-400">
                               Final
                             </span>
-                          </div>
-                        </div>
+          </div>
+              </div>
                       </>
                     )}
-                  </div>
+              </div>
                     );
                   })()}
-                </div>
+            </div>
               </div>
             </div>
           )}

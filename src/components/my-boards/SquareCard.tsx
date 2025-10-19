@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Info, CheckSquare, Loader2, Clock, Trophy, XCircle, AlertTriangle } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 // Import shared types instead of defining local interfaces
 import { TeamInfo, BoardSquare, BoardStatus, AppBoard } from '../../types/myBoards';
@@ -116,6 +117,22 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   const renderSquaresGrid = () => {
     const idxs = (userPickedSquares || []).map(s => s.index);
     const xys = (userPickedSquares || []).map(s => s.square || '—');
+    
+    // If all 100 squares, show summary
+    if (idxs.length === 100) {
+      return (
+        <div className="mt-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium">Squares:</span>
+            <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 border-orange-500/30">
+              100/100 Complete
+            </Badge>
+          </div>
+        </div>
+      );
+    }
+    
+    // Original grid display for partial selections
     return (
       <div className="mt-1">
         <div className="flex items-center gap-2">
@@ -154,7 +171,10 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   };
 
   return (
-    <Card className="w-full max-w-sm overflow-visible glass transition-shadow duration-300 ease-in-out flex flex-col gap-0 text-slate-100 cursor-pointer h-full rounded-lg relative" onClick={() => onClick(id)}>
+    <Card className={cn(
+      "w-full max-w-sm overflow-visible glass transition-shadow duration-300 ease-in-out flex flex-col gap-0 text-slate-100 cursor-pointer h-full rounded-lg relative",
+      status === 'full' && "ring-2 ring-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.15)]"
+    )} onClick={() => onClick(id)}>
       {/* Ribbons */}
         {sport && (
         <div className="absolute -top-3 left-3 z-20 pointer-events-none">
@@ -221,7 +241,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
               <span>Pot: ${potDisplay.toFixed(2)}</span>
             )}
           </div>
-          {status === 'open' && typeof stakeAmount === 'number' && (board.gameId) && (
+          {(status === 'open' || status === 'full') && typeof stakeAmount === 'number' && (board.gameId) && (
             <Link href={`/game/${board.gameId}?amount=${stakeAmount}`}>
               <Button size="sm" variant="secondary" className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2">View</Button>
             </Link>
@@ -237,12 +257,26 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         {/* Your Selections (Squares/Picks) */}
         <div className="mt-0">
           <div className="font-semibold mb-0">Your Selections</div>
-             {status === 'open' ? (
-            <div className="text-white/85">Squares: {userPickedSquares && userPickedSquares.length > 0 ? userPickedSquares.map(s => s.index).join(', ') : '--'}</div>
-             ) : (
-            renderSquaresGrid()
-             )}
-           </div>
+          {(() => {
+            const isFullBoard = status === 'full' && userPickedSquares && userPickedSquares.length === 100;
+            
+            if (status === 'open') {
+              return (
+                <div className="text-white/85">Squares: {userPickedSquares && userPickedSquares.length > 0 ? userPickedSquares.map(s => s.index).join(', ') : '--'}</div>
+              );
+            } else if (isFullBoard) {
+              return (
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 border-orange-500/30">
+                    All 100 squares selected
+                  </Badge>
+                </div>
+              );
+            } else {
+              return renderSquaresGrid();
+            }
+          })()}
+        </div>
 
         <div className="border-t border-white/10 pt-2 mt-3" />
         <div className="mt-1">

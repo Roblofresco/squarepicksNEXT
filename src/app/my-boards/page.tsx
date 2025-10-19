@@ -153,7 +153,10 @@ export default function MyBoardsPage() {
         </div>
         </div>
         </div>
-        <BottomNav />
+        <BottomNav 
+          user={user} 
+          onProtectedAction={() => router.push('/login')} 
+        />
         </div>
       );
     }
@@ -174,7 +177,10 @@ export default function MyBoardsPage() {
             </div>
           </div>
         </div>
-        <BottomNav />
+        <BottomNav 
+          user={user} 
+          onProtectedAction={() => router.push('/login')} 
+        />
             </div>
         );
     }
@@ -197,7 +203,10 @@ export default function MyBoardsPage() {
               </div>
           </div>
         </div>
-        <BottomNav />
+        <BottomNav 
+          user={user} 
+          onProtectedAction={() => router.push('/login')} 
+        />
         </div>
       );
     }
@@ -317,7 +326,10 @@ export default function MyBoardsPage() {
           </TabsContent>
         </Tabs>
             </div>
-      <BottomNav />
+      <BottomNav 
+        user={user} 
+        onProtectedAction={() => router.push('/login')} 
+      />
     </div>
   );
 } 

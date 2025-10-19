@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
     console.log(`[API] Fetching boards for user: ${userId}`);
 
     // Get all active boards
+    console.log(`[API] Querying boards collection...`);
     const boardsQuery = await db.collection('boards')
       .where('status', 'in', ['open', 'full', 'active'])
       .get();
@@ -106,7 +107,7 @@ export async function GET(request: NextRequest) {
         // Return only necessary data
         return {
           id: boardDoc.id,
-          gameId: gameData?.id || boardData.gameID?.id || '',
+          gameId: gameData?.id || boardData.gameID?.id || boardDoc.id,
           homeTeam: homeTeam || { name: 'Team A', initials: 'TA', logo: undefined },
           awayTeam: awayTeam || { name: 'Team B', initials: 'TB', logo: undefined },
           gameDateTime: gameData?.dateTime || boardData.created_time?.toDate?.()?.toISOString() || new Date().toISOString(),

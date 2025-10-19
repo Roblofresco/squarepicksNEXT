@@ -1,6 +1,4 @@
 import * as admin from 'firebase-admin';
-import fs from 'fs'; // Import fs for file reading
-// import path from 'path'; // Path might not be needed if using absolute path
 
 // Function to ensure Firebase Admin is initialized only once
 export const initAdmin = (): admin.app.App => {
@@ -8,17 +6,36 @@ export const initAdmin = (): admin.app.App => {
     return admin.app(); // Return existing app if already initialized
   }
 
-  // Get the path to the service account key file from environment variables
+  // Try to get service account from environment variable first (for Vercel)
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  
+  if (serviceAccountJson) {
+    try {
+      console.log('Initializing Firebase Admin SDK using environment variable...');
+      const serviceAccount = JSON.parse(serviceAccountJson);
+      const credential = admin.credential.cert(serviceAccount);
+      const app = admin.initializeApp({ credential });
+      console.log('Firebase Admin SDK initialized successfully from environment variable.');
+      return app;
+    } catch (error: any) {
+      console.error('Firebase Admin SDK initialization error (from environment variable):', error);
+      throw new Error(`Firebase Admin SDK initialization failed: ${error.message}`);
+    }
+  }
+
+  // Fallback to file path (for local development)
   const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
   if (!serviceAccountPath) {
-    console.error('Firebase Admin SDK Error: GOOGLE_APPLICATION_CREDENTIALS environment variable not set.');
-    throw new Error('Firebase Admin SDK credentials path is not configured.');
+    console.error('Firebase Admin SDK Error: Neither FIREBASE_SERVICE_ACCOUNT_KEY nor GOOGLE_APPLICATION_CREDENTIALS environment variable is set.');
+    throw new Error('Firebase Admin SDK credentials not configured.');
   }
 
-  console.log(`Firebase Admin Init - Attempting to load credentials from: ${serviceAccountPath}`);
+  console.log(`Firebase Admin Init - Attempting to load credentials from file: ${serviceAccountPath}`);
 
   try {
+    const fs = require('fs');
+    
     // Check if file exists before reading
     if (!fs.existsSync(serviceAccountPath)) {
         console.error(`Firebase Admin SDK Error: Service account file not found at path: ${serviceAccountPath}`);
@@ -28,13 +45,13 @@ export const initAdmin = (): admin.app.App => {
     // Read the service account file
     const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
 
-    console.log('Initializing Firebase Admin SDK using service account file (explicitly)...');
+    console.log('Initializing Firebase Admin SDK using service account file...');
     
     // Explicitly create credentials and initialize
     const credential = admin.credential.cert(serviceAccount);
     const app = admin.initializeApp({ credential });
     
-    console.log('Firebase Admin SDK initialized successfully (explicitly).');
+    console.log('Firebase Admin SDK initialized successfully from file.');
     return app;
 
   } catch (error: any) {

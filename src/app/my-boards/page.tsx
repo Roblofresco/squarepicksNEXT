@@ -150,24 +150,15 @@ export default function MyBoardsPage() {
             // Cache game data by board ID
             gameDataCache.set(boardDoc.id, gameData);
             
-            // Debug: Log the game data structure to see what fields are available
-            console.log(`[MyBoardsPage] Game data for board ${boardDoc.id}:`, {
-              hasHomeTeamId: !!gameData.home_team_id,
-              hasAwayTeamId: !!gameData.away_team_id,
-              homeTeamIdType: typeof gameData.home_team_id,
-              awayTeamIdType: typeof gameData.away_team_id,
-              homeTeamIdValue: gameData.home_team_id,
-              awayTeamIdValue: gameData.away_team_id,
-              allKeys: Object.keys(gameData)
-            });
+            // Cache game data by board ID
             
-            if (gameData.home_team_id) {
-              console.log(`[MyBoardsPage] Adding home team ref: ${gameData.home_team_id.id}`);
-              allTeamRefs.push(gameData.home_team_id);
+            if (gameData.homeTeam) {
+              console.log(`[MyBoardsPage] Adding home team ref: ${gameData.homeTeam.id}`);
+              allTeamRefs.push(gameData.homeTeam);
             }
-            if (gameData.away_team_id) {
-              console.log(`[MyBoardsPage] Adding away team ref: ${gameData.away_team_id.id}`);
-              allTeamRefs.push(gameData.away_team_id);
+            if (gameData.awayTeam) {
+              console.log(`[MyBoardsPage] Adding away team ref: ${gameData.awayTeam.id}`);
+              allTeamRefs.push(gameData.awayTeam);
             }
           }
         }
@@ -218,14 +209,14 @@ export default function MyBoardsPage() {
         let homeTeamData: TeamInfo | undefined = undefined;
         let awayTeamData: TeamInfo | undefined = undefined;
 
-        // Use cached game data instead of fetching again
-        gameData = gameDataCache.get(boardDoc.id) || null;
+                // Use cached game data instead of fetching again
+                gameData = gameDataCache.get(boardDoc.id) || null;
 
-        if (gameData) {
-          const homeTeamId = gameData.home_team_id?.id;
-          const awayTeamId = gameData.away_team_id?.id;
-          
-          console.log(`[MyBoardsPage] Board ${boardDoc.id}: Looking up home team ${homeTeamId}, away team ${awayTeamId}`);
+                if (gameData) {
+                  const homeTeamId = gameData.homeTeam?.id;
+                  const awayTeamId = gameData.awayTeam?.id;
+                  
+                  console.log(`[MyBoardsPage] Board ${boardDoc.id}: Looking up home team ${homeTeamId}, away team ${awayTeamId}`);
           
           homeTeamData = homeTeamId ? teamsMap[homeTeamId] : undefined;
           awayTeamData = awayTeamId ? teamsMap[awayTeamId] : undefined;
@@ -389,24 +380,15 @@ export default function MyBoardsPage() {
             // Cache game data by board ID
             gameDataCache.set(boardDoc.id, gameData);
             
-            // Debug: Log the game data structure to see what fields are available
-            console.log(`[MyBoardsPage] Historical - Game data for board ${boardDoc.id}:`, {
-              hasHomeTeamId: !!gameData.home_team_id,
-              hasAwayTeamId: !!gameData.away_team_id,
-              homeTeamIdType: typeof gameData.home_team_id,
-              awayTeamIdType: typeof gameData.away_team_id,
-              homeTeamIdValue: gameData.home_team_id,
-              awayTeamIdValue: gameData.away_team_id,
-              allKeys: Object.keys(gameData).join(', ')
-            });
+            // Cache game data by board ID
             
-            if (gameData.home_team_id) {
-              console.log(`[MyBoardsPage] Historical - Adding home team ref: ${gameData.home_team_id.id}`);
-              allTeamRefs.push(gameData.home_team_id);
+            if (gameData.homeTeam) {
+              console.log(`[MyBoardsPage] Historical - Adding home team ref: ${gameData.homeTeam.id}`);
+              allTeamRefs.push(gameData.homeTeam);
             }
-            if (gameData.away_team_id) {
-              console.log(`[MyBoardsPage] Historical - Adding away team ref: ${gameData.away_team_id.id}`);
-              allTeamRefs.push(gameData.away_team_id);
+            if (gameData.awayTeam) {
+              console.log(`[MyBoardsPage] Historical - Adding away team ref: ${gameData.awayTeam.id}`);
+              allTeamRefs.push(gameData.awayTeam);
             }
           }
         }
@@ -442,8 +424,8 @@ export default function MyBoardsPage() {
           gameData = gameDataCache.get(boardDoc.id) || null;
 
           if (gameData) {
-            const homeTeamId = gameData.home_team_id?.id;
-            const awayTeamId = gameData.away_team_id?.id;
+            const homeTeamId = gameData.homeTeam?.id;
+            const awayTeamId = gameData.awayTeam?.id;
             
             console.log(`[MyBoardsPage] Historical Board ${boardDoc.id}: Looking up home team ${homeTeamId}, away team ${awayTeamId}`);
             

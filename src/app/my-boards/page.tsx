@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -99,8 +99,8 @@ export default function MyBoardsPage() {
   }, [user, authLoading, fetchBoards]);
 
   // Filter and sort boards
-  const filterAndSortBoards = useCallback((boards: AppBoard[]) => {
-    let filtered = boards;
+  const filteredActiveBoards = useMemo(() => {
+    let filtered = activeBoards;
 
     // Search filter
     if (searchTerm) {
@@ -132,10 +132,42 @@ export default function MyBoardsPage() {
     });
 
     return filtered;
-  }, [searchTerm, statusFilter, sortBy]);
+  }, [activeBoards, searchTerm, statusFilter, sortBy]);
 
-  const filteredActiveBoards = filterAndSortBoards(activeBoards);
-  const filteredHistoricalBoards = filterAndSortBoards(historicalBoards);
+  const filteredHistoricalBoards = useMemo(() => {
+    let filtered = historicalBoards;
+
+    // Search filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(board => 
+        board.homeTeam.name.toLowerCase().includes(term) ||
+        board.awayTeam.name.toLowerCase().includes(term) ||
+        board.sport?.toLowerCase().includes(term)
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(board => board.status === statusFilter);
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'date':
+          return new Date(b.gameDateTime).getTime() - new Date(a.gameDateTime).getTime();
+        case 'amount':
+          return (b.amount || 0) - (a.amount || 0);
+        case 'status':
+          return a.status.localeCompare(b.status);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [historicalBoards, searchTerm, statusFilter, sortBy]);
 
   // Handle board click
   const handleBoardClick = useCallback((boardId: string) => {

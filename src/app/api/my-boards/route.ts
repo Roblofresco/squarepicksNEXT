@@ -55,11 +55,16 @@ export async function GET(request: NextRequest) {
 
     // Get all active boards
     console.log(`[API] Querying boards collection...`);
-    const boardsQuery = await db.collection('boards')
-      .where('status', 'in', ['open', 'full', 'active'])
-      .get();
-
-    console.log(`[API] Found ${boardsQuery.docs.length} total boards`);
+    let boardsQuery;
+    try {
+      boardsQuery = await db.collection('boards')
+        .where('status', 'in', ['open', 'full', 'active'])
+        .get();
+      console.log(`[API] Found ${boardsQuery.docs.length} total boards`);
+    } catch (error) {
+      console.error(`[API] Error querying boards collection:`, error);
+      return NextResponse.json({ error: 'Failed to query boards' }, { status: 500 });
+    }
 
     // Process boards in parallel to check user participation
     const boardPromises = boardsQuery.docs.map(async (boardDoc) => {
@@ -88,6 +93,11 @@ export async function GET(request: NextRequest) {
             const gameDoc = await boardData.gameID.get();
             if (gameDoc.exists) {
               gameData = gameDoc.data();
+              
+              // Add game ID to the data
+              if (gameData && !gameData.id) {
+                gameData.id = gameDoc.id;
+              }
               
               // Fetch team data in parallel
               if (gameData.homeTeam && gameData.awayTeam) {

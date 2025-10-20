@@ -1202,7 +1202,201 @@ function GamePageContent() {
           )}
           {gameDetails && gameDetails.status === 'final' && (
             <div className="mb-6">
-              {renderGrid()}
+              <div 
+                className="max-w-3xl mx-auto px-2 py-3 rounded-lg"
+                style={{ 
+                  background: 'radial-gradient(ellipse at center, rgba(20,28,48,0.98) 0%, rgba(20,28,48,0.9) 60%, rgba(20,28,48,0.0) 100%), #0a0e1b'
+                }}
+              >
+                <div className="text-[10px] sm:text-xs text-slate-400 mb-2 text-center font-medium">
+                  Winners
+                </div>
+                <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-md mx-auto">
+                  {/* Q1 */}
+                  {(() => { return (
+                  <div 
+                    className={cn(
+                          "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                          "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                          "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+                      q1WinningSquare 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            : "bg-black/30"
+                        )}
+                      >
+                        {q1WinningSquare ? (
+                      <>
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-xs font-semibold uppercase text-white">
+                            Q1
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold font-mono text-white">
+                            {q1WinningSquare}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
+                          <div className="flex-1 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-gray-500">
+                              --
+                            </span>
+                          </div>
+                          <Separator className="w-full bg-white/20" />
+                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                            <span className="text-xs font-semibold uppercase text-gray-400">
+                              Q1
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  ); })()}
+                  
+                  {/* Q2 */}
+                  {(() => { return (
+                <div 
+                  className={cn(
+                          "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                          "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                          "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+                    q2WinningSquare 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            : "bg-black/30"
+                        )}
+                      >
+                        {q2WinningSquare ? (
+                      <>
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-xs font-semibold uppercase text-white">
+                            Q2
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold font-mono text-white">
+                            {q2WinningSquare}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
+                          <div className="flex-1 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-gray-500">
+                              --
+                            </span>
+                          </div>
+                          <Separator className="w-full bg-white/20" />
+                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                            <span className="text-xs font-semibold uppercase text-gray-400">
+                              Q2
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                </div>
+                  ); })()}
+                  
+                  {/* Q3 */}
+                  {(() => { return (
+                <div 
+                  className={cn(
+                          "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                          "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                          "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+                    q3WinningSquare 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            : "bg-black/30"
+                        )}
+                      >
+                        {q3WinningSquare ? (
+                      <>
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-xs font-semibold uppercase text-white">
+                            Q3
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold font-mono text-white">
+                            {q3WinningSquare}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
+                          <div className="flex-1 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-gray-500">
+                              --
+                            </span>
+                          </div>
+                          <Separator className="w-full bg-white/20" />
+                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                            <span className="text-xs font-semibold uppercase text-gray-400">
+                              Q3
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                </div>
+                  ); })()}
+                  
+                  {/* FINAL */}
+                  {(() => { return (
+                <div 
+                  className={cn(
+                          "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                          "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
+                          "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+                    finalWinningSquare 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            : "bg-black/30"
+                        )}
+                      >
+                        {finalWinningSquare ? (
+                      <>
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-xs font-semibold uppercase text-white">
+                            Final
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold font-mono text-white">
+                            {finalWinningSquare}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
+                          <div className="flex-1 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-gray-500">
+                              --
+                            </span>
+                          </div>
+                          <Separator className="w-full bg-white/20" />
+                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                            <span className="text-xs font-semibold uppercase text-gray-400">
+                              Final
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+              </div>
+                  ); })()}
+                </div>
+              </div>
             </div>
           )}
 

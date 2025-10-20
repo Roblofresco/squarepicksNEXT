@@ -1213,7 +1213,7 @@ function GamePageContent() {
                 </div>
                 <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-md mx-auto">
                   {/* Q1 */}
-                  {(() => { const isQ1Current = gameDetails?.status === 'live' && !q1WinningSquare && Number(gameDetails.quarter) === 1; return (
+                  {(() => { return (
                   <div 
                     className={cn(
                           "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
@@ -1221,13 +1221,11 @@ function GamePageContent() {
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                       q1WinningSquare 
                             ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
-                            : "bg-black/30",
-                          isQ1Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
+                            : "bg-black/30"
                         )}
                       >
                         {q1WinningSquare ? (
                       <>
-                        {/* Assigned: Label container top, Number container bottom */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q1
@@ -1242,7 +1240,6 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes container top, Label container bottom */}
                         <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
                           <div className="flex-1 flex items-center justify-center">
                             <span className="text-2xl font-bold text-gray-500">
@@ -1262,7 +1259,7 @@ function GamePageContent() {
                   ); })()}
                   
                   {/* Q2 */}
-                  {(() => { const isQ2Current = gameDetails?.status === 'live' && !q2WinningSquare && Number(gameDetails.quarter) === 2; return (
+                  {(() => { return (
                 <div 
                   className={cn(
                           "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
@@ -1270,13 +1267,11 @@ function GamePageContent() {
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     q2WinningSquare 
                             ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
-                            : "bg-black/30",
-                          isQ2Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
+                            : "bg-black/30"
                         )}
                       >
                         {q2WinningSquare ? (
                       <>
-                        {/* Assigned: Label container top, Number container bottom */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q2
@@ -1291,7 +1286,6 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes container top, Label container bottom */}
                         <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
                           <div className="flex-1 flex items-center justify-center">
                             <span className="text-2xl font-bold text-gray-500">
@@ -1311,7 +1305,7 @@ function GamePageContent() {
                   ); })()}
                   
                   {/* Q3 */}
-                  {(() => { const isQ3Current = gameDetails?.status === 'live' && !q3WinningSquare && Number(gameDetails.quarter) === 3; return (
+                  {(() => { return (
                 <div 
                   className={cn(
                           "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
@@ -1319,13 +1313,11 @@ function GamePageContent() {
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     q3WinningSquare 
                             ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
-                            : "bg-black/30",
-                          isQ3Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
+                            : "bg-black/30"
                         )}
                       >
                         {q3WinningSquare ? (
                       <>
-                        {/* Assigned: Label container top, Number container bottom */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q3
@@ -1340,7 +1332,6 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes container top, Label container bottom */}
                         <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
                           <div className="flex-1 flex items-center justify-center">
                             <span className="text-2xl font-bold text-gray-500">
@@ -1360,7 +1351,7 @@ function GamePageContent() {
                   ); })()}
                   
                   {/* FINAL */}
-                  {(() => { const isFinalCurrent = gameDetails?.status === 'live' && !finalWinningSquare && Number(gameDetails.quarter) === 4; return (
+                  {(() => { return (
                 <div 
                   className={cn(
                           "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
@@ -1368,13 +1359,11 @@ function GamePageContent() {
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     finalWinningSquare 
                             ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
-                            : "bg-black/30",
-                          isFinalCurrent && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
+                            : "bg-black/30"
                         )}
                       >
                         {finalWinningSquare ? (
                       <>
-                        {/* Assigned: Label container top, Number container bottom */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-xs font-semibold uppercase text-white">
                             Final
@@ -1389,7 +1378,6 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes container top, Label container bottom */}
                         <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
                           <div className="flex-1 flex items-center justify-center">
                             <span className="text-2xl font-bold text-gray-500">

@@ -1105,8 +1105,8 @@ function LobbyContent() {
                                   onMounted={() => setTourContentReady(true)}
                                 />
                               );
-                            } else if (sweepstakesGame?.isLive || sweepstakesGame?.isOver) {
-                              console.log("[LobbyPage] Rendering both SweepstakesScoreboard and SweepstakesWinnersScoreboard");
+                            } else {
+                              console.log("[LobbyPage] Rendering SweepstakesScoreboard. Status:", sweepstakesGame?.status);
                               return (
                                 <div className="space-y-4">
                                   <SweepstakesScoreboard 
@@ -1119,29 +1119,29 @@ function LobbyContent() {
                                     homeScore={sweepstakesGame.home_score}
                                     timeRemaining={sweepstakesGame.timeRemaining}
                                   />
-                                  <SweepstakesWinnersScoreboard
-                                    q1WinningSquare={sweepstakesGame.q1WinningSquare}
-                                    q2WinningSquare={sweepstakesGame.q2WinningSquare}
-                                    q3WinningSquare={sweepstakesGame.q3WinningSquare}
-                                    finalWinningSquare={sweepstakesGame.finalWinningSquare}
-                                    isLive={sweepstakesGame.isLive}
-                                    currentQuarter={typeof sweepstakesGame.quarter === 'number' ? sweepstakesGame.quarter : undefined}
-                                  />
+                                  {sweepstakesGame?.isLive || sweepstakesGame?.isOver ? (
+                                    <SweepstakesWinnersScoreboard
+                                      q1WinningSquare={sweepstakesGame.q1WinningSquare}
+                                      q2WinningSquare={sweepstakesGame.q2WinningSquare}
+                                      q3WinningSquare={sweepstakesGame.q3WinningSquare}
+                                      finalWinningSquare={sweepstakesGame.finalWinningSquare}
+                                      isLive={sweepstakesGame.isLive}
+                                      currentQuarter={typeof sweepstakesGame.quarter === 'number' ? sweepstakesGame.quarter : undefined}
+                                    />
+                                  ) : sweepstakesGame?.status === 'scheduled' ? (
+                                    <SweepstakesBoardCard 
+                                      board={sweepstakesBoard}
+                                      user={user}
+                                      onProtectedAction={handleProtectedAction}
+                                      entryInteraction={entryInteraction}
+                                      handleBoardAction={handleBoardAction}
+                                      openWalletDialog={openWalletDialog}
+                                      walletHasWallet={hasWallet}
+                                      walletBalance={balance}
+                                      walletIsLoading={isWalletLoading}
+                                    />
+                                  ) : null}
                                 </div>
-                              );
-                            } else {
-                              console.log("[LobbyPage] Rendering SweepstakesScoreboard with status:", sweepstakesGame?.status);
-                              return (
-                                <SweepstakesScoreboard 
-                                  awayTeam={sweepstakesTeams[sweepstakesGame.teamA.id]!}
-                                  homeTeam={sweepstakesTeams[sweepstakesGame.teamB.id]!}
-                                  status={sweepstakesGame.status}
-                                  gameTime={sweepstakesGame.period} // Assuming period is gameTime string
-                                  quarter={sweepstakesGame.quarter} // Assuming quarter is also relevant
-                                  awayScore={sweepstakesGame.away_score}
-                                  homeScore={sweepstakesGame.home_score}
-                                  timeRemaining={sweepstakesGame.timeRemaining}
-                                />
                               );
                             }
                           })()}

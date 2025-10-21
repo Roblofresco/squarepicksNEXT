@@ -194,7 +194,7 @@ function GamePageContent() {
         setGameDetails({
           id: gameSnap.id,
           sport: gameData.sport,
-          status: (gameData.isLive ?? gameData.is_live) ? 'live' : ((gameData.isOver ?? gameData.is_over) ? 'final' : 'upcoming'),
+          status: (gameData.isLive ?? gameData.is_live) ? 'live' : ((gameData.isOver ?? gameData.is_over) ? 'final' : 'scheduled'),
           teamA: teamAData, teamB: teamBData,
           away_team_id: gameData.away_team_id as DocumentReference,
           home_team_id: gameData.home_team_id as DocumentReference,
@@ -794,9 +794,9 @@ function GamePageContent() {
   const glowA = glowHexA ? `${glowHexA}cc` : 'rgba(27,176,242,0.8)';
   const glowB = glowHexB ? `${glowHexB}cc` : 'rgba(27,176,242,0.8)';
 
-  const effectiveView = requestedView === 'final' || requestedView === 'live' || requestedView === 'upcoming'
+  const effectiveView = requestedView === 'final' || requestedView === 'live' || requestedView === 'scheduled'
     ? requestedView
-    : (gameDetails.status === 'final' ? 'final' : (gameDetails.status === 'live' ? 'live' : 'upcoming'));
+    : (gameDetails.status === 'final' ? 'final' : (gameDetails.status === 'live' ? 'live' : 'scheduled'));
 
   return (
     <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-slate-900"><Loader2 className="h-16 w-16 animate-spin text-accent-1" /></div>}> 
@@ -936,7 +936,7 @@ function GamePageContent() {
 
           <div className="h-px w-full bg-white/10 mb-3" />
 
-          {gameDetails && gameDetails.status === 'upcoming' && (
+          {gameDetails && gameDetails.status === 'scheduled' && (
             <div
               ref={entryFeeRef}
                   className={cn(
@@ -970,7 +970,7 @@ function GamePageContent() {
             </div>
           )}
 
-          {gameDetails && gameDetails.status === 'upcoming' && (
+          {gameDetails && gameDetails.status === 'scheduled' && (
             <div className="mb-6">
               <h2 className="text-lg sm:text-xl font-semibold mb-3 text-center text-slate-100">Select Your Squares <span className="text-xs text-slate-400">(Max {MAX_SQUARE_SELECTION_LIMIT})</span></h2>
               {renderGrid()}

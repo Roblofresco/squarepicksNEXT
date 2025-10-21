@@ -26,7 +26,7 @@ function SweepstakesScoreboardComponent({
   timeRemaining,
 }: SweepstakesScoreboardProps) {
   const isLive = status === 'live' || status === 'in_progress';
-  const isUpcoming = status === 'upcoming';
+  const isUpcoming = status === 'scheduled';
   const isFinal = status === 'final';
 
   // Define base styles for team sections to avoid repetition

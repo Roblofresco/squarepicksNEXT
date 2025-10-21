@@ -45,7 +45,6 @@ export interface Game {
   id: string;           // Firestore document ID (or the value from 'game_id' field if it's the primary business key)
   sport: string;        // From 'sport' field in Firestore
   status: string;       // From 'status' field in Firestore (e.g., "scheduled", "live", "final")
-  originalStatus?: string; // Original Firestore status before any transformations
 
   // Normalized camelCase flags (preferred)
   isLive?: boolean;

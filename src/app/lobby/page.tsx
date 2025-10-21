@@ -367,6 +367,7 @@ function LobbyContent() {
                     quarter: gameDataFirestore.quarter || '',
                     sport: gameDataFirestore.sport || SWEEPSTAKES_SPORT_ID,
                     status: gameDataFirestore.status === 'scheduled' ? 'upcoming' : (gameDataFirestore.status || 'upcoming'),
+                    originalStatus: gameDataFirestore.status,
                     broadcastProvider: gameDataFirestore.broadcastProvider || gameDataFirestore.broadcast_provider,
                     broadcast_provider: gameDataFirestore.broadcast_provider ?? undefined,
                     timeRemaining: gameDataFirestore.timeRemaining || '',
@@ -1128,7 +1129,7 @@ function LobbyContent() {
                                       isLive={sweepstakesGame.isLive}
                                       currentQuarter={typeof sweepstakesGame.quarter === 'number' ? sweepstakesGame.quarter : undefined}
                                     />
-                                  ) : sweepstakesGame?.status === 'upcoming' ? (
+                                  ) : sweepstakesGame?.originalStatus === 'scheduled' ? (
                                     <SweepstakesBoardCard 
                                       board={sweepstakesBoard}
                                       user={user}

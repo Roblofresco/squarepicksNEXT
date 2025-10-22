@@ -52,7 +52,8 @@ export default function MyBoardsPage() {
       // Get Firebase ID token for authentication
       const idToken = await user.getIdToken();
       
-      const response = await fetch('/api/my-boards', {
+      // Fetch based on active tab
+      const response = await fetch(`/api/my-boards?tab=${activeTab}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${idToken}`,
@@ -70,18 +71,16 @@ export default function MyBoardsPage() {
         throw new Error('Failed to fetch boards');
       }
 
-      // Separate active and historical boards
-      const active = data.boards.filter(board => 
-        ['open', 'full', 'active'].includes(board.status)
-      );
-      const historical = data.boards.filter(board => 
-        !['open', 'full', 'active'].includes(board.status)
-      );
-
-      setActiveBoards(active);
-      setHistoricalBoards(historical);
+      // No need to filter - API returns correct boards for the tab
+      if (activeTab === 'active') {
+        setActiveBoards(data.boards);
+        setHistoricalBoards([]);
+      } else {
+        setHistoricalBoards(data.boards);
+        setActiveBoards([]);
+      }
       
-      console.log(`[MyBoardsPage] Loaded ${active.length} active and ${historical.length} historical boards`);
+      console.log(`[MyBoardsPage] Loaded ${data.boards.length} ${activeTab} boards`);
       
     } catch (error) {
       console.error('[MyBoardsPage] Error fetching boards:', error);
@@ -89,14 +88,14 @@ export default function MyBoardsPage() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, activeTab]);
 
-  // Load boards when user changes
+  // Load boards when user changes or tab changes
   useEffect(() => {
     if (user && !authLoading) {
       fetchBoards();
     }
-  }, [user, authLoading, fetchBoards]);
+  }, [user, authLoading, activeTab, fetchBoards]);
 
   // Filter and sort boards
   const filteredActiveBoards = useMemo(() => {

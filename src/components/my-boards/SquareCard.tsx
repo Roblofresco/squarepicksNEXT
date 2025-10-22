@@ -107,9 +107,10 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   const dateStr = gameDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
   const timeStr = gameDate.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
 
+  const boardAmount = typeof board.amount === 'number' ? board.amount : 0;
   const stakeAmount = typeof board.stake === 'number' ? board.stake : undefined;
   const potDisplay = typeof stakeAmount === 'number' ? (stakeAmount * 80) : undefined;
-  const isSweepstakes = (stakeAmount ?? 0) === 0;
+  const isSweepstakes = boardAmount === 0;
 
   const bracketIdx = (val?: number) => typeof val === 'number' ? `[ ${String(val).padStart(2,'0')} ]` : `[ -- ]`;
   const bracketSquare = (sq?: string, idx?: number) => sq ? `[ ${sq} ]` : bracketIdx(idx);
@@ -233,6 +234,10 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
 
         <div className="mt-1 flex items-center justify-between text-sm">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            {/* Show Amount row for non-sweepstakes boards */}
+            {!isSweepstakes && typeof boardAmount === 'number' && (
+              <span>Amount: ${boardAmount.toFixed(2)}</span>
+            )}
             {typeof stakeAmount === 'number' && (
               <span>Entry: ${stakeAmount.toFixed(2)}</span>
             )}

@@ -883,7 +883,7 @@ function GamePageContent() {
                     )}
                   </>
                 )}
-                {effectiveView === 'upcoming' && (
+                {effectiveView === 'scheduled' && (
                   <>
                     <div className="text-lg sm:text-xl md:text-2xl font-semibold text-accent-1 mb-1">
                       {gameDetails.time}

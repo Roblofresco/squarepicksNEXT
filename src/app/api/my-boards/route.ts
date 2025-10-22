@@ -58,37 +58,63 @@ export async function GET(request: NextRequest) {
     // Step 1: Query ONLY user's squares across all boards using collection group
     const userRef = db.doc(`users/${userId}`);
     console.log(`[API] Querying user's squares with collection group...`);
-    
-    let userSquaresQuery;
-    try {
-      userSquaresQuery = await db.collectionGroup('squares')
-        .where('userID', '==', userRef)
-        .get();
-      console.log(`[API] Found ${userSquaresQuery.docs.length} squares owned by user`);
-    } catch (error) {
-      console.error(`[API] Error querying user squares:`, error);
-      return NextResponse.json({ error: 'Failed to query user squares' }, { status: 500 });
-    }
 
-    if (userSquaresQuery.empty) {
-      console.log(`[API] User has no squares, returning empty result`);
-      return NextResponse.json({
-        success: true,
-        boards: [],
-        timestamp: Date.now()
-      }, {
-        headers: {
-          'Cache-Control': 'private, max-age=300',
-          'X-Content-Type-Options': 'nosniff',
-          'X-Frame-Options': 'DENY',
-          'X-XSS-Protection': '1; mode=block'
+    // Compatibility: support three encodings of userID in historical data
+    // 1) DocumentReference users/{uid}
+    // 2) string uid
+    // 3) string path 'users/{uid}'
+    let hadIndexError = false;
+    const isIndexError = (e: any) => {
+      const msg = String(e?.message || '').toLowerCase();
+      const code = String((e as any)?.code || '').toUpperCase();
+      return msg.includes('index') || code.includes('FAILED_PRECONDITION');
+    };
+
+    const safeQuery = async (value: any) => {
+      try {
+        const snap = await db.collectionGroup('squares').where('userID', '==', value).get();
+        return snap?.docs || [];
+      } catch (e) {
+        if (isIndexError(e)) {
+          hadIndexError = true;
+          console.warn('[API] Collection group index likely required for squares.userID. Proceeding with soft-fail merge.', e);
+          return [] as any[];
         }
-      });
+        console.error('[API] Error querying collection group squares:', e);
+        throw e;
+      }
+    };
+
+    const [docsRef, docsUid, docsPath] = await Promise.all([
+      safeQuery(userRef),
+      safeQuery(userId),
+      safeQuery(`users/${userId}`)
+    ]);
+
+    // Merge and dedupe by document path
+    const userSquareDocsMap = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
+    [...docsRef, ...docsUid, ...docsPath].forEach((d: any) => {
+      if (d && d.ref?.path) userSquareDocsMap.set(d.ref.path, d);
+    });
+    const userSquareDocs = Array.from(userSquareDocsMap.values());
+    console.log(`[API] Found ${userSquareDocs.length} user squares across variants`);
+
+    if (userSquareDocs.length === 0) {
+      // Soft-fail: if index missing or simply no squares, return empty set (200) instead of 500
+      const headers: Record<string, string> = {
+        'Cache-Control': 'private, max-age=300',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block'
+      };
+      if (hadIndexError) headers['X-Firestore-Index-Required'] = 'collectionGroup:squares.userID';
+      console.log('[API] No user squares found. Returning empty list. hadIndexError =', hadIndexError);
+      return NextResponse.json({ success: true, boards: [], timestamp: Date.now() }, { headers });
     }
 
     // Extract unique board IDs from user's squares
     const boardIds = new Set<string>();
-    userSquaresQuery.docs.forEach(doc => {
+    userSquareDocs.forEach(doc => {
       const boardId = doc.ref.parent.parent?.id;
       if (boardId) boardIds.add(boardId);
     });
@@ -190,7 +216,7 @@ export async function GET(request: NextRequest) {
         : null;
       
       // Get user's squares for this board from the initial query
-      const userSquares = userSquaresQuery.docs
+      const userSquares = userSquareDocs
         .filter(doc => doc.ref.parent.parent?.id === boardDoc.id)
         .map(doc => ({
           index: doc.data().index || 0,

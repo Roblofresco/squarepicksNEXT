@@ -136,17 +136,11 @@ export async function GET(request: NextRequest) {
       boardBatches.push(batch);
     }
 
-    // Fetch boards in parallel batches
-    const boardDocs = await Promise.all(
-      boardBatches.map(batch =>
-        db.collection('boards')
-          .where(FieldPath.documentId(), 'in', batch)
-          .get()
-      )
+    // Fetch boards by ID directly (avoid 'in' operator limits and index issues)
+    const boardSnaps = await Promise.all(
+      boardIdArray.map(id => db.doc(`boards/${id}`).get())
     );
-
-    // Flatten results
-    const allBoards = boardDocs.flatMap(snapshot => snapshot.docs);
+    const allBoards = boardSnaps.filter(snap => snap.exists);
 
     // Step 3: Filter by tab (active vs history)
     const activeStatuses = ['open', 'full', 'active'];
@@ -157,8 +151,8 @@ export async function GET(request: NextRequest) {
     ];
 
     const filteredBoards = allBoards.filter(doc => {
-      const status = doc.data().status;
-      return tab === 'active' 
+      const status = String((doc.data() as any)?.status || '');
+      return tab === 'active'
         ? activeStatuses.includes(status)
         : historyStatuses.includes(status);
     });
@@ -168,7 +162,7 @@ export async function GET(request: NextRequest) {
     // Step 4: Batch fetch related documents (games & teams)
     const gameRefs = new Map<string, any>();
     filteredBoards.forEach(doc => {
-      const gameID = doc.data().gameID;
+      const gameID = (doc.data() as any)?.gameID;
       if (gameID?.path) {
         gameRefs.set(gameID.path, gameID);
       }
@@ -189,8 +183,8 @@ export async function GET(request: NextRequest) {
     // Collect unique team refs from games
     const teamRefs = new Map<string, any>();
     games.forEach(gameDoc => {
-      if (gameDoc.exists) {
-        const data = gameDoc.data();
+      if (gameDoc && gameDoc.exists) {
+        const data = (gameDoc.data?.() as any) || {};
         if (data?.homeTeam?.path) teamRefs.set(data.homeTeam.path, data.homeTeam);
         if (data?.awayTeam?.path) teamRefs.set(data.awayTeam.path, data.awayTeam);
       }
@@ -210,7 +204,7 @@ export async function GET(request: NextRequest) {
 
     // Step 5: Build response with cached data
     const boards = filteredBoards.map(boardDoc => {
-      const boardData = boardDoc.data();
+      const boardData = (boardDoc.data() as any) || {};
       const gameData = gameDataMap.get(boardData.gameID?.path);
       
       const homeTeam = gameData?.homeTeam?.path 
@@ -238,34 +232,34 @@ export async function GET(request: NextRequest) {
         homeTeam: homeTeam || { name: 'Team A', initials: 'TA', logo: undefined },
         awayTeam: awayTeam || { name: 'Team B', initials: 'TB', logo: undefined },
         gameDateTime: gameData?.dateTime || boardData.created_time?.toDate?.()?.toISOString() || new Date().toISOString(),
-        status: boardData.status,
-        amount: boardData.amount || 0,
-        stake: boardData.amount || 0, // Add stake field for consistency
-        pot: boardData.pot || (boardData.amount * 80) || 0,
+        status: boardData?.status,
+        amount: boardData?.amount || 0,
+        stake: boardData?.amount || 0, // Add stake field for consistency
+        pot: boardData?.pot || (boardData?.amount * 80) || 0,
         is_live: gameData?.status === 'live' || false,
         broadcast_provider: gameData?.broadcast_provider || undefined,
         sport: gameData?.sport || 'NFL',
         league: gameData?.league || 'NFL',
         userSquareCount,
         isFull,
-        selected_indexes_on_board: boardData.selected_indexes || [],
+        selected_indexes_on_board: boardData?.selected_indexes || [],
         totalSquareCount: 100,
         // For UI display
         userPickedSquares: userSquares,
         // Quarter winners (if available)
-        q1_winning_square: boardData.q1_winning_square,
-        q2_winning_square: boardData.q2_winning_square,
-        q3_winning_square: boardData.q3_winning_square,
-        q4_winning_square: boardData.q4_winning_square,
-        q1_winning_index: boardData.q1_winning_index,
-        q2_winning_index: boardData.q2_winning_index,
-        q3_winning_index: boardData.q3_winning_index,
-        q4_winning_index: boardData.q4_winning_index,
+        q1_winning_square: boardData?.q1_winning_square,
+        q2_winning_square: boardData?.q2_winning_square,
+        q3_winning_square: boardData?.q3_winning_square,
+        q4_winning_square: boardData?.q4_winning_square,
+        q1_winning_index: boardData?.q1_winning_index,
+        q2_winning_index: boardData?.q2_winning_index,
+        q3_winning_index: boardData?.q3_winning_index,
+        q4_winning_index: boardData?.q4_winning_index,
         // User win status
-        userWon_q1: boardData.userWon_q1 || false,
-        userWon_q2: boardData.userWon_q2 || false,
-        userWon_q3: boardData.userWon_q3 || false,
-        userWon_final: boardData.userWon_final || false,
+        userWon_q1: boardData?.userWon_q1 || false,
+        userWon_q2: boardData?.userWon_q2 || false,
+        userWon_q3: boardData?.userWon_q3 || false,
+        userWon_final: boardData?.userWon_final || false,
       };
     });
 

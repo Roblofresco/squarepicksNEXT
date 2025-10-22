@@ -408,7 +408,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
 
   return (
     <div 
-      className={`bg-gradient-to-b from-background-primary from-0% to-[#B8860B] to-5% p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20 ${isActive ? 'ring-2 ring-[#5855e0] z-40' : ''}`}
+      className={`bg-gradient-to-b from-background-primary from-0% to-[#B8860B] to-2% p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20 ${isActive ? 'ring-2 ring-[#5855e0] z-40' : ''}`}
     >
       <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
         <span className="text-sm sm:text-base text-white font-semibold select-none min-w-0">

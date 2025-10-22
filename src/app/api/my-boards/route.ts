@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
 
     // If fallback enabled, build a minimal response without fetching games/teams
     if (FALLBACK_MY_BOARDS) {
-      const activeStatuses = ['open', 'full', 'active'];
+      const activeStatuses = ['open', 'full', 'active', 'unfilled'];
       const historyStatuses = [
         'IN_PROGRESS_Q1', 'IN_PROGRESS_Q2', 'IN_PROGRESS_Q3',
         'IN_PROGRESS_HALFTIME', 'IN_PROGRESS_Q4', 'IN_PROGRESS_OT',
@@ -207,7 +207,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Step 3: Filter by tab (active vs history)
-    const activeStatuses = ['open', 'full', 'active'];
+    const activeStatuses = ['open', 'full', 'active', 'unfilled'];
     const historyStatuses = [
       'IN_PROGRESS_Q1', 'IN_PROGRESS_Q2', 'IN_PROGRESS_Q3', 
       'IN_PROGRESS_HALFTIME', 'IN_PROGRESS_Q4', 'IN_PROGRESS_OT',

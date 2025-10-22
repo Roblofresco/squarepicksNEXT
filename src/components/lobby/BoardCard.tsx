@@ -5,6 +5,7 @@ import { User as FirebaseUser } from 'firebase/auth';
 import { Board as BoardType, Game as GameType, TeamInfo, SquareEntry } from '@/types/lobby';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, limit, DocumentData, DocumentReference, doc } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { BOARD_STATUS_OPEN } from '@/config/lobbyConfig';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -118,68 +119,31 @@ const BoardCard = memo((props: BoardCardProps) => {
 
   }, [game.id, game.teamA, game.teamB, purchaseTrigger]); // Added purchaseTrigger
 
-  // Effect to fetch current user's squares for the activeBoard (supports ref or legacy string IDs)
+  // Effect to fetch current user's squares for the activeBoard using Cloud Function
   useEffect(() => {
     if (!activeBoard?.id || !currentUserId) {
       setBoardCardCurrentUserSquaresSet(new Set());
-      return () => {};
+      return;
     }
 
-    const squaresSubcollectionRef = collection(db, 'boards', activeBoard.id, 'squares');
-    const userDocRef = doc(db, 'users', currentUserId);
-
-    let refOwnedSquares = new Set<number>();
-    let stringOwnedSquares = new Set<number>();
-
-    const updateCombinedSquares = () => {
-      const combined = new Set<number>();
-      refOwnedSquares.forEach((sq) => combined.add(sq));
-      stringOwnedSquares.forEach((sq) => combined.add(sq));
-      setBoardCardCurrentUserSquaresSet(combined);
+    const fetchUserSquares = async () => {
+      try {
+        const functions = getFunctions(undefined, "us-east1");
+        const getSelectionsFn = httpsCallable(functions, 'getBoardUserSelections');
+        const result = await getSelectionsFn({ boardID: activeBoard.id });
+        const data = result.data as { selectedIndexes?: number[] };
+        if (data?.selectedIndexes && Array.isArray(data.selectedIndexes)) {
+          setBoardCardCurrentUserSquaresSet(new Set(data.selectedIndexes));
+        } else {
+          setBoardCardCurrentUserSquaresSet(new Set());
+        }
+      } catch (error) {
+        console.error('Error fetching user squares:', error);
+        setBoardCardCurrentUserSquaresSet(new Set());
+      }
     };
 
-    const unsubscribeRefQuery = onSnapshot(
-      query(squaresSubcollectionRef, where('userID', '==', userDocRef)),
-      (snapshot) => {
-        refOwnedSquares = new Set<number>();
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as Partial<SquareEntry>;
-          if (typeof data.index === 'number') {
-            refOwnedSquares.add(data.index);
-          }
-        });
-        updateCombinedSquares();
-      },
-      (error) => {
-        console.error(`Error fetching user squares by reference for board ${activeBoard.id} in BoardCard:`, error);
-        refOwnedSquares = new Set<number>();
-        updateCombinedSquares();
-      }
-    );
-
-    const unsubscribeStringQuery = onSnapshot(
-      query(squaresSubcollectionRef, where('userID', '==', currentUserId)),
-      (snapshot) => {
-        stringOwnedSquares = new Set<number>();
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as Partial<SquareEntry>;
-          if (typeof data.index === 'number') {
-            stringOwnedSquares.add(data.index);
-          }
-        });
-        updateCombinedSquares();
-      },
-      (error) => {
-        console.error(`Error fetching user squares by string for board ${activeBoard.id} in BoardCard:`, error);
-        stringOwnedSquares = new Set<number>();
-        updateCombinedSquares();
-      }
-    );
-
-    return () => {
-      unsubscribeRefQuery();
-      unsubscribeStringQuery();
-    };
+    fetchUserSquares();
   }, [activeBoard?.id, currentUserId, purchaseTrigger]);
 
   // Determine if the interaction state applies to *this* card's active board

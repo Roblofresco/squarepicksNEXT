@@ -336,7 +336,7 @@ function GamePageContent() {
     };
   }, [gameId, selectedEntryAmount, entrySuccessCount]);
 
-  // Effect to fetch current user's purchased squares for the current board (live, supports ref and legacy string userID)
+  // Effect: Fetch user's purchased squares using Cloud Function
   useEffect(() => {
     if (!currentBoard?.id || !userId) {
       setCurrentUserPurchasedSquaresSet(new Set());
@@ -344,62 +344,27 @@ function GamePageContent() {
       return;
     }
 
-    setIsLoadingUserSquares(true);
-
-    const squaresRef = collection(db, 'boards', currentBoard.id, 'squares');
-    const userDocRef = doc(db, 'users', userId);
-
-    let refOwned = new Set<number>();
-    let strOwned = new Set<number>();
-
-    const updateCombined = () => {
-      const combined = new Set<number>();
-      refOwned.forEach((i) => combined.add(i));
-      strOwned.forEach((i) => combined.add(i));
-      setCurrentUserPurchasedSquaresSet(combined);
-      setIsLoadingUserSquares(false);
+    const fetchUserSquares = async () => {
+      setIsLoadingUserSquares(true);
+      try {
+        const functions = getFunctions(undefined, "us-east1");
+        const getSelectionsFn = httpsCallable(functions, 'getBoardUserSelections');
+        const result = await getSelectionsFn({ boardID: currentBoard.id });
+        const data = result.data as { selectedIndexes?: number[] };
+        if (data?.selectedIndexes && Array.isArray(data.selectedIndexes)) {
+          setCurrentUserPurchasedSquaresSet(new Set(data.selectedIndexes));
+        } else {
+          setCurrentUserPurchasedSquaresSet(new Set());
+        }
+      } catch (error) {
+        console.error('Error fetching user squares:', error);
+        setCurrentUserPurchasedSquaresSet(new Set());
+      } finally {
+        setIsLoadingUserSquares(false);
+      }
     };
 
-    const unsubRef = onSnapshot(
-      query(squaresRef, where('userID', '==', userDocRef)),
-      (snapshot) => {
-        refOwned = new Set<number>();
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const idx = data?.index;
-          if (typeof idx === 'number') refOwned.add(idx);
-        });
-        updateCombined();
-      },
-      (error) => {
-        console.error(`[GamePage] Ref userID query failed for board ${currentBoard.id}:`, error);
-        refOwned = new Set<number>();
-        updateCombined();
-      }
-    );
-
-    const unsubStr = onSnapshot(
-      query(squaresRef, where('userID', '==', userId)),
-      (snapshot) => {
-        strOwned = new Set<number>();
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const idx = data?.index;
-          if (typeof idx === 'number') strOwned.add(idx);
-        });
-        updateCombined();
-      },
-      (error) => {
-        console.error(`[GamePage] String userID query failed for board ${currentBoard.id}:`, error);
-        strOwned = new Set<number>();
-        updateCombined();
-      }
-    );
-
-    return () => {
-      unsubRef();
-      unsubStr();
-    };
+    fetchUserSquares();
   }, [currentBoard?.id, userId, entrySuccessCount]);
 
   // New useEffect for redirection based on email verification status

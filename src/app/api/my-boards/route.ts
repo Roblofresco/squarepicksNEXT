@@ -60,8 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = decodedToken.uid;
-    const tab = request.nextUrl.searchParams.get('tab') || 'active';
-    console.log(`[API] Fetching ${tab} boards for user: ${userId}`);
+    console.log(`[API] Fetching all boards for user: ${userId}`);
 
     // Step 1: Query user's squares from top-level squares collection
     const userRef = db.doc(`users/${userId}`);
@@ -69,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     const userSquaresSnap = await db.collection('squares')
       .where('userID', '==', userRef)
-      .get();
+        .get();
 
     console.log(`[API] Found ${userSquaresSnap.size} squares for user`);
 
@@ -128,17 +127,8 @@ export async function GET(request: NextRequest) {
 
     // If fallback enabled, build a minimal response without fetching games/teams
     if (FALLBACK_MY_BOARDS) {
-      const activeStatuses = ['open', 'full', 'active', 'unfilled'];
-      const historyStatuses = [
-        'IN_PROGRESS_Q1', 'IN_PROGRESS_Q2', 'IN_PROGRESS_Q3',
-        'IN_PROGRESS_HALFTIME', 'IN_PROGRESS_Q4', 'IN_PROGRESS_OT',
-        'FINAL_WON', 'FINAL_LOST', 'CANCELLED'
-      ];
-
-      const filtered = allBoards.filter(doc => {
-        const status = String((doc.data() as any)?.status || '');
-        return tab === 'active' ? activeStatuses.includes(status) : historyStatuses.includes(status);
-      });
+      // Return all boards - frontend will filter by status
+      const filtered = allBoards;
 
       const boards = filtered.map(b => {
         const bd = (b.data() as any) || {};
@@ -185,22 +175,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Step 3: Filter by tab (active vs history)
-    const activeStatuses = ['open', 'full', 'active', 'unfilled'];
-    const historyStatuses = [
-      'IN_PROGRESS_Q1', 'IN_PROGRESS_Q2', 'IN_PROGRESS_Q3', 
-      'IN_PROGRESS_HALFTIME', 'IN_PROGRESS_Q4', 'IN_PROGRESS_OT',
-      'FINAL_WON', 'FINAL_LOST', 'CANCELLED'
-    ];
-
-    const filteredBoards = allBoards.filter(doc => {
-      const status = String((doc.data() as any)?.status || '');
-      return tab === 'active'
-        ? activeStatuses.includes(status)
-        : historyStatuses.includes(status);
-    });
-
-    console.log(`[API] Filtered to ${filteredBoards.length} boards for ${tab} tab`);
+    // Step 3: Return all boards - frontend will filter by status client-side
+    const filteredBoards = allBoards;
+    console.log(`[API] Returning ${filteredBoards.length} boards (all statuses)`);
 
     // Step 4: Batch fetch related documents (games & teams)
     const gameRefs = new Map<string, any>();

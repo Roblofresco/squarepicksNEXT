@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ACTIVE_BOARD_STATUSES, HISTORY_BOARD_STATUSES } from '@/constants/boardStatuses';
  
 interface ApiResponse {
   success: boolean;
@@ -52,10 +53,8 @@ export default function MyBoardsPage() {
       // Get Firebase ID token for authentication
       const idToken = await user.getIdToken();
       
-      // If debug=all in URL, hit the all route once (ignore tabs)
-      const useAll = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'all';
-      const endpoint = useAll ? '/api/my-boards/all' : `/api/my-boards?tab=${activeTab}`;
-      const response = await fetch(endpoint, {
+      // Always fetch ALL boards (no tab parameter)
+      const response = await fetch('/api/my-boards', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${idToken}`,
@@ -73,26 +72,18 @@ export default function MyBoardsPage() {
         throw new Error('Failed to fetch boards');
       }
 
-      // Debug logs
-      try {
-        console.log('[MyBoardsPage] endpoint:', endpoint,
-          'X-MyBoards-All:', response.headers.get('X-MyBoards-All'),
-          'X-MyBoards-Squares:', response.headers.get('X-MyBoards-Squares'),
-          'X-MyBoards-Variants:', response.headers.get('X-MyBoards-Variants'),
-          'X-MyBoards-Error:', response.headers.get('X-MyBoards-Error'));
-        console.log('[MyBoardsPage] boards:', (data as any)?.boards?.map?.((b:any)=>({id:b.id,status:b.status,picks:b.userPickedSquares?.length||0})));
-      } catch {}
-
-      // No need to filter - API returns correct boards for the tab or all
-      if (useAll || activeTab === 'active') {
-        setActiveBoards(data.boards);
-        setHistoricalBoards([]);
-      } else {
-        setHistoricalBoards(data.boards);
-        setActiveBoards([]);
-      }
+      // Separate by status client-side
+      const active = data.boards.filter(b => 
+        ACTIVE_BOARD_STATUSES.includes(b.status as any)
+      );
+      const history = data.boards.filter(b => 
+        HISTORY_BOARD_STATUSES.includes(b.status as any)
+      );
       
-      console.log(`[MyBoardsPage] Loaded ${data.boards.length} ${activeTab} boards`);
+      setActiveBoards(active);
+      setHistoricalBoards(history);
+      
+      console.log(`[MyBoardsPage] Loaded ${active.length} active boards, ${history.length} history boards (${data.boards.length} total)`);
       
     } catch (error) {
       console.error('[MyBoardsPage] Error fetching boards:', error);
@@ -100,14 +91,14 @@ export default function MyBoardsPage() {
     } finally {
       setLoading(false);
     }
-  }, [user, activeTab]);
+  }, [user]);
 
-  // Load boards when user changes or tab changes
+  // Load boards when user changes (NOT when tab changes)
   useEffect(() => {
     if (user && !authLoading) {
       fetchBoards();
     }
-  }, [user, authLoading, activeTab, fetchBoards]);
+  }, [user, authLoading, fetchBoards]);
 
   // Filter and sort boards
   const filteredActiveBoards = useMemo(() => {

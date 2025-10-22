@@ -13,6 +13,7 @@ export const ACTIVE_BOARD_STATUSES = [
 
 export const HISTORY_BOARD_STATUSES = [
   'unfilled',           // Game started without filling → users automatically refunded, board closed
+  'closed',             // Game ended, winners paid, board complete
   'IN_PROGRESS_Q1',     // In-game statuses (transitional)
   'IN_PROGRESS_Q2',
   'IN_PROGRESS_Q3',

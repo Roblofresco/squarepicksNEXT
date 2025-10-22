@@ -411,7 +411,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
       className={`bg-[#B8860B] p-4 rounded-xl shadow-lg glow-border-gold max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-6 relative mb-20 ${isActive ? 'ring-2 ring-[#5855e0] z-40' : ''}`}
     >
       {/* Fade area above the "Choose Your Pick" container */}
-      <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-background-primary from-0% to-[#B8860B] to-100% rounded-t-xl"></div>
+      <div className="h-8 bg-gradient-to-b from-background-primary from-0% to-[#B8860B] to-100% rounded-t-xl -m-4 mb-0"></div>
       <div className="p-3 mb-3 rounded-md bg-black/10 backdrop-blur-sm flex items-center justify-between space-x-2 min-h-16">
         <span className="text-sm sm:text-base text-white font-semibold select-none min-w-0">
           {isLoadingParticipantStatus ? "Checking status..." :

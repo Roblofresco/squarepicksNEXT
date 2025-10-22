@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     const userRef = db.doc(`users/${userId}`);
     // Single-board query mirroring the working Cloud Function
-    const squaresSnap = await db.collection(`boards/${boardId}/squares`).where('userID','==', userRef).get();
+    const squaresSnap = await db.collection('squares').where('boardId', '==', boardId).where('userID','==', userRef).get();
 
     if (squaresSnap.empty) {
       return NextResponse.json({ success: true, boards: [], timestamp: Date.now() }, { headers: { 'X-MyBoards-Board-Squares': '0' } });

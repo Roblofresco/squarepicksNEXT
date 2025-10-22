@@ -63,68 +63,49 @@ export async function GET(request: NextRequest) {
     const tab = request.nextUrl.searchParams.get('tab') || 'active';
     console.log(`[API] Fetching ${tab} boards for user: ${userId}`);
 
-    // Step 1: Query ONLY user's squares across all boards using collection group
+    // Step 1: Query user's squares from top-level squares collection
     const userRef = db.doc(`users/${userId}`);
-    console.log(`[API] Querying user's squares with collection group...`);
+    console.log(`[API] Querying user's squares from top-level squares collection...`);
 
-    // Compatibility: support three encodings of userID in historical data
-    // 1) DocumentReference users/{uid}
-    // 2) string uid
-    // 3) string path 'users/{uid}'
-    let hadIndexError = false;
-    const isIndexError = (e: any) => {
-      const msg = String(e?.message || '').toLowerCase();
-      const code = String((e as any)?.code || '').toUpperCase();
-      return msg.includes('index') || code.includes('FAILED_PRECONDITION');
-    };
+    const userSquaresSnap = await db.collection('squares')
+      .where('userID', '==', userRef)
+      .get();
 
-    const safeQuery = async (value: any) => {
-      try {
-        const snap = await db.collectionGroup('squares').where('userID', '==', value).get();
-        return snap?.docs || [];
-      } catch (e) {
-        if (isIndexError(e)) {
-          hadIndexError = true;
-          console.warn('[API] Collection group index likely required for squares.userID. Proceeding with soft-fail merge.', e);
-          return [] as any[];
+    console.log(`[API] Found ${userSquaresSnap.size} squares for user`);
+
+    if (userSquaresSnap.empty) {
+      return NextResponse.json({ 
+        success: true, 
+        boards: [], 
+        timestamp: Date.now() 
+      }, {
+        headers: {
+          'Cache-Control': 'private, max-age=300',
+          'X-Content-Type-Options': 'nosniff',
+          'X-Frame-Options': 'DENY',
+          'X-XSS-Protection': '1; mode=block'
         }
-        console.error('[API] Error querying collection group squares:', e);
-        throw e;
-      }
-    };
-
-    const [docsRef, docsUid, docsPath] = await Promise.all([
-      safeQuery(userRef),
-      safeQuery(userId),
-      safeQuery(`users/${userId}`)
-    ]);
-
-    // Merge and dedupe by document path
-    const userSquareDocsMap = new Map<string, FirebaseFirestore.QueryDocumentSnapshot>();
-    [...docsRef, ...docsUid, ...docsPath].forEach((d: any) => {
-      if (d && d.ref?.path) userSquareDocsMap.set(d.ref.path, d);
-    });
-    const userSquareDocs = Array.from(userSquareDocsMap.values());
-    console.log(`[API] Found ${userSquareDocs.length} user squares across variants`);
-
-    if (userSquareDocs.length === 0) {
-      // Soft-fail: if index missing or simply no squares, return empty set (200) instead of 500
-      const headers: Record<string, string> = {
-        'Cache-Control': 'private, max-age=300',
-        'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
-        'X-XSS-Protection': '1; mode=block'
-      };
-      if (hadIndexError) headers['X-Firestore-Index-Required'] = 'collectionGroup:squares.userID';
-      console.log('[API] No user squares found. Returning empty list. hadIndexError =', hadIndexError);
-      return NextResponse.json({ success: true, boards: [], timestamp: Date.now() }, { headers });
+      });
     }
 
-    // Extract unique board IDs from user's squares
+    // Extract unique board IDs and group squares by board
     const boardIds = new Set<string>();
-    userSquareDocs.forEach(doc => {
-      const boardId = doc.ref.parent.parent?.id;
-      if (boardId) boardIds.add(boardId);
+    const squaresByBoard = new Map<string, any[]>();
+    
+    userSquaresSnap.forEach(doc => {
+      const data = doc.data();
+      const boardId = data.boardId;
+      if (boardId) {
+        boardIds.add(boardId);
+        if (!squaresByBoard.has(boardId)) {
+          squaresByBoard.set(boardId, []);
+        }
+        squaresByBoard.get(boardId)!.push({
+          index: data.index || 0,
+          isUserSquare: true,
+          square: data.square || undefined
+        });
+      }
     });
 
     console.log(`[API] User participates in ${boardIds.size} boards`);
@@ -278,14 +259,8 @@ export async function GET(request: NextRequest) {
         ? teamDataMap.get(gameData.awayTeam.path)
         : null;
       
-      // Get user's squares for this board from the initial query
-      const userSquares = userSquareDocs
-        .filter(doc => doc.ref.parent.parent?.id === boardDoc.id)
-        .map(doc => ({
-          index: doc.data().index || 0,
-          isUserSquare: true,
-          square: doc.data().square || undefined
-        }));
+      // Get user's squares for this board from the grouped map
+      const userSquares = squaresByBoard.get(boardDoc.id) || [];
 
       const userSquareCount = userSquares.length;
       const isFull = userSquareCount === 100;

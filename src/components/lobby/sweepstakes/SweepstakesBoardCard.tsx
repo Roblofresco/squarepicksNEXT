@@ -511,7 +511,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
         </div>
       </div>
 
-      <div className="rounded-md border-none mt-2">
+      <div className="rounded-md bg-black/30 backdrop-blur-xs shadow-inner border-none mt-2">
            <SweepstakesMiniGrid
               highlightedNumber={finalNumberToHighlight}
               allTakenSet={allTakenSet}

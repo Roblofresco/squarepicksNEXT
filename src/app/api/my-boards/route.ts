@@ -142,9 +142,7 @@ export async function GET(request: NextRequest) {
 
       const boards = filtered.map(b => {
         const bd = (b.data() as any) || {};
-        const userSquares = userSquareDocs
-          .filter(d => d.ref.parent.parent?.id === b.id)
-          .map(d => ({ index: d.data().index || 0, isUserSquare: true, square: d.data().square || undefined }));
+        const userSquares = squaresByBoard.get(b.id) || [];
         return {
           id: b.id,
           gameId: bd?.gameID?.id || b.id,

@@ -52,8 +52,10 @@ export default function MyBoardsPage() {
       // Get Firebase ID token for authentication
       const idToken = await user.getIdToken();
       
-      // Fetch based on active tab
-      const response = await fetch(`/api/my-boards?tab=${activeTab}`, {
+      // If debug=all in URL, hit the all route once (ignore tabs)
+      const useAll = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'all';
+      const endpoint = useAll ? '/api/my-boards/all' : `/api/my-boards?tab=${activeTab}`;
+      const response = await fetch(endpoint, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${idToken}`,
@@ -71,8 +73,18 @@ export default function MyBoardsPage() {
         throw new Error('Failed to fetch boards');
       }
 
-      // No need to filter - API returns correct boards for the tab
-      if (activeTab === 'active') {
+      // Debug logs
+      try {
+        console.log('[MyBoardsPage] endpoint:', endpoint,
+          'X-MyBoards-All:', response.headers.get('X-MyBoards-All'),
+          'X-MyBoards-Squares:', response.headers.get('X-MyBoards-Squares'),
+          'X-MyBoards-Variants:', response.headers.get('X-MyBoards-Variants'),
+          'X-MyBoards-Error:', response.headers.get('X-MyBoards-Error'));
+        console.log('[MyBoardsPage] boards:', (data as any)?.boards?.map?.((b:any)=>({id:b.id,status:b.status,picks:b.userPickedSquares?.length||0})));
+      } catch {}
+
+      // No need to filter - API returns correct boards for the tab or all
+      if (useAll || activeTab === 'active') {
         setActiveBoards(data.boards);
         setHistoricalBoards([]);
       } else {

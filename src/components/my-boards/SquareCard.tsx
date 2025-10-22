@@ -109,7 +109,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
 
   const boardAmount = typeof board.amount === 'number' ? board.amount : 0;
   const stakeAmount = typeof board.stake === 'number' ? board.stake : undefined;
-  const potDisplay = typeof stakeAmount === 'number' ? (stakeAmount * 80) : undefined;
+  const potDisplay = typeof board.pot === 'number' ? board.pot : undefined;  // Use board.pot from Firestore
   const isSweepstakes = boardAmount === 0;
 
   const bracketIdx = (val?: number) => typeof val === 'number' ? `[ ${String(val).padStart(2,'0')} ]` : `[ -- ]`;
@@ -235,16 +235,12 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
 
         <div className="mt-1 flex items-center justify-between text-sm">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            {/* Show Amount row for non-sweepstakes boards */}
-            {!isSweepstakes && typeof boardAmount === 'number' && (
-              <span>Amount: ${boardAmount.toFixed(2)}</span>
-            )}
             {typeof stakeAmount === 'number' && (
               <span>Entry: ${stakeAmount.toFixed(2)}</span>
             )}
             <span>Picks: {userPickedSquares ? userPickedSquares.length : 0}</span>
             {typeof potDisplay === 'number' && (
-              <span>Pot: ${potDisplay.toFixed(2)}</span>
+              <span>Total Pot: ${potDisplay.toFixed(2)}</span>
             )}
           </div>
           {(status === 'open' || status === 'full') && typeof stakeAmount === 'number' && (board.gameId) && (

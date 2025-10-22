@@ -3,6 +3,11 @@ import { initAdmin } from '@/lib/firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldPath } from 'firebase-admin/firestore';
 
+// Force Node.js runtime (firebase-admin is not supported on Edge)
+export const runtime = 'nodejs';
+// Avoid caching since this depends on auth and live data
+export const dynamic = 'force-dynamic';
+
 // Initialize Firebase Admin
 const adminApp = initAdmin();
 const db = getFirestore(adminApp);
@@ -279,10 +284,12 @@ export async function GET(request: NextRequest) {
       }
     });
 
-  } catch (error) {
-    console.error('[API] Error in my-boards route:', error);
+  } catch (error: any) {
+    const message = error?.message || 'Internal server error';
+    const code = error?.code || 'UNKNOWN';
+    console.error('[API] Error in my-boards route:', code, message, error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: message, code },
       { status: 500 }
     );
   }

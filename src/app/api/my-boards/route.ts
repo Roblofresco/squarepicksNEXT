@@ -8,6 +8,9 @@ export const runtime = 'nodejs';
 // Avoid caching since this depends on auth and live data
 export const dynamic = 'force-dynamic';
 
+// Optional feature flag: fall back to simpler logic to avoid 500s in prod during migration
+const FALLBACK_MY_BOARDS = process.env.MY_BOARDS_FALLBACK === '1';
+
 // Initialize Firebase Admin
 const adminApp = initAdmin();
 const db = getFirestore(adminApp);
@@ -142,6 +145,67 @@ export async function GET(request: NextRequest) {
     );
     const allBoards = boardSnaps.filter(snap => snap.exists);
 
+    // If fallback enabled, build a minimal response without fetching games/teams
+    if (FALLBACK_MY_BOARDS) {
+      const activeStatuses = ['open', 'full', 'active'];
+      const historyStatuses = [
+        'IN_PROGRESS_Q1', 'IN_PROGRESS_Q2', 'IN_PROGRESS_Q3',
+        'IN_PROGRESS_HALFTIME', 'IN_PROGRESS_Q4', 'IN_PROGRESS_OT',
+        'FINAL_WON', 'FINAL_LOST', 'CANCELLED'
+      ];
+
+      const filtered = allBoards.filter(doc => {
+        const status = String((doc.data() as any)?.status || '');
+        return tab === 'active' ? activeStatuses.includes(status) : historyStatuses.includes(status);
+      });
+
+      const boards = filtered.map(b => {
+        const bd = (b.data() as any) || {};
+        const userSquares = userSquareDocs
+          .filter(d => d.ref.parent.parent?.id === b.id)
+          .map(d => ({ index: d.data().index || 0, isUserSquare: true, square: d.data().square || undefined }));
+        return {
+          id: b.id,
+          gameId: bd?.gameID?.id || b.id,
+          homeTeam: { name: 'Home', initials: 'HM' },
+          awayTeam: { name: 'Away', initials: 'AW' },
+          gameDateTime: bd?.created_time?.toDate?.()?.toISOString() || new Date().toISOString(),
+          status: bd?.status,
+          amount: bd?.amount || 0,
+          stake: bd?.amount || 0,
+          pot: bd?.pot || (bd?.amount * 80) || 0,
+          is_live: false,
+          broadcast_provider: undefined,
+          sport: bd?.sport || 'NFL',
+          league: bd?.league || 'NFL',
+          userSquareCount: userSquares.length,
+          isFull: userSquares.length === 100,
+          selected_indexes_on_board: bd?.selected_indexes || [],
+          totalSquareCount: 100,
+          userPickedSquares: userSquares,
+          q1_winning_square: bd?.q1_winning_square,
+          q2_winning_square: bd?.q2_winning_square,
+          q3_winning_square: bd?.q3_winning_square,
+          q4_winning_square: bd?.q4_winning_square,
+          q1_winning_index: bd?.q1_winning_index,
+          q2_winning_index: bd?.q2_winning_index,
+          q3_winning_index: bd?.q3_winning_index,
+          q4_winning_index: bd?.q4_winning_index,
+          userWon_q1: bd?.userWon_q1 || false,
+          userWon_q2: bd?.userWon_q2 || false,
+          userWon_q3: bd?.userWon_q3 || false,
+          userWon_final: bd?.userWon_final || false,
+        };
+      });
+
+      return NextResponse.json({ success: true, boards, timestamp: Date.now() }, {
+        headers: {
+          'Cache-Control': 'private, max-age=120',
+          'X-MyBoards-Fallback': '1'
+        }
+      });
+    }
+
     // Step 3: Filter by tab (active vs history)
     const activeStatuses = ['open', 'full', 'active'];
     const historyStatuses = [
@@ -226,27 +290,27 @@ export async function GET(request: NextRequest) {
       const userSquareCount = userSquares.length;
       const isFull = userSquareCount === 100;
 
-      return {
-        id: boardDoc.id,
-        gameId: gameData?.id || boardData.gameID?.id || boardDoc.id,
-        homeTeam: homeTeam || { name: 'Team A', initials: 'TA', logo: undefined },
-        awayTeam: awayTeam || { name: 'Team B', initials: 'TB', logo: undefined },
-        gameDateTime: gameData?.dateTime || boardData.created_time?.toDate?.()?.toISOString() || new Date().toISOString(),
+        return {
+          id: boardDoc.id,
+          gameId: gameData?.id || boardData.gameID?.id || boardDoc.id,
+          homeTeam: homeTeam || { name: 'Team A', initials: 'TA', logo: undefined },
+          awayTeam: awayTeam || { name: 'Team B', initials: 'TB', logo: undefined },
+          gameDateTime: gameData?.dateTime || boardData.created_time?.toDate?.()?.toISOString() || new Date().toISOString(),
         status: boardData?.status,
         amount: boardData?.amount || 0,
         stake: boardData?.amount || 0, // Add stake field for consistency
         pot: boardData?.pot || (boardData?.amount * 80) || 0,
-        is_live: gameData?.status === 'live' || false,
-        broadcast_provider: gameData?.broadcast_provider || undefined,
-        sport: gameData?.sport || 'NFL',
-        league: gameData?.league || 'NFL',
-        userSquareCount,
-        isFull,
+          is_live: gameData?.status === 'live' || false,
+          broadcast_provider: gameData?.broadcast_provider || undefined,
+          sport: gameData?.sport || 'NFL',
+          league: gameData?.league || 'NFL',
+          userSquareCount,
+          isFull,
         selected_indexes_on_board: boardData?.selected_indexes || [],
-        totalSquareCount: 100,
-        // For UI display
+          totalSquareCount: 100,
+          // For UI display
         userPickedSquares: userSquares,
-        // Quarter winners (if available)
+          // Quarter winners (if available)
         q1_winning_square: boardData?.q1_winning_square,
         q2_winning_square: boardData?.q2_winning_square,
         q3_winning_square: boardData?.q3_winning_square,
@@ -255,7 +319,7 @@ export async function GET(request: NextRequest) {
         q2_winning_index: boardData?.q2_winning_index,
         q3_winning_index: boardData?.q3_winning_index,
         q4_winning_index: boardData?.q4_winning_index,
-        // User win status
+          // User win status
         userWon_q1: boardData?.userWon_q1 || false,
         userWon_q2: boardData?.userWon_q2 || false,
         userWon_q3: boardData?.userWon_q3 || false,
@@ -282,9 +346,10 @@ export async function GET(request: NextRequest) {
     const message = error?.message || 'Internal server error';
     const code = error?.code || 'UNKNOWN';
     console.error('[API] Error in my-boards route:', code, message, error);
+    // Soft-fail to avoid breaking the page
     return NextResponse.json(
-      { error: message, code },
-      { status: 500 }
+      { success: true, boards: [], timestamp: Date.now() },
+      { headers: { 'X-MyBoards-Error': `${code}:${message}` } }
     );
   }
 }

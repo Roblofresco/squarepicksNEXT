@@ -30,6 +30,8 @@ const getStatusAppearance = (status: BoardStatus | string, isLive?: boolean, isB
   }
   
   switch (status) {
+    case 'unfilled':
+      return { text: 'Refunded', color: 'bg-red-600 hover:bg-red-700', icon: <XCircle className="h-3.5 w-3.5" /> };
     case 'IN_PROGRESS_Q1':
     case 'IN_PROGRESS_Q2':
     case 'IN_PROGRESS_Q3':

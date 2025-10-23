@@ -1058,7 +1058,7 @@ function GamePageContent() {
                         </div>
                         
                         {/* Winner container at bottom (if user owns this square) */}
-                        {doesUserOwnWinningSquare(q1WinningSquare) && (
+                        {doesUserOwnWinningSquare('q1') && (
                           <>
                             <Separator className="my-1 w-full bg-white/20" />
                             <div className="relative overflow-hidden bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-2 rounded-b-lg shadow-[0_0_10px_rgba(231,184,68,0.35)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
@@ -1122,7 +1122,7 @@ function GamePageContent() {
                         </div>
                         
                         {/* Winner container at bottom (if user owns this square) */}
-                        {doesUserOwnWinningSquare(q2WinningSquare) && (
+                        {doesUserOwnWinningSquare('q2') && (
                           <>
                             <Separator className="my-1 w-full bg-white/20" />
                             <div className="relative overflow-hidden bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-2 rounded-b-lg shadow-[0_0_10px_rgba(231,184,68,0.35)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
@@ -1186,7 +1186,7 @@ function GamePageContent() {
                         </div>
                         
                         {/* Winner container at bottom (if user owns this square) */}
-                        {doesUserOwnWinningSquare(q3WinningSquare) && (
+                        {doesUserOwnWinningSquare('q3') && (
                           <>
                             <Separator className="my-1 w-full bg-white/20" />
                             <div className="relative overflow-hidden bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-2 rounded-b-lg shadow-[0_0_10px_rgba(231,184,68,0.35)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
@@ -1250,7 +1250,7 @@ function GamePageContent() {
                         </div>
                         
                         {/* Winner container at bottom (if user owns this square) */}
-                        {doesUserOwnWinningSquare(finalWinningSquare) && (
+                        {doesUserOwnWinningSquare('final') && (
                           <>
                             <Separator className="my-1 w-full bg-white/20" />
                             <div className="relative overflow-hidden bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-2 rounded-b-lg shadow-[0_0_10px_rgba(231,184,68,0.35)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">

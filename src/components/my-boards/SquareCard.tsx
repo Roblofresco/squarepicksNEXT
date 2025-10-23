@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -90,6 +91,7 @@ const TeamDisplay: React.FC<{ team?: TeamInfo; logoRight?: boolean }> = ({ team,
 };
 
 const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
+  const router = useRouter();
   const { 
     id, homeTeam, awayTeam, gameDateTime, status, 
     sport, userPickedSquares,
@@ -114,6 +116,16 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
 
   const bracketIdx = (val?: number) => typeof val === 'number' ? `[ ${String(val).padStart(2,'0')} ]` : `[ -- ]`;
   const bracketSquare = (sq?: string, idx?: number) => sq ? `[ ${sq} ]` : bracketIdx(idx);
+
+  const handleViewClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    const userIndexes = userPickedSquares?.map(s => s.index) || [];
+    const params = new URLSearchParams({
+      boardId: id,
+      userSquares: userIndexes.join(',')
+    });
+    router.push(`/game/${board.gameId}?${params.toString()}`);
+  };
 
   const renderSquaresGrid = () => {
     const idxs = (userPickedSquares || []).map(s => s.index);
@@ -245,14 +257,24 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
             )}
           </div>
           {(status === 'open' || status === 'full') && typeof stakeAmount === 'number' && (board.gameId) && (
-            <Link href={`/game/${board.gameId}?amount=${stakeAmount}`}>
-              <Button size="sm" variant="secondary" className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2">View</Button>
-            </Link>
+            <Button 
+              size="sm" 
+              variant="secondary" 
+              onClick={handleViewClick}
+              className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2"
+            >
+              View
+            </Button>
           )}
           {(status !== 'open') && board.winnings && board.winnings > 0 && (
-            <Link href={`/transactions`}>
-              <Button size="sm" variant="secondary" className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2">View</Button>
-            </Link>
+            <Button 
+              size="sm" 
+              variant="secondary" 
+              onClick={handleViewClick}
+              className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2"
+            >
+              View
+            </Button>
           )}
         </div>
 

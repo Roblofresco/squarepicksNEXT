@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
           gameId: bd?.gameID?.id || b.id,
           homeTeam: { name: 'Home', initials: 'HM' },
           awayTeam: { name: 'Away', initials: 'AW' },
-          gameDateTime: bd?.created_time?.toDate?.()?.toISOString() || new Date().toISOString(),
+          gameDateTime: bd?.startTime?.toDate?.()?.toISOString() || bd?.created_time?.toDate?.()?.toISOString() || new Date().toISOString(),
           status: bd?.status,
           amount: bd?.amount || 0,
           stake: bd?.amount || 0,
@@ -245,7 +245,7 @@ export async function GET(request: NextRequest) {
           gameId: gameData?.id || boardData.gameID?.id || boardDoc.id,
           homeTeam: homeTeam || { name: 'Team A', initials: 'TA', logo: undefined },
           awayTeam: awayTeam || { name: 'Team B', initials: 'TB', logo: undefined },
-          gameDateTime: gameData?.dateTime || boardData.created_time?.toDate?.()?.toISOString() || new Date().toISOString(),
+          gameDateTime: gameData?.startTime?.toDate?.()?.toISOString() || boardData.created_time?.toDate?.()?.toISOString() || new Date().toISOString(),
         status: boardData?.status,
         amount: boardData?.amount || 0,
         stake: boardData?.amount || 0, // Add stake field for consistency

@@ -96,6 +96,13 @@ function GamePageContent() {
   const gameId = params.gameId as string;
   const initialEntryAmount = parseInt(searchParams.get('entry') || '1', 10);
   const requestedView = (searchParams.get('view') || '').toLowerCase();
+  
+  // Read URL parameters for user context
+  const boardId = searchParams.get('boardId');
+  const userSquaresParam = searchParams.get('userSquares');
+  const userSelectedIndexes = userSquaresParam 
+    ? userSquaresParam.split(',').map(Number) 
+    : [];
 
   const { 
     hasWallet, 
@@ -128,6 +135,7 @@ function GamePageContent() {
   const [isDisplayingDelayedLoader, setIsDisplayingDelayedLoader] = useState(false);
   const [shakeEntryFee, setShakeEntryFee] = useState(false);
   const [showWinnerAnimation, setShowWinnerAnimation] = useState(false);
+  const [userPickedSquares, setUserPickedSquares] = useState<Array<{index: number, square?: string}>>([]);
   const entryFeeRef = useRef<HTMLDivElement>(null);
   const confirmRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -152,6 +160,16 @@ function GamePageContent() {
   // Compute optimistic displayed balance: subtract cost of currently selected squares
   const costCommitted = selectedSquares.size * selectedEntryAmount;
   const displayedBalance = Math.max(0, balance - costCommitted);
+
+  // Helper function to check if user owns a winning square
+  const doesUserOwnWinningSquare = (winningSquare: string | undefined) => {
+    if (!winningSquare || userSelectedIndexes.length === 0) return false;
+    
+    // Get user's square strings (e.g., "23", "45")
+    const userSquareStrings = userPickedSquares?.map(s => s.square) || [];
+    
+    return userSquareStrings.includes(winningSquare);
+  };
 
   const handleWalletClick = useCallback(() => {
     if (!userId) {
@@ -376,6 +394,20 @@ function GamePageContent() {
       // If !userId (user not logged in), other logic might redirect to login or show guest content
     }
   }, [userId, emailVerified, walletIsLoading, router]);
+
+  // Effect: Fetch user's picked squares when boardId is available
+  useEffect(() => {
+    if (!boardId || !currentBoard) return;
+    
+    // User's squares with their assigned square strings
+    const userSquares = userSelectedIndexes.map(index => {
+      // Find the square string from board data if available
+      // This will be populated after board is full and numbers are assigned
+      return { index, square: currentBoard.squares?.[index] };
+    });
+    
+    setUserPickedSquares(userSquares);
+  }, [boardId, currentBoard, userSelectedIndexes]);
 
   const handleSquareClick = (squareNumber: number) => {
     // === Pre-computation and State Checks ===
@@ -941,7 +973,7 @@ function GamePageContent() {
               {renderGrid()}
             </div>
           )}
-          {gameDetails && gameDetails.status === 'live' && (
+          {gameDetails && gameDetails.status !== 'scheduled' && (
             <div className="mb-6">
               {/* Winners scoreboard */}
               <div 
@@ -971,7 +1003,7 @@ function GamePageContent() {
                       >
                         {q1WinningSquare ? (
                       <>
-                        {/* Assigned: Label container top, Number container bottom */}
+                        {/* Assigned: Label container top, Number container middle */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q1
@@ -983,6 +1015,18 @@ function GamePageContent() {
                             {q1WinningSquare}
                           </span>
                         </div>
+                        
+                        {/* Winner container at bottom (if user owns this square) */}
+                        {doesUserOwnWinningSquare(q1WinningSquare) && (
+                          <>
+                            <Separator className="my-1 w-full bg-white/20" />
+                            <div className="relative overflow-hidden bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-2 rounded-b-lg shadow-[0_0_10px_rgba(231,184,68,0.35)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                              <span className="text-[10px] font-bold uppercase text-white tracking-wide">
+                                WINNER
+                              </span>
+                            </div>
+                          </>
+                        )}
                       </>
                     ) : (
                       <>
@@ -1023,7 +1067,7 @@ function GamePageContent() {
                       >
                         {q2WinningSquare ? (
                       <>
-                        {/* Assigned: Label container top, Number container bottom */}
+                        {/* Assigned: Label container top, Number container middle */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q2
@@ -1035,6 +1079,18 @@ function GamePageContent() {
                             {q2WinningSquare}
                           </span>
                         </div>
+                        
+                        {/* Winner container at bottom (if user owns this square) */}
+                        {doesUserOwnWinningSquare(q2WinningSquare) && (
+                          <>
+                            <Separator className="my-1 w-full bg-white/20" />
+                            <div className="relative overflow-hidden bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-2 rounded-b-lg shadow-[0_0_10px_rgba(231,184,68,0.35)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                              <span className="text-[10px] font-bold uppercase text-white tracking-wide">
+                                WINNER
+                              </span>
+                            </div>
+                          </>
+                        )}
                       </>
                     ) : (
                       <>
@@ -1075,7 +1131,7 @@ function GamePageContent() {
                       >
                         {q3WinningSquare ? (
                       <>
-                        {/* Assigned: Label container top, Number container bottom */}
+                        {/* Assigned: Label container top, Number container middle */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q3
@@ -1087,6 +1143,18 @@ function GamePageContent() {
                             {q3WinningSquare}
                           </span>
                         </div>
+                        
+                        {/* Winner container at bottom (if user owns this square) */}
+                        {doesUserOwnWinningSquare(q3WinningSquare) && (
+                          <>
+                            <Separator className="my-1 w-full bg-white/20" />
+                            <div className="relative overflow-hidden bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-2 rounded-b-lg shadow-[0_0_10px_rgba(231,184,68,0.35)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                              <span className="text-[10px] font-bold uppercase text-white tracking-wide">
+                                WINNER
+                              </span>
+                            </div>
+                          </>
+                        )}
                       </>
                     ) : (
                       <>
@@ -1127,7 +1195,7 @@ function GamePageContent() {
                       >
                         {finalWinningSquare ? (
                       <>
-                        {/* Assigned: Label container top, Number container bottom */}
+                        {/* Assigned: Label container top, Number container middle */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-xs font-semibold uppercase text-white">
                             Final
@@ -1138,7 +1206,19 @@ function GamePageContent() {
                           <span className="text-2xl font-bold font-mono text-white">
                             {finalWinningSquare}
                           </span>
-              </div>
+                        </div>
+                        
+                        {/* Winner container at bottom (if user owns this square) */}
+                        {doesUserOwnWinningSquare(finalWinningSquare) && (
+                          <>
+                            <Separator className="my-1 w-full bg-white/20" />
+                            <div className="relative overflow-hidden bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-2 rounded-b-lg shadow-[0_0_10px_rgba(231,184,68,0.35)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                              <span className="text-[10px] font-bold uppercase text-white tracking-wide">
+                                WINNER
+                              </span>
+                            </div>
+                          </>
+                        )}
                       </>
                     ) : (
                       <>
@@ -1163,11 +1243,6 @@ function GamePageContent() {
                   })()}
             </div>
               </div>
-            </div>
-          )}
-          {gameDetails && gameDetails.status === 'final' && (
-            <div className="mb-6">
-              {renderGrid()}
             </div>
           )}
 

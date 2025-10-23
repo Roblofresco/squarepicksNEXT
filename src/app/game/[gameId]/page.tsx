@@ -401,13 +401,18 @@ function GamePageContent() {
     
     // User's squares with their assigned square strings
     const userSquares = userSelectedIndexes.map(index => {
-      // Find the square string from board data if available
-      // This will be populated after board is full and numbers are assigned
-      return { index, square: currentBoard.squares?.[index] };
+      // Generate square string from axis numbers if available
+      if (homeAxisNumbers.length === 10 && awayAxisNumbers.length === 10) {
+        const homeIndex = Math.floor(index / 10);
+        const awayIndex = index % 10;
+        const squareString = `${homeAxisNumbers[homeIndex]}${awayAxisNumbers[awayIndex]}`;
+        return { index, square: squareString };
+      }
+      return { index, square: undefined };
     });
     
     setUserPickedSquares(userSquares);
-  }, [boardId, currentBoard, userSelectedIndexes]);
+  }, [boardId, currentBoard, userSelectedIndexes, homeAxisNumbers, awayAxisNumbers]);
 
   const handleSquareClick = (squareNumber: number) => {
     // === Pre-computation and State Checks ===

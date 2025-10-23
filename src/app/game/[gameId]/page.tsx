@@ -99,10 +99,6 @@ function GamePageContent() {
   
   // Read URL parameters for user context
   const boardId = searchParams.get('boardId');
-  const userSquaresParam = searchParams.get('userSquares');
-  const userSelectedIndexes = userSquaresParam 
-    ? userSquaresParam.split(',').map(Number) 
-    : [];
 
   const { 
     hasWallet, 
@@ -136,6 +132,7 @@ function GamePageContent() {
   const [shakeEntryFee, setShakeEntryFee] = useState(false);
   const [showWinnerAnimation, setShowWinnerAnimation] = useState(false);
   const [userPickedSquares, setUserPickedSquares] = useState<Array<{index: number, square?: string}>>([]);
+  const [userWins, setUserWins] = useState<Set<string>>(new Set());
   const entryFeeRef = useRef<HTMLDivElement>(null);
   const confirmRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -161,14 +158,28 @@ function GamePageContent() {
   const costCommitted = selectedSquares.size * selectedEntryAmount;
   const displayedBalance = Math.max(0, balance - costCommitted);
 
-  // Helper function to check if user owns a winning square
-  const doesUserOwnWinningSquare = (winningSquare: string | undefined) => {
-    if (!winningSquare || userSelectedIndexes.length === 0) return false;
+  // Helper function to check if user won a specific quarter
+  const doesUserOwnWinningSquare = (period: 'q1' | 'q2' | 'q3' | 'final') => {
+    return userWins.has(period);
+  };
+
+  // Helper function to check if a square index is a winning square that user owns
+  const isUserWinningSquareIndex = (index: number): boolean => {
+    if (!homeAxisNumbers.length || !awayAxisNumbers.length) return false;
     
-    // Get user's square strings (e.g., "23", "45")
-    const userSquareStrings = userPickedSquares?.map(s => s.square) || [];
+    const row = Math.floor(index / 10);
+    const col = index % 10;
+    const squareString = `${awayAxisNumbers[row]}${homeAxisNumbers[col]}`;
     
-    return userSquareStrings.includes(winningSquare);
+    // Check if this square matches any winning square that user owns
+    const winningSquares = [
+      userWins.has('q1') ? q1WinningSquare : null,
+      userWins.has('q2') ? q2WinningSquare : null,
+      userWins.has('q3') ? q3WinningSquare : null,
+      userWins.has('final') ? finalWinningSquare : null,
+    ].filter(Boolean);
+    
+    return winningSquares.includes(squareString);
   };
 
   const handleWalletClick = useCallback(() => {
@@ -395,24 +406,43 @@ function GamePageContent() {
     }
   }, [userId, emailVerified, walletIsLoading, router]);
 
-  // Effect: Fetch user's picked squares when boardId is available
+  // Effect: Fetch user's wins from private wins collection when game is active
   useEffect(() => {
-    if (!boardId || !currentBoard) return;
+    // Only query wins if:
+    // 1. User is authenticated
+    // 2. We have a board to check
+    // 3. Game status is NOT scheduled (i.e., live or final)
+    if (!userId || !currentBoard?.id || gameDetails?.status === 'scheduled') {
+      setUserWins(new Set());
+      return;
+    }
     
-    // User's squares with their assigned square strings
-    const userSquares = userSelectedIndexes.map(index => {
-      // Generate square string from axis numbers if available
-      if (homeAxisNumbers.length === 10 && awayAxisNumbers.length === 10) {
-        const homeIndex = Math.floor(index / 10);
-        const awayIndex = index % 10;
-        const squareString = `${homeAxisNumbers[homeIndex]}${awayAxisNumbers[awayIndex]}`;
-        return { index, square: squareString };
+    const fetchUserWins = async () => {
+      try {
+        // Query for all wins for this board (q1, q2, q3, final)
+        const periods = ['q1', 'q2', 'q3', 'final'];
+        const winDocs = await Promise.all(
+          periods.map(period => 
+            getDoc(doc(db, `users/${userId}/wins/${currentBoard.id}_${period}`))
+          )
+        );
+        
+        const wonPeriods = new Set<string>();
+        winDocs.forEach((docSnap, index) => {
+          if (docSnap.exists()) {
+            wonPeriods.add(periods[index]);
+          }
+        });
+        
+        setUserWins(wonPeriods);
+      } catch (error) {
+        console.error('Error fetching user wins:', error);
+        setUserWins(new Set());
       }
-      return { index, square: undefined };
-    });
+    };
     
-    setUserPickedSquares(userSquares);
-  }, [boardId, currentBoard, userSelectedIndexes, homeAxisNumbers, awayAxisNumbers]);
+    fetchUserWins();
+  }, [userId, currentBoard?.id, gameDetails?.status]);
 
   const handleSquareClick = (squareNumber: number) => {
     // === Pre-computation and State Checks ===
@@ -714,7 +744,13 @@ function GamePageContent() {
         let squareClasses = "";
         let squareContent = String(i).padStart(2, '0');
 
-        if (isPurchasedByCurrentUser) {
+        // Check if this is a winning square owned by user (highest priority)
+        const isWinningSquare = gameDetails?.status !== 'scheduled' && isUserWinningSquareIndex(i);
+
+        if (isWinningSquare) {
+          // Gold gradient for winning squares
+          squareClasses = "bg-gradient-to-br from-[#FFE08A] via-[#E7B844] to-[#C9962E] text-white cursor-not-allowed font-bold shadow-[0_0_10px_rgba(231,184,68,0.35)]";
+        } else if (isPurchasedByCurrentUser) {
           squareClasses = "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] text-white cursor-not-allowed opacity-90 font-semibold"; 
         } else if (isTakenByOtherUser) {
           squareClasses = "bg-gradient-to-br from-slate-600 to-slate-700 text-slate-400 cursor-not-allowed opacity-70";

@@ -301,8 +301,9 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
       <div className="absolute -top-3 right-3 z-20 pointer-events-none">
         {(() => {
           const s = String(status);
-          const statusBgClass = s === 'open' ? 'bg-blue-500/80' 
-            : s === 'full' ? 'bg-orange-500/80' 
+          const statusBgClass = s === 'open' && isBoardFull ? 'bg-yellow-500/80'  // Yellow for full board
+            : s === 'open' ? 'bg-blue-500/80'                                      // Blue for open (not full)
+            : s === 'active' ? 'bg-green-600/80'                                   // Green for active
             : s === 'unfilled' ? 'bg-red-600/80'
             : s === 'closed' ? 'bg-gray-600/80'
             : s.startsWith('IN_PROGRESS') ? 'bg-yellow-500/80'

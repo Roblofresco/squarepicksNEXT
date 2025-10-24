@@ -51,9 +51,10 @@ const getStatusAppearance = (status: BoardStatus | string, isLive?: boolean, isB
   }
 };
 
-const statusLabel = (status: BoardStatus): string => {
+const statusLabel = (status: BoardStatus, isFull: boolean): string => {
+  if (status === 'open' && isFull) return 'FULL';
   if (status === 'open') return 'OPEN';
-  if (status === 'full') return 'FULL';
+  // Remove the 'full' check since it won't exist in database
   if (String(status).startsWith('FINAL')) return 'FINAL';
   if (String(status).startsWith('IN_PROGRESS')) return 'IN PROGRESS';
   return String(status).replace(/_/g, ' ').toUpperCase();
@@ -276,7 +277,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   return (
     <Card className={cn(
       "w-full max-w-sm overflow-visible glass transition-shadow duration-300 ease-in-out flex flex-col gap-0 text-slate-100 h-full rounded-lg relative",
-      status === 'full' && "ring-2 ring-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.15)]"
+      isBoardFull && "ring-2 ring-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.15)]"
     )}>
       {/* Ribbons */}
         {sport && (
@@ -310,7 +311,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
             : 'bg-white/20';
           return (
             <div className={`px-2 py-0.5 rounded-full ${statusBgClass} border border-white/20 text-[10px] uppercase tracking-wide text-white shadow-[0_2px_10px_rgba(0,0,0,0.35)]`}>
-              {statusLabel(status)}
+              {statusLabel(status, isBoardFull)}
             </div>
           );
         })()}

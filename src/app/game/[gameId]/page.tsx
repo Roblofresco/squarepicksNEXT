@@ -1014,7 +1014,7 @@ function GamePageContent() {
               {renderGrid()}
             </div>
           )}
-          {gameDetails && gameDetails.status !== 'scheduled' && (
+          {gameDetails && (currentBoard?.selected_indexes?.length === 100 || gameDetails.status !== 'scheduled') && (
             <div className="mb-6">
               {/* Winners scoreboard */}
               <div 

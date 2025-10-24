@@ -1,0 +1,20 @@
+warning: in the working copy of 'src/app/game/[gameId]/page.tsx', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/src/app/game/[gameId]/page.tsx b/src/app/game/[gameId]/page.tsx[m
+[1mindex d77e986..0e5fd0f 100644[m
+[1m--- a/src/app/game/[gameId]/page.tsx[m
+[1m+++ b/src/app/game/[gameId]/page.tsx[m
+[36m@@ -907,13 +907,11 @@[m [mfunction GamePageContent() {[m
+                         if (periodStr === '2' || periodStr.includes('2')) return '2nd Qtr';[m
+                         if (periodStr === '3' || periodStr.includes('3')) return '3rd Qtr';[m
+                         if (periodStr === '4' || periodStr.includes('4')) return '4th Qtr';[m
+[31m-                        if (periodStr === 'ot' || periodStr.includes('ot')) return 'Overtime';[m
+[31m-                        if (periodStr === 'halftime' || periodStr.includes('halftime')) return 'Halftime';[m
+                         return period.toUpperCase();[m
+                       })()}[m
+                     </div>[m
+                     [m
+[31m-                    {/* Time Remaining - Enhanced Container */}[m
+[32m+[m[32m                    {/* Time Remaining - Indented Container */}[m
+                     {((gameDetails as any).timeRemaining || (gameDetails as any).time_remaining) && ([m
+                       <div className="mb-1 px-3 py-1 rounded-md border border-white/10 bg-slate-950/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">[m
+                         <span className="text-[10px] sm:text-xs text-slate-300 font-mono tabular-nums">[m

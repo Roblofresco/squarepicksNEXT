@@ -130,32 +130,9 @@ export async function GET(request: NextRequest) {
       // Return all boards - frontend will filter by status
       const filtered = allBoards;
 
-      // Query user wins for fallback boards too
-      const userWinsMap = new Map<string, Set<string>>();
-      const winQueries = Array.from(boardIds).map(async (boardId) => {
-        const periods = ['q1', 'q2', 'q3', 'final'];
-        const winDocs = await Promise.all(
-          periods.map(period =>
-            db.doc(`users/${userId}/wins/${boardId}_${period}`).get()
-          )
-        );
-        
-        const wonPeriods = new Set<string>();
-        winDocs.forEach((docSnap, index) => {
-          if (docSnap.exists) {
-            wonPeriods.add(periods[index]);
-          }
-        });
-        
-        userWinsMap.set(boardId, wonPeriods);
-      });
-      
-      await Promise.all(winQueries);
-
       const boards = filtered.map(b => {
         const bd = (b.data() as any) || {};
         const userSquares = squaresByBoard.get(b.id) || [];
-        const userWins = userWinsMap.get(b.id) || new Set();
         return {
           id: b.id,
           gameId: bd?.gameID?.id || b.id,
@@ -175,21 +152,18 @@ export async function GET(request: NextRequest) {
           selected_indexes_on_board: bd?.selected_indexes || [],
           totalSquareCount: 100,
           userPickedSquares: userSquares,
-          // Winning squares should come from game doc, not board doc
-          // Fallback doesn't fetch game data, so these will be undefined
-          q1_winning_square: undefined,
-          q2_winning_square: undefined,
-          q3_winning_square: undefined,
-          q4_winning_square: undefined,
-          q1_winning_index: undefined,
-          q2_winning_index: undefined,
-          q3_winning_index: undefined,
-          q4_winning_index: undefined,
-          // User win status - now from private wins collection
-          userWon_q1: userWins.has('q1'),
-          userWon_q2: userWins.has('q2'),
-          userWon_q3: userWins.has('q3'),
-          userWon_final: userWins.has('final'),
+          q1_winning_square: bd?.q1_winning_square,
+          q2_winning_square: bd?.q2_winning_square,
+          q3_winning_square: bd?.q3_winning_square,
+          q4_winning_square: bd?.q4_winning_square,
+          q1_winning_index: bd?.q1_winning_index,
+          q2_winning_index: bd?.q2_winning_index,
+          q3_winning_index: bd?.q3_winning_index,
+          q4_winning_index: bd?.q4_winning_index,
+          userWon_q1: bd?.userWon_q1 || false,
+          userWon_q2: bd?.userWon_q2 || false,
+          userWon_q3: bd?.userWon_q3 || false,
+          userWon_final: bd?.userWon_final || false,
         };
       });
 
@@ -248,32 +222,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Step 5: Query user wins for all boards
-    const userWinsMap = new Map<string, Set<string>>();
-    
-    // Query wins for all boards in parallel
-    const winQueries = Array.from(boardIds).map(async (boardId) => {
-      const periods = ['q1', 'q2', 'q3', 'final'];
-      const winDocs = await Promise.all(
-        periods.map(period =>
-          db.doc(`users/${userId}/wins/${boardId}_${period}`).get()
-        )
-      );
-      
-      const wonPeriods = new Set<string>();
-      winDocs.forEach((docSnap, index) => {
-        if (docSnap.exists) {
-          wonPeriods.add(periods[index]);
-        }
-      });
-      
-      userWinsMap.set(boardId, wonPeriods);
-    });
-    
-    await Promise.all(winQueries);
-    console.log(`[API] Queried wins for ${boardIds.size} boards`);
-
-    // Step 6: Build response with cached data
+    // Step 5: Build response with cached data
     const boards = filteredBoards.map(boardDoc => {
       const boardData = (boardDoc.data() as any) || {};
       const gameData = gameDataMap.get(boardData.gameID?.path);
@@ -287,9 +236,6 @@ export async function GET(request: NextRequest) {
       
       // Get user's squares for this board from the grouped map
       const userSquares = squaresByBoard.get(boardDoc.id) || [];
-      
-      // Get user wins for this board
-      const userWins = userWinsMap.get(boardDoc.id) || new Set();
 
       const userSquareCount = userSquares.length;
       const isFull = userSquareCount === 100;
@@ -315,19 +261,19 @@ export async function GET(request: NextRequest) {
           // For UI display
         userPickedSquares: userSquares,
           // Quarter winners (if available)
-        q1_winning_square: gameData?.q1WinningSquare,
-        q2_winning_square: gameData?.q2WinningSquare,
-        q3_winning_square: gameData?.q3WinningSquare,
-        q4_winning_square: gameData?.finalWinningSquare,
+        q1_winning_square: boardData?.q1_winning_square,
+        q2_winning_square: boardData?.q2_winning_square,
+        q3_winning_square: boardData?.q3_winning_square,
+        q4_winning_square: boardData?.q4_winning_square,
         q1_winning_index: boardData?.q1_winning_index,
         q2_winning_index: boardData?.q2_winning_index,
         q3_winning_index: boardData?.q3_winning_index,
         q4_winning_index: boardData?.q4_winning_index,
-          // User win status - now from private wins collection
-        userWon_q1: userWins.has('q1'),
-        userWon_q2: userWins.has('q2'),
-        userWon_q3: userWins.has('q3'),
-        userWon_final: userWins.has('final'),
+          // User win status
+        userWon_q1: boardData?.userWon_q1 || false,
+        userWon_q2: boardData?.userWon_q2 || false,
+        userWon_q3: boardData?.userWon_q3 || false,
+        userWon_final: boardData?.userWon_final || false,
       };
     });
 

@@ -313,10 +313,10 @@ export async function GET(request: NextRequest) {
           // For UI display
         userPickedSquares: userSquares,
           // Quarter winners (if available)
-        q1_winning_square: boardData?.q1_winning_square,
-        q2_winning_square: boardData?.q2_winning_square,
-        q3_winning_square: boardData?.q3_winning_square,
-        q4_winning_square: boardData?.q4_winning_square,
+        q1_winning_square: gameData?.q1WinningSquare,
+        q2_winning_square: gameData?.q2WinningSquare,
+        q3_winning_square: gameData?.q3WinningSquare,
+        q4_winning_square: gameData?.finalWinningSquare,
         q1_winning_index: boardData?.q1_winning_index,
         q2_winning_index: boardData?.q2_winning_index,
         q3_winning_index: boardData?.q3_winning_index,

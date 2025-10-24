@@ -181,7 +181,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
                 >
                   {/* Front side (Squares - shows .index from square doc) */}
                   <span 
-                    className="chip text-white/90 rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
+                    className="chip text-white/90 !rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
                     style={{ 
                       transformStyle: 'preserve-3d',
                       backfaceVisibility: 'hidden',
@@ -194,7 +194,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
                   
                   {/* Back side (Picks - shows .square from square doc) */}
                   <span 
-                    className="chip text-white/90 rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
+                    className="chip text-white/90 !rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
                     style={{ 
                       transformStyle: 'preserve-3d',
                       backfaceVisibility: 'hidden',
@@ -237,7 +237,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         </span>
       );
     }
-    return <span className="chip text-white/90 rounded-none">{content}</span>;
+    return <span className="chip text-white/90 !rounded-none">{content}</span>;
   };
 
   return (

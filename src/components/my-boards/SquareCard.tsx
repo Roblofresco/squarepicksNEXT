@@ -185,7 +185,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         
         {/* Grid with individual flip animations */}
         <div 
-          className="p-2 rounded-none max-h-[92px] overflow-y-auto"
+          className="p-2 rounded-none max-h-[90px] overflow-y-auto"
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(255,255,255,0.2) rgba(255,255,255,0.05)'
@@ -197,12 +197,12 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
               const isWinner = squareValue !== '—' && isUserWinningSquare(squareValue);
               
               // Base classes for both sides
-              const baseClasses = "!rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500";
+              const baseClasses = "!rounded-none !p-0 absolute inset-0 flex items-center justify-center transition-all duration-500 text-[10px] font-mono";
               
               // Conditional styling for winner squares
               const winnerClasses = isWinner
                 ? "bg-gradient-to-br from-[#FFE08A] via-[#E7B844] to-[#C9962E] text-white font-bold shadow-[0_0_10px_rgba(231,184,68,0.35)]"
-                : "chip text-white/90";
+                : "bg-white/8 border border-white/18 text-white/90";
               
               return (
                 <div 

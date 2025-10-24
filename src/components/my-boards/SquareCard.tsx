@@ -191,7 +191,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
             scrollbarColor: 'rgba(255,255,255,0.2) rgba(255,255,255,0.05)'
           }}
         >
-          <div className="grid grid-cols-5 gap-0.5">
+          <div className="grid grid-cols-5 gap-px">
             {idxs.map((v, i) => {
               const squareValue = xys[i];
               const isWinner = squareValue !== '—' && isUserWinningSquare(squareValue);

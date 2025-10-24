@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Info, CheckSquare, Loader2, Clock, Trophy, XCircle, AlertTriangle } from 'lucide-react';
+import { Info, CheckSquare, Loader2, Clock, Trophy, XCircle, AlertTriangle, Crown } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 // Import shared types instead of defining local interfaces
@@ -252,8 +252,14 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   const renderWinnerChip = (won: boolean, content: string) => {
     if (won) {
       return (
-        <span className="inline-flex rounded-none p-px bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_10px_rgba(231,184,68,0.35)]">
-          <span className="px-2 py-0.5 rounded-none bg-white/10 text-white/95 backdrop-blur-[2px] text-[11px] leading-4">
+        <span className="relative inline-flex items-center justify-center">
+          <Crown 
+            className="h-6 w-6 fill-[#E7B844] text-[#FFE08A]" 
+            style={{ 
+              filter: 'drop-shadow(0 0 8px rgba(231,184,68,0.6))' 
+            }}
+          />
+          <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white leading-none" style={{ marginTop: '2px' }}>
             {content}
           </span>
         </span>

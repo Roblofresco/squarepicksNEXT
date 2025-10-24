@@ -118,6 +118,16 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   const bracketIdx = (val?: number) => typeof val === 'number' ? String(val).padStart(2,'0') : '--';
   const bracketSquare = (sq?: string, idx?: number) => sq || '--';
 
+  // Helper function to check if a square value is a winning square that the user owns
+  const isUserWinningSquare = (squareValue: string): boolean => {
+    // Check if this square matches any quarter the user won
+    if (board.userWon_q1 && board.q1_winning_square === squareValue) return true;
+    if (board.userWon_q2 && board.q2_winning_square === squareValue) return true;
+    if (board.userWon_q3 && board.q3_winning_square === squareValue) return true;
+    if (board.userWon_final && board.q4_winning_square === squareValue) return true;
+    return false;
+  };
+
   const handleViewClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
     const userIndexes = userPickedSquares?.map(s => s.index) || [];
@@ -176,39 +186,52 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         {/* Grid with individual flip animations */}
         <div className="p-2 rounded-none">
           <div className="grid grid-cols-3 gap-1">
-            {idxs.map((v, i) => (
-              <div 
-                key={`flip-${i}`}
-                className="relative h-6"
-                style={{ perspective: '1000px' }}
-              >
-                {/* Front side (Squares) */}
-                <span 
-                  className="chip text-white/90 !rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
-                  style={{ 
-                    transformStyle: 'preserve-3d',
-                    backfaceVisibility: 'hidden',
-                    transform: showSquares ? 'rotateY(0deg)' : 'rotateY(180deg)',
-                    opacity: showSquares ? 1 : 0
-                  }}
+            {idxs.map((v, i) => {
+              const squareValue = xys[i];
+              const isWinner = squareValue !== '—' && isUserWinningSquare(squareValue);
+              
+              // Base classes for both sides
+              const baseClasses = "!rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500";
+              
+              // Conditional styling for winner squares
+              const winnerClasses = isWinner
+                ? "bg-gradient-to-br from-[#FFE08A] via-[#E7B844] to-[#C9962E] text-white font-bold shadow-[0_0_10px_rgba(231,184,68,0.35)]"
+                : "chip text-white/90";
+              
+              return (
+                <div 
+                  key={`flip-${i}`}
+                  className="relative h-6"
+                  style={{ perspective: '1000px' }}
                 >
-                  {v}
-                </span>
-                
-                {/* Back side (Picks) */}
-                <span 
-                  className="chip text-white/90 !rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
-                  style={{ 
-                    transformStyle: 'preserve-3d',
-                    backfaceVisibility: 'hidden',
-                    transform: !showSquares ? 'rotateY(0deg)' : 'rotateY(-180deg)',
-                    opacity: !showSquares ? 1 : 0
-                  }}
-                >
-                  {xys[i]}
-                </span>
-              </div>
-            ))}
+                  {/* Front side (Squares) */}
+                  <span 
+                    className={`${winnerClasses} ${baseClasses}`}
+                    style={{ 
+                      transformStyle: 'preserve-3d',
+                      backfaceVisibility: 'hidden',
+                      transform: showSquares ? 'rotateY(0deg)' : 'rotateY(180deg)',
+                      opacity: showSquares ? 1 : 0
+                    }}
+                  >
+                    {v}
+                  </span>
+                  
+                  {/* Back side (Picks) */}
+                  <span 
+                    className={`${winnerClasses} ${baseClasses}`}
+                    style={{ 
+                      transformStyle: 'preserve-3d',
+                      backfaceVisibility: 'hidden',
+                      transform: !showSquares ? 'rotateY(0deg)' : 'rotateY(-180deg)',
+                      opacity: !showSquares ? 1 : 0
+                    }}
+                  >
+                    {xys[i]}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

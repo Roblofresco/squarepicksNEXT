@@ -185,14 +185,13 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         
         {/* Grid with individual flip animations */}
         <div 
-          className="p-2 rounded-none max-h-[102px] overflow-y-auto"
+          className="p-2 rounded-none max-h-[68px] overflow-y-auto"
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(255,255,255,0.2) rgba(255,255,255,0.05)'
           }}
         >
-          <div className="flex justify-center">
-            <div className="flex flex-wrap gap-0.5 w-fit">
+          <div className="flex flex-wrap gap-0.5 w-fit">
               {idxs.map((v, i) => {
                 const squareValue = xys[i];
                 const isWinner = squareValue !== '—' && isUserWinningSquare(squareValue);
@@ -239,7 +238,6 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
                 </div>
               );
             })}
-            </div>
           </div>
         </div>
       </div>

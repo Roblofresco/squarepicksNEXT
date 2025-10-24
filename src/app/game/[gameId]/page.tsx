@@ -907,11 +907,13 @@ function GamePageContent() {
                         if (periodStr === '2' || periodStr.includes('2')) return '2nd Qtr';
                         if (periodStr === '3' || periodStr.includes('3')) return '3rd Qtr';
                         if (periodStr === '4' || periodStr.includes('4')) return '4th Qtr';
+                        if (periodStr === 'ot' || periodStr.includes('ot')) return 'Overtime';
+                        if (periodStr === 'halftime' || periodStr.includes('halftime')) return 'Halftime';
                         return period.toUpperCase();
                       })()}
                     </div>
                     
-                    {/* Time Remaining - Indented Container */}
+                    {/* Time Remaining - Enhanced Container */}
                     {((gameDetails as any).timeRemaining || (gameDetails as any).time_remaining) && (
                       <div className="mb-1 px-3 py-1 rounded-md border border-white/10 bg-slate-950/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">
                         <span className="text-[10px] sm:text-xs text-slate-300 font-mono tabular-nums">

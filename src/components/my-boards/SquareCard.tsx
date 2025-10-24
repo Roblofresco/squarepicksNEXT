@@ -233,7 +233,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   const renderWinnerChip = (won: boolean, content: string) => {
     if (won) {
       return (
-        <span className="inline-flex rounded-none p-px bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_10px_rgba(231,184,68,0.35)]">
+        <span className="inline-flex rounded-none p-px bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_12px_rgba(231,184,68,0.5)]">
           <span className="px-2 py-0.5 rounded-none bg-white/10 text-white/95 backdrop-blur-[2px] text-[11px] leading-4">
             {content}
           </span>
@@ -316,26 +316,14 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
               <span>Total Pot: ${potDisplay.toFixed(2)}</span>
             )}
           </div>
-          {(status === 'open' || status === 'full') && typeof stakeAmount === 'number' && (board.gameId) && (
-            <Button 
-              size="sm" 
-              variant="secondary" 
-              onClick={handleViewClick}
-              className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2"
-            >
-              View
-            </Button>
-          )}
-          {(status !== 'open') && board.winnings && board.winnings > 0 && (
-            <Button 
-              size="sm" 
-              variant="secondary" 
-              onClick={handleViewClick}
-              className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2"
-            >
-              View
-            </Button>
-          )}
+          <Button 
+            size="sm" 
+            variant="secondary" 
+            onClick={handleViewClick}
+            className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2"
+          >
+            View
+          </Button>
         </div>
 
         <div className="border-t border-white/10 pt-2 mt-3" />
@@ -367,32 +355,63 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         <div className="mt-1">
           <div className="font-semibold mb-1">Quarter Winners</div>
           {(() => {
-            const show = isInProgressOrFinal();
-            const q1 = show ? bracketSquare(board.q1_winning_square, board.q1_winning_index) : bracketIdx(undefined);
-            const q2 = show ? bracketSquare(board.q2_winning_square, board.q2_winning_index) : bracketIdx(undefined);
-            const q3 = show ? bracketSquare(board.q3_winning_square, board.q3_winning_index) : bracketIdx(undefined);
-            const q4 = show ? bracketSquare(board.q4_winning_square, board.q4_winning_index) : bracketIdx(undefined);
+            // Show winning squares for active/live/final games (not open/scheduled)
+            const showWinners = status !== 'open' && !String(status).toLowerCase().includes('scheduled');
+            
+            const q1 = showWinners ? bracketSquare(board.q1_winning_square, board.q1_winning_index) : bracketIdx(undefined);
+            const q2 = showWinners ? bracketSquare(board.q2_winning_square, board.q2_winning_index) : bracketIdx(undefined);
+            const q3 = showWinners ? bracketSquare(board.q3_winning_square, board.q3_winning_index) : bracketIdx(undefined);
+            const q4 = showWinners ? bracketSquare(board.q4_winning_square, board.q4_winning_index) : bracketIdx(undefined);
+            
             return (
               <>
                 <div className="text-white/90 flex flex-wrap gap-2 items-center">
                   <div className="flex items-center gap-1">
-                    <span className={show && board.userWon_q1 ? 'text-[#E7B844] font-semibold' : ''}>Q1:</span>
-                    {renderWinnerChip(!!(show && board.userWon_q1), q1)}
+                    <span className={showWinners && board.userWon_q1 ? 'text-[#E7B844] font-semibold' : ''}>Q1:</span>
+                    <div className="relative">
+                      {renderWinnerChip(!!(showWinners && board.userWon_q1), q1)}
+                      {showWinners && board.userWon_q1 && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-[#FFE08A] to-[#C9962E] border border-[#E7B844] shadow-[0_0_8px_rgba(231,184,68,0.6)] flex items-center justify-center z-10">
+                          <Trophy className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={show && board.userWon_q2 ? 'text-[#E7B844] font-semibold' : ''}>Q2:</span>
-                    {renderWinnerChip(!!(show && board.userWon_q2), q2)}
+                    <span className={showWinners && board.userWon_q2 ? 'text-[#E7B844] font-semibold' : ''}>Q2:</span>
+                    <div className="relative">
+                      {renderWinnerChip(!!(showWinners && board.userWon_q2), q2)}
+                      {showWinners && board.userWon_q2 && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-[#FFE08A] to-[#C9962E] border border-[#E7B844] shadow-[0_0_8px_rgba(231,184,68,0.6)] flex items-center justify-center z-10">
+                          <Trophy className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={show && board.userWon_q3 ? 'text-[#E7B844] font-semibold' : ''}>Q3:</span>
-                    {renderWinnerChip(!!(show && board.userWon_q3), q3)}
+                    <span className={showWinners && board.userWon_q3 ? 'text-[#E7B844] font-semibold' : ''}>Q3:</span>
+                    <div className="relative">
+                      {renderWinnerChip(!!(showWinners && board.userWon_q3), q3)}
+                      {showWinners && board.userWon_q3 && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-[#FFE08A] to-[#C9962E] border border-[#E7B844] shadow-[0_0_8px_rgba(231,184,68,0.6)] flex items-center justify-center z-10">
+                          <Trophy className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={show && board.userWon_final ? 'text-[#E7B844] font-semibold' : ''}>Final:</span>
-                    {renderWinnerChip(!!(show && board.userWon_final), q4)}
+                    <span className={showWinners && board.userWon_final ? 'text-[#E7B844] font-semibold' : ''}>Final:</span>
+                    <div className="relative">
+                      {renderWinnerChip(!!(showWinners && board.userWon_final), q4)}
+                      {showWinners && board.userWon_final && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-[#FFE08A] to-[#C9962E] border border-[#E7B844] shadow-[0_0_8px_rgba(231,184,68,0.6)] flex items-center justify-center z-10">
+                          <Trophy className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-                {show && (board.userWon_q1 || board.userWon_q2 || board.userWon_q3 || board.userWon_final) && (
+                {showWinners && (board.userWon_q1 || board.userWon_q2 || board.userWon_q3 || board.userWon_final) && (
                   <div className="text-xs text-[#E7B844]/90 mt-1">* Winner</div>
                 )}
               </>

@@ -115,8 +115,8 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   const potDisplay = typeof board.pot === 'number' ? board.pot : undefined;  // Use board.pot from Firestore
   const isSweepstakes = boardAmount === 0;
 
-  const bracketIdx = (val?: number) => typeof val === 'number' ? `[ ${String(val).padStart(2,'0')} ]` : `[ -- ]`;
-  const bracketSquare = (sq?: string, idx?: number) => sq ? `[ ${sq} ]` : bracketIdx(idx);
+  const bracketIdx = (val?: number) => typeof val === 'number' ? String(val).padStart(2,'0') : '--';
+  const bracketSquare = (sq?: string, idx?: number) => sq || '--';
 
   const handleViewClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
@@ -132,92 +132,85 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
     const idxs = (userPickedSquares || []).map(s => s.index);
     const xys = (userPickedSquares || []).map(s => s.square || '—');
     
-    // If all 100 squares, show summary
+    // If no squares, show placeholder
+    if (idxs.length === 0) {
+      return <div className="text-white/85">--</div>;
+    }
+    
+    // If all 100 squares, show summary badge
     if (idxs.length === 100) {
       return (
         <div className="mt-1">
           <div className="flex items-center gap-2">
-            <span className="font-medium">Squares:</span>
             <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 border-orange-500/30 rounded-none">
-              100/100 Complete
+              All 100 squares selected
             </Badge>
           </div>
         </div>
       );
     }
     
-    // For non-open status: show toggle with flip animation on individual containers
-    if (status !== 'open') {
-      return (
-        <div className="mt-1">
-          {/* Toggle buttons */}
-          <div className="flex gap-2 mb-2">
-            <button 
-              onClick={(e) => { e.stopPropagation(); setShowSquares(true); }}
-              className={`px-3 py-1 text-xs font-medium transition-colors rounded-none ${
-                showSquares ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60'
-              }`}
-            >
-              Squares
-            </button>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setShowSquares(false); }}
-              className={`px-3 py-1 text-xs font-medium transition-colors rounded-none ${
-                !showSquares ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60'
-              }`}
-            >
-              Picks
-            </button>
-          </div>
-          
-          {/* Grid with individual flip animations on each square container */}
-          <div className="p-2 rounded-none">
-            <div className="grid grid-cols-3 gap-1">
-              {idxs.map((v, i) => (
-                <div 
-                  key={`flip-${i}`}
-                  className="relative h-6"
-                  style={{ perspective: '1000px' }}
+    // For all other cases: show toggle with flip animation (works for ALL statuses)
+    return (
+      <div className="mt-1">
+        {/* Toggle buttons */}
+        <div className="flex gap-2 mb-2">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowSquares(true); }}
+            className={`px-3 py-1 text-xs font-medium transition-colors rounded-none ${
+              showSquares ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60'
+            }`}
+          >
+            Squares
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowSquares(false); }}
+            className={`px-3 py-1 text-xs font-medium transition-colors rounded-none ${
+              !showSquares ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60'
+            }`}
+          >
+            Picks
+          </button>
+        </div>
+        
+        {/* Grid with individual flip animations */}
+        <div className="p-2 rounded-none">
+          <div className="grid grid-cols-3 gap-1">
+            {idxs.map((v, i) => (
+              <div 
+                key={`flip-${i}`}
+                className="relative h-6"
+                style={{ perspective: '1000px' }}
+              >
+                {/* Front side (Squares) */}
+                <span 
+                  className="chip text-white/90 !rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
+                  style={{ 
+                    transformStyle: 'preserve-3d',
+                    backfaceVisibility: 'hidden',
+                    transform: showSquares ? 'rotateY(0deg)' : 'rotateY(180deg)',
+                    opacity: showSquares ? 1 : 0
+                  }}
                 >
-                  {/* Front side (Squares - shows .index from square doc) */}
-                  <span 
-                    className="chip text-white/90 !rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
-                    style={{ 
-                      transformStyle: 'preserve-3d',
-                      backfaceVisibility: 'hidden',
-                      transform: showSquares ? 'rotateY(0deg)' : 'rotateY(180deg)',
-                      opacity: showSquares ? 1 : 0
-                    }}
-                  >
-                    {v}
-                  </span>
-                  
-                  {/* Back side (Picks - shows .square from square doc) */}
-                  <span 
-                    className="chip text-white/90 !rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
-                    style={{ 
-                      transformStyle: 'preserve-3d',
-                      backfaceVisibility: 'hidden',
-                      transform: !showSquares ? 'rotateY(0deg)' : 'rotateY(-180deg)',
-                      opacity: !showSquares ? 1 : 0
-                    }}
-                  >
-                    {xys[i]}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  {v}
+                </span>
+                
+                {/* Back side (Picks) */}
+                <span 
+                  className="chip text-white/90 !rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
+                  style={{ 
+                    transformStyle: 'preserve-3d',
+                    backfaceVisibility: 'hidden',
+                    transform: !showSquares ? 'rotateY(0deg)' : 'rotateY(-180deg)',
+                    opacity: !showSquares ? 1 : 0
+                  }}
+                >
+                  {xys[i]}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
-      );
-    }
-    
-    // For open status: keep simple display
-    return (
-      <div className="text-white/85">
-        Squares: {userPickedSquares && userPickedSquares.length > 0 
-          ? userPickedSquares.map(s => s.index).join(', ') 
-          : '--'}
       </div>
     );
   };
@@ -237,7 +230,12 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         </span>
       );
     }
-    return <span className="chip text-white/90 !rounded-none">{content}</span>;
+    // When no winning square assigned (content is "--")
+    if (content === '--') {
+      return <span className="chip text-white/40 !rounded-none">{content}</span>;
+    }
+    // When winning square exists but user didn't win
+    return <span className="chip text-white/90 !rounded-none bg-white/5">{content}</span>;
   };
 
   return (
@@ -329,57 +327,40 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         {/* Your Selections (Squares/Picks) */}
         <div className="mt-0">
           <div className="font-semibold mb-0">Your Selections</div>
-          {(() => {
-            const isFullBoard = status === 'full' && userPickedSquares && userPickedSquares.length === 100;
-            
-            if (status === 'open') {
-              return (
-                <div className="text-white/85">Squares: {userPickedSquares && userPickedSquares.length > 0 ? userPickedSquares.map(s => s.index).join(', ') : '--'}</div>
-              );
-            } else if (isFullBoard) {
-              return (
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 border-orange-500/30 rounded-none">
-                    All 100 squares selected
-                  </Badge>
-                </div>
-              );
-            } else {
-              return renderSquaresGrid();
-            }
-          })()}
+          {renderSquaresGrid()}
         </div>
 
         <div className="border-t border-white/10 pt-2 mt-3" />
         <div className="mt-1">
           <div className="font-semibold mb-1">Quarter Winners</div>
           {(() => {
-            const show = isInProgressOrFinal();
-            const q1 = show ? bracketSquare(board.q1_winning_square, board.q1_winning_index) : bracketIdx(undefined);
-            const q2 = show ? bracketSquare(board.q2_winning_square, board.q2_winning_index) : bracketIdx(undefined);
-            const q3 = show ? bracketSquare(board.q3_winning_square, board.q3_winning_index) : bracketIdx(undefined);
-            const q4 = show ? bracketSquare(board.q4_winning_square, board.q4_winning_index) : bracketIdx(undefined);
+            // Always show winning squares if they exist (from game document)
+            // Don't restrict to IN_PROGRESS/FINAL status
+            const q1 = bracketSquare(board.q1_winning_square, board.q1_winning_index);
+            const q2 = bracketSquare(board.q2_winning_square, board.q2_winning_index);
+            const q3 = bracketSquare(board.q3_winning_square, board.q3_winning_index);
+            const q4 = bracketSquare(board.q4_winning_square, board.q4_winning_index);
             return (
               <>
                 <div className="text-white/90 flex flex-wrap gap-2 items-center">
                   <div className="flex items-center gap-1">
-                    <span className={show && board.userWon_q1 ? 'text-[#E7B844] font-semibold' : ''}>Q1:</span>
-                    {renderWinnerChip(!!(show && board.userWon_q1), q1)}
+                    <span className={board.userWon_q1 ? 'text-[#E7B844] font-semibold' : ''}>Q1:</span>
+                    {renderWinnerChip(!!board.userWon_q1, q1)}
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={show && board.userWon_q2 ? 'text-[#E7B844] font-semibold' : ''}>Q2:</span>
-                    {renderWinnerChip(!!(show && board.userWon_q2), q2)}
+                    <span className={board.userWon_q2 ? 'text-[#E7B844] font-semibold' : ''}>Q2:</span>
+                    {renderWinnerChip(!!board.userWon_q2, q2)}
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={show && board.userWon_q3 ? 'text-[#E7B844] font-semibold' : ''}>Q3:</span>
-                    {renderWinnerChip(!!(show && board.userWon_q3), q3)}
+                    <span className={board.userWon_q3 ? 'text-[#E7B844] font-semibold' : ''}>Q3:</span>
+                    {renderWinnerChip(!!board.userWon_q3, q3)}
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={show && board.userWon_final ? 'text-[#E7B844] font-semibold' : ''}>Final:</span>
-                    {renderWinnerChip(!!(show && board.userWon_final), q4)}
+                    <span className={board.userWon_final ? 'text-[#E7B844] font-semibold' : ''}>Final:</span>
+                    {renderWinnerChip(!!board.userWon_final, q4)}
                   </div>
                 </div>
-                {show && (board.userWon_q1 || board.userWon_q2 || board.userWon_q3 || board.userWon_final) && (
+                {(board.userWon_q1 || board.userWon_q2 || board.userWon_q3 || board.userWon_final) && (
                   <div className="text-xs text-[#E7B844]/90 mt-1">* Winner</div>
                 )}
               </>

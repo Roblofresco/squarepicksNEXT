@@ -192,7 +192,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
           }}
         >
           <div className="flex justify-center">
-            <div className="flex flex-wrap gap-px w-fit">
+            <div className="flex flex-wrap gap-0.5 w-fit">
               {idxs.map((v, i) => {
                 const squareValue = xys[i];
                 const isWinner = squareValue !== '—' && isUserWinningSquare(squareValue);

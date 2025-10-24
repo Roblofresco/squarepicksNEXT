@@ -130,9 +130,32 @@ export async function GET(request: NextRequest) {
       // Return all boards - frontend will filter by status
       const filtered = allBoards;
 
+      // Query user wins for fallback boards too
+      const userWinsMap = new Map<string, Set<string>>();
+      const winQueries = Array.from(boardIds).map(async (boardId) => {
+        const periods = ['q1', 'q2', 'q3', 'final'];
+        const winDocs = await Promise.all(
+          periods.map(period =>
+            db.doc(`users/${userId}/wins/${boardId}_${period}`).get()
+          )
+        );
+        
+        const wonPeriods = new Set<string>();
+        winDocs.forEach((docSnap, index) => {
+          if (docSnap.exists()) {
+            wonPeriods.add(periods[index]);
+          }
+        });
+        
+        userWinsMap.set(boardId, wonPeriods);
+      });
+      
+      await Promise.all(winQueries);
+
       const boards = filtered.map(b => {
         const bd = (b.data() as any) || {};
         const userSquares = squaresByBoard.get(b.id) || [];
+        const userWins = userWinsMap.get(b.id) || new Set();
         return {
           id: b.id,
           gameId: bd?.gameID?.id || b.id,
@@ -160,10 +183,11 @@ export async function GET(request: NextRequest) {
           q2_winning_index: bd?.q2_winning_index,
           q3_winning_index: bd?.q3_winning_index,
           q4_winning_index: bd?.q4_winning_index,
-          userWon_q1: bd?.userWon_q1 || false,
-          userWon_q2: bd?.userWon_q2 || false,
-          userWon_q3: bd?.userWon_q3 || false,
-          userWon_final: bd?.userWon_final || false,
+          // User win status - now from private wins collection
+          userWon_q1: userWins.has('q1'),
+          userWon_q2: userWins.has('q2'),
+          userWon_q3: userWins.has('q3'),
+          userWon_final: userWins.has('final'),
         };
       });
 
@@ -222,7 +246,32 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Step 5: Build response with cached data
+    // Step 5: Query user wins for all boards
+    const userWinsMap = new Map<string, Set<string>>();
+    
+    // Query wins for all boards in parallel
+    const winQueries = Array.from(boardIds).map(async (boardId) => {
+      const periods = ['q1', 'q2', 'q3', 'final'];
+      const winDocs = await Promise.all(
+        periods.map(period =>
+          db.doc(`users/${userId}/wins/${boardId}_${period}`).get()
+        )
+      );
+      
+      const wonPeriods = new Set<string>();
+      winDocs.forEach((docSnap, index) => {
+        if (docSnap.exists()) {
+          wonPeriods.add(periods[index]);
+        }
+      });
+      
+      userWinsMap.set(boardId, wonPeriods);
+    });
+    
+    await Promise.all(winQueries);
+    console.log(`[API] Queried wins for ${boardIds.size} boards`);
+
+    // Step 6: Build response with cached data
     const boards = filteredBoards.map(boardDoc => {
       const boardData = (boardDoc.data() as any) || {};
       const gameData = gameDataMap.get(boardData.gameID?.path);
@@ -236,6 +285,9 @@ export async function GET(request: NextRequest) {
       
       // Get user's squares for this board from the grouped map
       const userSquares = squaresByBoard.get(boardDoc.id) || [];
+      
+      // Get user wins for this board
+      const userWins = userWinsMap.get(boardDoc.id) || new Set();
 
       const userSquareCount = userSquares.length;
       const isFull = userSquareCount === 100;
@@ -269,11 +321,11 @@ export async function GET(request: NextRequest) {
         q2_winning_index: boardData?.q2_winning_index,
         q3_winning_index: boardData?.q3_winning_index,
         q4_winning_index: boardData?.q4_winning_index,
-          // User win status
-        userWon_q1: boardData?.userWon_q1 || false,
-        userWon_q2: boardData?.userWon_q2 || false,
-        userWon_q3: boardData?.userWon_q3 || false,
-        userWon_final: boardData?.userWon_final || false,
+          // User win status - now from private wins collection
+        userWon_q1: userWins.has('q1'),
+        userWon_q2: userWins.has('q2'),
+        userWon_q3: userWins.has('q3'),
+        userWon_final: userWins.has('final'),
       };
     });
 

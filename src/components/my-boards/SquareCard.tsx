@@ -171,44 +171,41 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
           </div>
           
           {/* Grid with individual flip animations on each square container */}
-          <div className="bg-white/5 p-2 rounded-none">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">{showSquares ? 'Squares:' : 'Picks:'}</span>
-              <div className="grid grid-cols-3 gap-1">
-                {idxs.map((v, i) => (
-                  <div 
-                    key={`flip-${i}`}
-                    className="relative h-6"
-                    style={{ perspective: '1000px' }}
+          <div className="p-2 rounded-none">
+            <div className="grid grid-cols-3 gap-1">
+              {idxs.map((v, i) => (
+                <div 
+                  key={`flip-${i}`}
+                  className="relative h-6"
+                  style={{ perspective: '1000px' }}
+                >
+                  {/* Front side (Squares - shows .index from square doc) */}
+                  <span 
+                    className="chip text-white/90 rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
+                    style={{ 
+                      transformStyle: 'preserve-3d',
+                      backfaceVisibility: 'hidden',
+                      transform: showSquares ? 'rotateY(0deg)' : 'rotateY(180deg)',
+                      opacity: showSquares ? 1 : 0
+                    }}
                   >
-                    {/* Front side (Squares - index) */}
-                    <span 
-                      className="chip text-white/90 rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
-                      style={{ 
-                        transformStyle: 'preserve-3d',
-                        backfaceVisibility: 'hidden',
-                        transform: showSquares ? 'rotateY(0deg)' : 'rotateY(180deg)',
-                        opacity: showSquares ? 1 : 0
-                      }}
-                    >
-                      {v}
-                    </span>
-                    
-                    {/* Back side (Picks - square) */}
-                    <span 
-                      className="chip text-white/90 rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
-                      style={{ 
-                        transformStyle: 'preserve-3d',
-                        backfaceVisibility: 'hidden',
-                        transform: !showSquares ? 'rotateY(0deg)' : 'rotateY(-180deg)',
-                        opacity: !showSquares ? 1 : 0
-                      }}
-                    >
-                      {xys[i]}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                    {v}
+                  </span>
+                  
+                  {/* Back side (Picks - shows .square from square doc) */}
+                  <span 
+                    className="chip text-white/90 rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
+                    style={{ 
+                      transformStyle: 'preserve-3d',
+                      backfaceVisibility: 'hidden',
+                      transform: !showSquares ? 'rotateY(0deg)' : 'rotateY(-180deg)',
+                      opacity: !showSquares ? 1 : 0
+                    }}
+                  >
+                    {xys[i]}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -233,7 +230,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   const renderWinnerChip = (won: boolean, content: string) => {
     if (won) {
       return (
-        <span className="inline-flex rounded-none p-px bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_12px_rgba(231,184,68,0.5)]">
+        <span className="inline-flex rounded-none p-px bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_10px_rgba(231,184,68,0.35)]">
           <span className="px-2 py-0.5 rounded-none bg-white/10 text-white/95 backdrop-blur-[2px] text-[11px] leading-4">
             {content}
           </span>
@@ -316,14 +313,16 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
               <span>Total Pot: ${potDisplay.toFixed(2)}</span>
             )}
           </div>
-          <Button 
-            size="sm" 
-            variant="secondary" 
-            onClick={handleViewClick}
-            className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2"
-          >
-            View
-          </Button>
+          {board.gameId && (
+            <Button 
+              size="sm" 
+              variant="secondary" 
+              onClick={handleViewClick}
+              className="transition-transform duration-150 hover:scale-[1.03] active:scale-95 hover:shadow-[0_8px_20px_rgba(88,85,228,0.25)] focus-visible:ring-2 focus-visible:ring-accent-1/60 hover:underline underline-offset-2"
+            >
+              View
+            </Button>
+          )}
         </div>
 
         <div className="border-t border-white/10 pt-2 mt-3" />
@@ -355,63 +354,32 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         <div className="mt-1">
           <div className="font-semibold mb-1">Quarter Winners</div>
           {(() => {
-            // Show winning squares for active/live/final games (not open/scheduled)
-            const showWinners = status !== 'open' && !String(status).toLowerCase().includes('scheduled');
-            
-            const q1 = showWinners ? bracketSquare(board.q1_winning_square, board.q1_winning_index) : bracketIdx(undefined);
-            const q2 = showWinners ? bracketSquare(board.q2_winning_square, board.q2_winning_index) : bracketIdx(undefined);
-            const q3 = showWinners ? bracketSquare(board.q3_winning_square, board.q3_winning_index) : bracketIdx(undefined);
-            const q4 = showWinners ? bracketSquare(board.q4_winning_square, board.q4_winning_index) : bracketIdx(undefined);
-            
+            const show = isInProgressOrFinal();
+            const q1 = show ? bracketSquare(board.q1_winning_square, board.q1_winning_index) : bracketIdx(undefined);
+            const q2 = show ? bracketSquare(board.q2_winning_square, board.q2_winning_index) : bracketIdx(undefined);
+            const q3 = show ? bracketSquare(board.q3_winning_square, board.q3_winning_index) : bracketIdx(undefined);
+            const q4 = show ? bracketSquare(board.q4_winning_square, board.q4_winning_index) : bracketIdx(undefined);
             return (
               <>
                 <div className="text-white/90 flex flex-wrap gap-2 items-center">
                   <div className="flex items-center gap-1">
-                    <span className={showWinners && board.userWon_q1 ? 'text-[#E7B844] font-semibold' : ''}>Q1:</span>
-                    <div className="relative">
-                      {renderWinnerChip(!!(showWinners && board.userWon_q1), q1)}
-                      {showWinners && board.userWon_q1 && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-[#FFE08A] to-[#C9962E] border border-[#E7B844] shadow-[0_0_8px_rgba(231,184,68,0.6)] flex items-center justify-center z-10">
-                          <Trophy className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      )}
-                    </div>
+                    <span className={show && board.userWon_q1 ? 'text-[#E7B844] font-semibold' : ''}>Q1:</span>
+                    {renderWinnerChip(!!(show && board.userWon_q1), q1)}
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={showWinners && board.userWon_q2 ? 'text-[#E7B844] font-semibold' : ''}>Q2:</span>
-                    <div className="relative">
-                      {renderWinnerChip(!!(showWinners && board.userWon_q2), q2)}
-                      {showWinners && board.userWon_q2 && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-[#FFE08A] to-[#C9962E] border border-[#E7B844] shadow-[0_0_8px_rgba(231,184,68,0.6)] flex items-center justify-center z-10">
-                          <Trophy className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      )}
-                    </div>
+                    <span className={show && board.userWon_q2 ? 'text-[#E7B844] font-semibold' : ''}>Q2:</span>
+                    {renderWinnerChip(!!(show && board.userWon_q2), q2)}
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={showWinners && board.userWon_q3 ? 'text-[#E7B844] font-semibold' : ''}>Q3:</span>
-                    <div className="relative">
-                      {renderWinnerChip(!!(showWinners && board.userWon_q3), q3)}
-                      {showWinners && board.userWon_q3 && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-[#FFE08A] to-[#C9962E] border border-[#E7B844] shadow-[0_0_8px_rgba(231,184,68,0.6)] flex items-center justify-center z-10">
-                          <Trophy className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      )}
-                    </div>
+                    <span className={show && board.userWon_q3 ? 'text-[#E7B844] font-semibold' : ''}>Q3:</span>
+                    {renderWinnerChip(!!(show && board.userWon_q3), q3)}
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className={showWinners && board.userWon_final ? 'text-[#E7B844] font-semibold' : ''}>Final:</span>
-                    <div className="relative">
-                      {renderWinnerChip(!!(showWinners && board.userWon_final), q4)}
-                      {showWinners && board.userWon_final && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-[#FFE08A] to-[#C9962E] border border-[#E7B844] shadow-[0_0_8px_rgba(231,184,68,0.6)] flex items-center justify-center z-10">
-                          <Trophy className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      )}
-                    </div>
+                    <span className={show && board.userWon_final ? 'text-[#E7B844] font-semibold' : ''}>Final:</span>
+                    {renderWinnerChip(!!(show && board.userWon_final), q4)}
                   </div>
                 </div>
-                {showWinners && (board.userWon_q1 || board.userWon_q2 || board.userWon_q3 || board.userWon_final) && (
+                {show && (board.userWon_q1 || board.userWon_q2 || board.userWon_q3 || board.userWon_final) && (
                   <div className="text-xs text-[#E7B844]/90 mt-1">* Winner</div>
                 )}
               </>

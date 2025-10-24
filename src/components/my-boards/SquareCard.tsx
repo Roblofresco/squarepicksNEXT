@@ -185,7 +185,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         
         {/* Grid with individual flip animations */}
         <div className="p-2 rounded-none">
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-5 gap-1">
             {idxs.map((v, i) => {
               const squareValue = xys[i];
               const isWinner = squareValue !== '—' && isUserWinningSquare(squareValue);
@@ -201,7 +201,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
               return (
                 <div 
                   key={`flip-${i}`}
-                  className="relative h-6"
+                  className="relative h-12 w-12"
                   style={{ perspective: '1000px' }}
                 >
                   {/* Front side (Squares) */}

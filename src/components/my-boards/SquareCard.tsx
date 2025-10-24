@@ -269,9 +269,9 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
 
   return (
     <Card className={cn(
-      "w-full max-w-sm overflow-visible glass transition-shadow duration-300 ease-in-out flex flex-col gap-0 text-slate-100 cursor-pointer h-full rounded-lg relative",
+      "w-full max-w-sm overflow-visible glass transition-shadow duration-300 ease-in-out flex flex-col gap-0 text-slate-100 h-full rounded-lg relative",
       status === 'full' && "ring-2 ring-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.15)]"
-    )} onClick={() => onClick(id)}>
+    )}>
       {/* Ribbons */}
         {sport && (
         <div className="absolute -top-3 left-3 z-20 pointer-events-none">

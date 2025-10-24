@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
         
         const wonPeriods = new Set<string>();
         winDocs.forEach((docSnap, index) => {
-          if (docSnap.exists()) {
+          if (docSnap.exists) {
             wonPeriods.add(periods[index]);
           }
         });
@@ -260,7 +260,7 @@ export async function GET(request: NextRequest) {
       
       const wonPeriods = new Set<string>();
       winDocs.forEach((docSnap, index) => {
-        if (docSnap.exists()) {
+        if (docSnap.exists) {
           wonPeriods.add(periods[index]);
         }
       });

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -92,6 +92,7 @@ const TeamDisplay: React.FC<{ team?: TeamInfo; logoRight?: boolean }> = ({ team,
 
 const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   const router = useRouter();
+  const [showSquares, setShowSquares] = useState(true); // Toggle between squares and picks
   const { 
     id, homeTeam, awayTeam, gameDateTime, status, 
     sport, userPickedSquares,
@@ -137,7 +138,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
         <div className="mt-1">
           <div className="flex items-center gap-2">
             <span className="font-medium">Squares:</span>
-            <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 border-orange-500/30">
+            <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 border-orange-500/30 rounded-none">
               100/100 Complete
             </Badge>
           </div>
@@ -145,22 +146,81 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
       );
     }
     
-    // Original grid display for partial selections
+    // For non-open status: show toggle with flip animation on individual containers
+    if (status !== 'open') {
+      return (
+        <div className="mt-1">
+          {/* Toggle buttons */}
+          <div className="flex gap-2 mb-2">
+            <button 
+              onClick={(e) => { e.stopPropagation(); setShowSquares(true); }}
+              className={`px-3 py-1 text-xs font-medium transition-colors rounded-none ${
+                showSquares ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60'
+              }`}
+            >
+              Squares
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setShowSquares(false); }}
+              className={`px-3 py-1 text-xs font-medium transition-colors rounded-none ${
+                !showSquares ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60'
+              }`}
+            >
+              Picks
+            </button>
+          </div>
+          
+          {/* Grid with individual flip animations on each square container */}
+          <div className="bg-white/5 p-2 rounded-none">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{showSquares ? 'Squares:' : 'Picks:'}</span>
+              <div className="grid grid-cols-3 gap-1">
+                {idxs.map((v, i) => (
+                  <div 
+                    key={`flip-${i}`}
+                    className="relative h-6"
+                    style={{ perspective: '1000px' }}
+                  >
+                    {/* Front side (Squares - index) */}
+                    <span 
+                      className="chip text-white/90 rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
+                      style={{ 
+                        transformStyle: 'preserve-3d',
+                        backfaceVisibility: 'hidden',
+                        transform: showSquares ? 'rotateY(0deg)' : 'rotateY(180deg)',
+                        opacity: showSquares ? 1 : 0
+                      }}
+                    >
+                      {v}
+                    </span>
+                    
+                    {/* Back side (Picks - square) */}
+                    <span 
+                      className="chip text-white/90 rounded-none absolute inset-0 flex items-center justify-center transition-all duration-500"
+                      style={{ 
+                        transformStyle: 'preserve-3d',
+                        backfaceVisibility: 'hidden',
+                        transform: !showSquares ? 'rotateY(0deg)' : 'rotateY(-180deg)',
+                        opacity: !showSquares ? 1 : 0
+                      }}
+                    >
+                      {xys[i]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // For open status: keep simple display
     return (
-      <div className="mt-1">
-        <div className="flex items-center gap-2">
-          <span className="font-medium">Squares:</span>
-          <div className="grid grid-cols-3 gap-1">
-            {idxs.map((v,i) => (<span key={`sq-${i}`} className="chip text-white/90">{v}</span>))}
-          </div>
-        </div>
-        <div className="my-1 border-t border-dashed border-white/15" />
-        <div className="flex items-center gap-2">
-          <span className="font-medium">Picks:</span>
-          <div className="grid grid-cols-3 gap-1">
-            {xys.map((v,i) => (<span key={`xy-${i}`} className="chip text-white/90">{v}</span>))}
-          </div>
-        </div>
+      <div className="text-white/85">
+        Squares: {userPickedSquares && userPickedSquares.length > 0 
+          ? userPickedSquares.map(s => s.index).join(', ') 
+          : '--'}
       </div>
     );
   };
@@ -173,14 +233,14 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   const renderWinnerChip = (won: boolean, content: string) => {
     if (won) {
       return (
-        <span className="inline-flex rounded-md p-px bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_10px_rgba(231,184,68,0.35)]">
-          <span className="px-2 py-0.5 rounded-[5px] bg-white/10 text-white/95 backdrop-blur-[2px] text-[11px] leading-4">
+        <span className="inline-flex rounded-none p-px bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_10px_rgba(231,184,68,0.35)]">
+          <span className="px-2 py-0.5 rounded-none bg-white/10 text-white/95 backdrop-blur-[2px] text-[11px] leading-4">
             {content}
           </span>
         </span>
       );
     }
-    return <span className="chip text-white/90">{content}</span>;
+    return <span className="chip text-white/90 rounded-none">{content}</span>;
   };
 
   return (
@@ -292,7 +352,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
             } else if (isFullBoard) {
               return (
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 border-orange-500/30">
+                  <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 border-orange-500/30 rounded-none">
                     All 100 squares selected
                   </Badge>
                 </div>

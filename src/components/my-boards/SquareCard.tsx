@@ -20,14 +20,15 @@ interface SquareCardProps {
   onClick: (boardId: string) => void;
 }
 
-const getStatusAppearance = (status: BoardStatus | string, isLive?: boolean, isBoardFull?: boolean) => {
+const getStatusAppearance = (status: BoardStatus | string, isLive?: boolean) => {
   if (status === 'open') {
-    if (isBoardFull && isLive) {
-      return { text: 'LIVE', color: 'bg-red-600 hover:bg-red-700 animate-pulse', icon: <Clock className="h-3.5 w-3.5" /> };
-    } else if (isBoardFull) {
-      return { text: 'Full', color: 'bg-orange-500 hover:bg-orange-600', icon: <Info className="h-3.5 w-3.5" /> };
-    }
     return { text: 'Picks Open', color: 'bg-blue-600 hover:bg-blue-700', icon: <CheckSquare className="h-3.5 w-3.5" /> };
+  }
+  if (status === 'full') {
+    if (isLive) {
+      return { text: 'LIVE', color: 'bg-red-600 hover:bg-red-700 animate-pulse', icon: <Clock className="h-3.5 w-3.5" /> };
+    }
+    return { text: 'Full', color: 'bg-orange-500 hover:bg-orange-600', icon: <Info className="h-3.5 w-3.5" /> };
   }
   
   switch (status) {
@@ -51,10 +52,9 @@ const getStatusAppearance = (status: BoardStatus | string, isLive?: boolean, isB
   }
 };
 
-const statusLabel = (status: BoardStatus, isFull: boolean): string => {
-  if (status === 'open' && isFull) return 'FULL';
+const statusLabel = (status: BoardStatus): string => {
   if (status === 'open') return 'OPEN';
-  // Remove the 'full' check since it won't exist in database
+  if (status === 'full') return 'FULL';
   if (String(status).startsWith('FINAL')) return 'FINAL';
   if (String(status).startsWith('IN_PROGRESS')) return 'IN PROGRESS';
   return String(status).replace(/_/g, ' ').toUpperCase();
@@ -101,10 +101,6 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
     totalSquareCount,
     q1_winning_index, q2_winning_index, q3_winning_index, q4_winning_index
   } = board;
-
-  const isBoardFull = totalSquareCount !== undefined && 
-                      selected_indexes_on_board !== undefined && 
-                      selected_indexes_on_board.length >= totalSquareCount;
 
   const gameDate = new Date(gameDateTime);
 
@@ -277,7 +273,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
   return (
     <Card className={cn(
       "w-full max-w-sm overflow-visible glass transition-shadow duration-300 ease-in-out flex flex-col gap-0 text-slate-100 h-full rounded-lg relative",
-      isBoardFull && "ring-2 ring-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.15)]"
+      status === 'full' && "ring-2 ring-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.15)]"
     )}>
       {/* Ribbons */}
         {sport && (
@@ -301,8 +297,8 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
       <div className="absolute -top-3 right-3 z-20 pointer-events-none">
         {(() => {
           const s = String(status);
-          const statusBgClass = s === 'open' && isBoardFull ? 'bg-yellow-500/80'  // Yellow for full board
-            : s === 'open' ? 'bg-blue-500/80'                                      // Blue for open (not full)
+          const statusBgClass = s === 'open' ? 'bg-blue-500/80'                    // Blue for open
+            : s === 'full' ? 'bg-yellow-500/80'                                    // Yellow for full board
             : s === 'active' ? 'bg-green-600/80'                                   // Green for active
             : s === 'unfilled' ? 'bg-red-600/80'
             : s === 'closed' ? 'bg-gray-600/80'
@@ -312,7 +308,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
             : 'bg-white/20';
           return (
             <div className={`px-2 py-0.5 rounded-full ${statusBgClass} border border-white/20 text-[10px] uppercase tracking-wide text-white shadow-[0_2px_10px_rgba(0,0,0,0.35)]`}>
-              {statusLabel(status, isBoardFull)}
+              {statusLabel(status)}
             </div>
           );
         })()}

@@ -244,10 +244,10 @@ export default function LoadingPage() {
 
     let animationFrameId: number;
     const stars: Array<{ x: number; y: number; angle: number; speed: number; size: number; opacity: number; dist: number; }> = [];
-    const numStars = 400; // Density
-    const baseSpeedFactor = 0.0035; // Slower base speed factor
-    const baseSpeedOffset = 0.04; // Minimum outward speed
-    const maxSpeedPxPerFrame = 2.2; // Clamp per-frame movement to avoid spikes
+    const numStars = 200; // Reduced from 400 for better performance
+    const baseSpeedFactor = 0.003; // Slightly slower for smoother movement
+    const baseSpeedOffset = 0.03; // Minimum outward speed
+    const maxSpeedPxPerFrame = 2.0; // Reduced clamp for smoother animation
     let canvasCenterX = window.innerWidth / 2;
     let canvasCenterY = window.innerHeight / 2;
     // Warp parameters (match home/info)
@@ -258,6 +258,9 @@ export default function LoadingPage() {
     let warpTarget = 0;
     const baseWarpOnHover = prefersReduced ? 0 : 0.5;
     const baseWarpOnPress = prefersReduced ? 0 : 0.85;
+    let lastFrameTime = 0;
+    const targetFPS = 60;
+    const frameInterval = 1000 / targetFPS;
 
     // Function to initialize or reset stars
     const setup = () => {
@@ -361,16 +364,22 @@ export default function LoadingPage() {
         }
 
       });
-      // Optional: re-sort by distance if needed
+    };
+
+    const animate = (currentTime: number) => {
+      // Frame rate limiting for smoother animation
+      const elapsed = currentTime - lastFrameTime;
+      
+      if (elapsed > frameInterval) {
+        lastFrameTime = currentTime - (elapsed % frameInterval);
+        renderFrame();
+      }
+      
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    const animate = () => {
-      renderFrame();
-    };
-
     setup(); 
-    animate();
+    animate(0);
     drawNowRef.current = renderFrame;
 
     const handleResize = () => setup();

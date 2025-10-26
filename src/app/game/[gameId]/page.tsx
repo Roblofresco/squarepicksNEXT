@@ -1092,7 +1092,12 @@ function GamePageContent() {
                       <>
                         {/* Assigned: Label container top, Number container middle */}
                         <div className="w-full flex items-center justify-center">
-                          <span className="text-xs font-semibold uppercase text-white">
+                          <span className={cn(
+                            "text-xs font-semibold uppercase",
+                            doesUserOwnWinningSquare('q1')
+                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              : "text-white"
+                          )}>
                             Q1
                           </span>
                 </div>
@@ -1161,7 +1166,12 @@ function GamePageContent() {
                       <>
                         {/* Assigned: Label container top, Number container middle */}
                         <div className="w-full flex items-center justify-center">
-                          <span className="text-xs font-semibold uppercase text-white">
+                          <span className={cn(
+                            "text-xs font-semibold uppercase",
+                            doesUserOwnWinningSquare('q2')
+                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              : "text-white"
+                          )}>
                             Q2
                           </span>
                         </div>
@@ -1230,7 +1240,12 @@ function GamePageContent() {
                       <>
                         {/* Assigned: Label container top, Number container middle */}
                         <div className="w-full flex items-center justify-center">
-                          <span className="text-xs font-semibold uppercase text-white">
+                          <span className={cn(
+                            "text-xs font-semibold uppercase",
+                            doesUserOwnWinningSquare('q3')
+                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              : "text-white"
+                          )}>
                             Q3
                           </span>
                         </div>
@@ -1299,7 +1314,12 @@ function GamePageContent() {
                       <>
                         {/* Assigned: Label container top, Number container middle */}
                         <div className="w-full flex items-center justify-center">
-                          <span className="text-xs font-semibold uppercase text-white">
+                          <span className={cn(
+                            "text-xs font-semibold uppercase",
+                            doesUserOwnWinningSquare('final')
+                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              : "text-white"
+                          )}>
                             Final
                           </span>
                 </div>

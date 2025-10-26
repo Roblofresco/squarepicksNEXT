@@ -63,11 +63,11 @@ export async function GET(request: NextRequest) {
     console.log(`[API] Fetching all boards for user: ${userId}`);
 
     // Step 1: Query user's squares from top-level squares collection
-    // Note: userID is stored as a string, not a reference
+    const userRef = db.doc(`users/${userId}`);
     console.log(`[API] Querying user's squares from top-level squares collection...`);
 
     const userSquaresSnap = await db.collection('squares')
-      .where('userID', '==', userId)
+      .where('userID', '==', userRef)
         .get();
 
     console.log(`[API] Found ${userSquaresSnap.size} squares for user`);

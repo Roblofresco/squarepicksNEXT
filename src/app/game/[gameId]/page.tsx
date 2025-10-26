@@ -406,13 +406,10 @@ function GamePageContent() {
     }
   }, [userId, emailVerified, walletIsLoading, router]);
 
-  // Effect: Fetch user's wins from private wins collection when game is active
+  // Effect: Fetch user's wins from private wins collection
   useEffect(() => {
-    // Only query wins if:
-    // 1. User is authenticated
-    // 2. We have a board to check
-    // 3. Game status is NOT scheduled (i.e., live or final)
-    if (!userId || !currentBoard?.id || gameDetails?.status === 'scheduled') {
+    // Only query wins if user is authenticated and we have a board
+    if (!userId || !currentBoard?.id) {
       setUserWins(new Set());
       return;
     }
@@ -442,7 +439,7 @@ function GamePageContent() {
     };
     
     fetchUserWins();
-  }, [userId, currentBoard?.id, gameDetails?.status]);
+  }, [userId, currentBoard?.id]);
 
   const handleSquareClick = (squareNumber: number) => {
     // === Pre-computation and State Checks ===

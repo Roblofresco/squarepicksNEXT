@@ -1096,16 +1096,26 @@ function GamePageContent() {
                             Q1
                           </span>
                 </div>
-                        <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center mb-1">
-                          <span className="text-2xl font-bold font-mono text-white">
+                        <Separator className={cn(
+                          "my-1 w-full",
+                          doesUserOwnWinningSquare('q1')
+                            ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                            : "bg-white/20"
+                        )} />
+                        <div className="w-full flex items-center justify-center mb-2">
+                          <span className={cn(
+                            "text-2xl font-bold font-mono",
+                            doesUserOwnWinningSquare('q1')
+                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              : "text-white"
+                          )}>
                             {q1WinningSquare}
                           </span>
                         </div>
                         
                         {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('q1') && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10 rounded-b-lg">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
                           </div>
                         )}
@@ -1155,16 +1165,26 @@ function GamePageContent() {
                             Q2
                           </span>
                         </div>
-                        <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center mb-1">
-                          <span className="text-2xl font-bold font-mono text-white">
+                        <Separator className={cn(
+                          "my-1 w-full",
+                          doesUserOwnWinningSquare('q2')
+                            ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                            : "bg-white/20"
+                        )} />
+                        <div className="w-full flex items-center justify-center mb-2">
+                          <span className={cn(
+                            "text-2xl font-bold font-mono",
+                            doesUserOwnWinningSquare('q2')
+                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              : "text-white"
+                          )}>
                             {q2WinningSquare}
                           </span>
                         </div>
                         
                         {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('q2') && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10 rounded-b-lg">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
                           </div>
                         )}
@@ -1214,16 +1234,26 @@ function GamePageContent() {
                             Q3
                           </span>
                         </div>
-                        <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center mb-1">
-                          <span className="text-2xl font-bold font-mono text-white">
+                        <Separator className={cn(
+                          "my-1 w-full",
+                          doesUserOwnWinningSquare('q3')
+                            ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                            : "bg-white/20"
+                        )} />
+                        <div className="w-full flex items-center justify-center mb-2">
+                          <span className={cn(
+                            "text-2xl font-bold font-mono",
+                            doesUserOwnWinningSquare('q3')
+                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              : "text-white"
+                          )}>
                             {q3WinningSquare}
                           </span>
                         </div>
                         
                         {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('q3') && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10 rounded-b-lg">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
                           </div>
                         )}
@@ -1273,16 +1303,26 @@ function GamePageContent() {
                             Final
                           </span>
                 </div>
-                        <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center mb-1">
-                          <span className="text-2xl font-bold font-mono text-white">
+                        <Separator className={cn(
+                          "my-1 w-full",
+                          doesUserOwnWinningSquare('final')
+                            ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                            : "bg-white/20"
+                        )} />
+                        <div className="w-full flex items-center justify-center mb-2">
+                          <span className={cn(
+                            "text-2xl font-bold font-mono",
+                            doesUserOwnWinningSquare('final')
+                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              : "text-white"
+                          )}>
                             {finalWinningSquare}
                           </span>
                         </div>
                         
                         {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('final') && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10 rounded-b-lg">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
                           </div>
                         )}

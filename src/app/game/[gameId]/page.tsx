@@ -277,38 +277,31 @@ function GamePageContent() {
     const fetchBoardLogic = async () => {
       try {
         const gameDocRef = doc(db, 'games', gameId) as DocumentReference;
-        const boardsQuery = query(
-          collection(db, 'boards'),
-          where('gameID', '==', gameDocRef),
-          where('amount', '==', selectedEntryAmount),
-          where('status', '==', 'open'),
-          limit(1)
-        );
-        const boardSnap = await getDocs(boardsQuery);
-
-        if (!boardSnap.empty) {
-          const boardDoc = boardSnap.docs[0];
-          unsubscribeBoardListener = onSnapshot(doc(db, 'boards', boardDoc.id), (snapshot) => {
-            if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
+        
+        // BRANCH 1: Specific board from My Boards (when boardId is provided)
+        if (boardId) {
+          const specificBoardRef = doc(db, 'boards', boardId);
+          
+          unsubscribeBoardListener = onSnapshot(specificBoardRef, (snapshot) => {
+            if (loaderTimerId.current) { 
+              clearTimeout(loaderTimerId.current); 
+              loaderTimerId.current = null; 
+            }
             setIsDisplayingDelayedLoader(false);
             
             if (snapshot.exists()) {
               const boardData = snapshot.data();
-              if (gameDocRef) { 
-                setCurrentBoard({
-                  id: snapshot.id,
-                  gameID: gameDocRef,
-                  prize: boardData.prize,
-                  entryFee: boardData.amount,
-                  isFreeEntry: boardData.amount === 0,
-                  selected_indexes: boardData.selected_indexes || [],
-                  status: boardData.status as 'open' | 'closed' | 'cancelled',
-                });
-              } else {
-                 console.error("gameDocRef is undefined, cannot set current board with non-optional gameID");
-                 setCurrentBoard(null); // Still set to null if gameDocRef is missing
-              }
-              // Capture axis numbers when assigned
+              setCurrentBoard({
+                id: snapshot.id,
+                gameID: gameDocRef,
+                prize: boardData.prize,
+                entryFee: boardData.amount,
+                isFreeEntry: boardData.amount === 0,
+                selected_indexes: boardData.selected_indexes || [],
+                status: boardData.status as 'open' | 'closed' | 'cancelled',
+              });
+              
+              // Capture axis numbers
               if (Array.isArray(boardData.home_numbers) && boardData.home_numbers.length === 10) {
                 setHomeAxisNumbers(boardData.home_numbers.map(String));
               } else {
@@ -319,28 +312,90 @@ function GamePageContent() {
               } else {
                 setAwayAxisNumbers([]);
               }
-              if (boardData.status !== 'open') {
-                toast.error("This board is now closed.", { id: `board-closed-${snapshot.id}` });
-                setSelectedSquares(new Set());
-              }
             } else {
               setCurrentBoard(null);
-              toast.error("The selected board is no longer available.", { id: `board-not-found-${boardDoc.id}` });
+              toast.error("Board not found.");
             }
-            setIsLoadingBoard(false); // Done loading board data
+            setIsLoadingBoard(false);
           }, (errorListener) => {
-            if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
+            if (loaderTimerId.current) { 
+              clearTimeout(loaderTimerId.current); 
+              loaderTimerId.current = null; 
+            }
             setIsDisplayingDelayedLoader(false);
-            console.error("Error listening to board updates:", errorListener);
-            toast.error("Error listening to board updates.");
+            console.error("Error listening to board:", errorListener);
+            toast.error("Error loading board.");
             setCurrentBoard(null);
             setIsLoadingBoard(false);
           });
-        } else {
-          if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
-          setIsDisplayingDelayedLoader(false);
-          setCurrentBoard(null); 
-          setIsLoadingBoard(false);
+        } 
+        // BRANCH 2: Open board query (normal lobby flow)
+        else {
+          const boardsQuery = query(
+            collection(db, 'boards'),
+            where('gameID', '==', gameDocRef),
+            where('amount', '==', selectedEntryAmount),
+            where('status', '==', 'open'),
+            limit(1)
+          );
+          const boardSnap = await getDocs(boardsQuery);
+
+          if (!boardSnap.empty) {
+            const boardDoc = boardSnap.docs[0];
+            unsubscribeBoardListener = onSnapshot(doc(db, 'boards', boardDoc.id), (snapshot) => {
+              if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
+              setIsDisplayingDelayedLoader(false);
+              
+              if (snapshot.exists()) {
+                const boardData = snapshot.data();
+                if (gameDocRef) { 
+                  setCurrentBoard({
+                    id: snapshot.id,
+                    gameID: gameDocRef,
+                    prize: boardData.prize,
+                    entryFee: boardData.amount,
+                    isFreeEntry: boardData.amount === 0,
+                    selected_indexes: boardData.selected_indexes || [],
+                    status: boardData.status as 'open' | 'closed' | 'cancelled',
+                  });
+                } else {
+                   console.error("gameDocRef is undefined, cannot set current board with non-optional gameID");
+                   setCurrentBoard(null); // Still set to null if gameDocRef is missing
+                }
+                // Capture axis numbers when assigned
+                if (Array.isArray(boardData.home_numbers) && boardData.home_numbers.length === 10) {
+                  setHomeAxisNumbers(boardData.home_numbers.map(String));
+                } else {
+                  setHomeAxisNumbers([]);
+                }
+                if (Array.isArray(boardData.away_numbers) && boardData.away_numbers.length === 10) {
+                  setAwayAxisNumbers(boardData.away_numbers.map(String));
+                } else {
+                  setAwayAxisNumbers([]);
+                }
+                if (boardData.status !== 'open') {
+                  toast.error("This board is now closed.", { id: `board-closed-${snapshot.id}` });
+                  setSelectedSquares(new Set());
+                }
+              } else {
+                setCurrentBoard(null);
+                toast.error("The selected board is no longer available.", { id: `board-not-found-${boardDoc.id}` });
+              }
+              setIsLoadingBoard(false); // Done loading board data
+            }, (errorListener) => {
+              if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
+              setIsDisplayingDelayedLoader(false);
+              console.error("Error listening to board updates:", errorListener);
+              toast.error("Error listening to board updates.");
+              setCurrentBoard(null);
+              setIsLoadingBoard(false);
+            });
+          } else {
+            if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
+            setIsDisplayingDelayedLoader(false);
+            setCurrentBoard(null); 
+            setIsLoadingBoard(false);
+          }
         }
       } catch (err: any) {
         if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
@@ -1011,7 +1066,7 @@ function GamePageContent() {
               {renderGrid()}
             </div>
           )}
-          {gameDetails && (currentBoard?.selected_indexes?.length === 100 || gameDetails.status !== 'scheduled') && (
+          {gameDetails && (boardId || gameDetails.status !== 'scheduled') && (
             <div className="mb-6">
               {/* Winners scoreboard */}
               <div 

@@ -1097,15 +1097,15 @@ function GamePageContent() {
                           </span>
                 </div>
                         <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center">
+                        <div className="w-full flex items-center justify-center mb-1">
                           <span className="text-2xl font-bold font-mono text-white">
                             {q1WinningSquare}
                           </span>
                         </div>
                         
-                        {/* Winner badge - absolutely positioned at bottom */}
+                        {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('q1') && (
-                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10 rounded-b-lg">
                             Winner
                           </div>
                         )}
@@ -1156,15 +1156,15 @@ function GamePageContent() {
                           </span>
                         </div>
                         <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center">
+                        <div className="w-full flex items-center justify-center mb-1">
                           <span className="text-2xl font-bold font-mono text-white">
                             {q2WinningSquare}
                           </span>
                         </div>
                         
-                        {/* Winner badge - absolutely positioned at bottom */}
+                        {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('q2') && (
-                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10 rounded-b-lg">
                             Winner
                           </div>
                         )}
@@ -1215,15 +1215,15 @@ function GamePageContent() {
                           </span>
                         </div>
                         <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center">
+                        <div className="w-full flex items-center justify-center mb-1">
                           <span className="text-2xl font-bold font-mono text-white">
                             {q3WinningSquare}
                           </span>
                         </div>
                         
-                        {/* Winner badge - absolutely positioned at bottom */}
+                        {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('q3') && (
-                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10 rounded-b-lg">
                             Winner
                           </div>
                         )}
@@ -1274,15 +1274,15 @@ function GamePageContent() {
                           </span>
                 </div>
                         <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center">
+                        <div className="w-full flex items-center justify-center mb-1">
                           <span className="text-2xl font-bold font-mono text-white">
                             {finalWinningSquare}
                           </span>
                         </div>
                         
-                        {/* Winner badge - absolutely positioned at bottom */}
+                        {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('final') && (
-                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_8px_rgba(231,184,68,0.5)] z-10 rounded-b-lg">
                             Winner
                           </div>
                         )}

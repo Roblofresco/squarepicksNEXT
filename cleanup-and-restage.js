@@ -145,13 +145,14 @@ async function cleanupAndRestage() {
       });
       
       // Create squares with CORRECT structure (userID as DocumentReference)
+      // Note: square field will be calculated by handleBoardFull after axis numbers assigned
       for (const index of userSquareIndexes) {
         const squareRef = db.collection('squares').doc();
         batch.set(squareRef, {
           boardId: boardId,
           gameId: gameId,
           index: index,
-          square: String(index).padStart(2, '0'),
+          // Do NOT set square field yet - it needs home_numbers/away_numbers from board
           userID: userRef, // DocumentReference, not string!
           selected_time: admin.firestore.FieldValue.serverTimestamp()
         });

@@ -222,7 +222,26 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Step 5: Build response with cached data
+    // Step 5: Query user wins for all boards
+    const userWinsMap = new Map<string, Set<string>>();
+    const winQueries = Array.from(boardIds).map(async (boardId) => {
+      const periods = ['q1', 'q2', 'q3', 'final'];
+      const wonPeriods = new Set<string>();
+      const winDocs = await Promise.all(
+        periods.map(period =>
+          db.doc(`users/${userId}/wins/${boardId}_${period}`).get()
+        )
+      );
+      winDocs.forEach((docSnap, index) => {
+        if (docSnap.exists) {
+          wonPeriods.add(periods[index]);
+        }
+      });
+      userWinsMap.set(boardId, wonPeriods);
+    });
+    await Promise.all(winQueries);
+
+    // Step 6: Build response with cached data
     const boards = filteredBoards.map(boardDoc => {
       const boardData = (boardDoc.data() as any) || {};
       const gameData = gameDataMap.get(boardData.gameID?.path);
@@ -239,6 +258,9 @@ export async function GET(request: NextRequest) {
 
       const userSquareCount = userSquares.length;
       const isFull = userSquareCount === 100;
+
+      // Get user wins for this board
+      const userWins = userWinsMap.get(boardDoc.id) || new Set();
 
         return {
           id: boardDoc.id,
@@ -260,20 +282,20 @@ export async function GET(request: NextRequest) {
           totalSquareCount: 100,
           // For UI display
         userPickedSquares: userSquares,
-          // Quarter winners (if available)
-        q1_winning_square: boardData?.q1_winning_square,
-        q2_winning_square: boardData?.q2_winning_square,
-        q3_winning_square: boardData?.q3_winning_square,
-        q4_winning_square: boardData?.q4_winning_square,
-        q1_winning_index: boardData?.q1_winning_index,
-        q2_winning_index: boardData?.q2_winning_index,
-        q3_winning_index: boardData?.q3_winning_index,
-        q4_winning_index: boardData?.q4_winning_index,
-          // User win status
-        userWon_q1: boardData?.userWon_q1 || false,
-        userWon_q2: boardData?.userWon_q2 || false,
-        userWon_q3: boardData?.userWon_q3 || false,
-        userWon_final: boardData?.userWon_final || false,
+          // Quarter winners (from game document, not board)
+        q1_winning_square: gameData?.q1WinningSquare,
+        q2_winning_square: gameData?.q2WinningSquare,
+        q3_winning_square: gameData?.q3WinningSquare,
+        q4_winning_square: gameData?.finalWinningSquare,
+        q1_winning_index: undefined, // Not needed - query by square value
+        q2_winning_index: undefined,
+        q3_winning_index: undefined,
+        q4_winning_index: undefined,
+          // User win status (from private wins collection)
+        userWon_q1: userWins.has('q1'),
+        userWon_q2: userWins.has('q2'),
+        userWon_q3: userWins.has('q3'),
+        userWon_final: userWins.has('final'),
       };
     });
 

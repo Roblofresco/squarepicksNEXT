@@ -1127,6 +1127,8 @@ function LobbyContent() {
                                       finalWinningSquare={sweepstakesGame.finalWinningSquare}
                                       isLive={sweepstakesGame.isLive}
                                       currentQuarter={typeof sweepstakesGame.quarter === 'number' ? sweepstakesGame.quarter : undefined}
+                                      user={user}
+                                      boardId={sweepstakesBoard?.id}
                                     />
                                   ) : sweepstakesGame?.status === 'scheduled' ? (
                                     <SweepstakesBoardCard 

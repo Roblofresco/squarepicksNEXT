@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { useState, useEffect } from 'react';
+import { User as FirebaseUser } from 'firebase/auth';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 interface WinnerPill {
   label: string;
@@ -15,6 +18,8 @@ interface SweepstakesWinnersScoreboardProps {
   finalWinningSquare?: string;
   isLive?: boolean;
   currentQuarter?: number;
+  user?: FirebaseUser | null;
+  boardId?: string;
 }
 
 export default function SweepstakesWinnersScoreboard({
@@ -23,8 +28,64 @@ export default function SweepstakesWinnersScoreboard({
   q3WinningSquare,
   finalWinningSquare,
   isLive,
-  currentQuarter
+  currentQuarter,
+  user,
+  boardId
 }: SweepstakesWinnersScoreboardProps) {
+  const [userPurchasedSquares, setUserPurchasedSquares] = useState<Set<number>>(new Set());
+
+  // Fetch user's purchased squares
+  useEffect(() => {
+    if (!boardId || !user?.uid) {
+      setUserPurchasedSquares(new Set());
+      return;
+    }
+
+    const fetchUserSquares = async () => {
+      try {
+        const functions = getFunctions(undefined, "us-east1");
+        const getSelectionsFn = httpsCallable(functions, 'getBoardUserSelections');
+        const result = await getSelectionsFn({ boardID: boardId });
+        const data = result.data as { selectedIndexes?: number[] };
+        if (data?.selectedIndexes && Array.isArray(data.selectedIndexes)) {
+          setUserPurchasedSquares(new Set(data.selectedIndexes));
+        } else {
+          setUserPurchasedSquares(new Set());
+        }
+      } catch (error) {
+        console.error("Failed to fetch user squares:", error);
+        setUserPurchasedSquares(new Set());
+      }
+    };
+
+    fetchUserSquares();
+  }, [boardId, user?.uid]);
+
+  // Helper to check if user owns the winning square for a period
+  const doesUserOwnWinningSquare = (period: 'q1' | 'q2' | 'q3' | 'final'): boolean => {
+    let winningSquareStr: string | undefined;
+    
+    switch (period) {
+      case 'q1':
+        winningSquareStr = q1WinningSquare;
+        break;
+      case 'q2':
+        winningSquareStr = q2WinningSquare;
+        break;
+      case 'q3':
+        winningSquareStr = q3WinningSquare;
+        break;
+      case 'final':
+        winningSquareStr = finalWinningSquare;
+        break;
+    }
+
+    if (!winningSquareStr) return false;
+    
+    const winningSquareNum = parseInt(winningSquareStr, 10);
+    return !isNaN(winningSquareNum) && userPurchasedSquares.has(winningSquareNum);
+  };
+
   const pills: WinnerPill[] = [
     { label: 'Q1', number: q1WinningSquare || null, period: 'q1' },
     { label: 'Q2', number: q2WinningSquare || null, period: 'q2' },
@@ -81,16 +142,38 @@ export default function SweepstakesWinnersScoreboard({
                 <>
                   {/* Assigned: Label container top, Number container bottom */}
                   <div className="w-full flex items-center justify-center">
-                    <span className={cn("text-xs font-semibold uppercase", colors.text)}>
+                    <span className={cn(
+                      "text-xs font-semibold uppercase",
+                      doesUserOwnWinningSquare(pill.period)
+                        ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(231,184,68,0.8)]"
+                        : colors.text
+                    )}>
                       {pill.label}
                     </span>
                   </div>
-                  <Separator className="my-1 w-full bg-white/20" />
-                  <div className="w-full flex items-center justify-center">
-                    <span className={cn("text-2xl font-bold font-mono", colors.text)}>
+                  <Separator className={cn(
+                    "my-1 w-full",
+                    doesUserOwnWinningSquare(pill.period)
+                      ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                      : "bg-white/20"
+                  )} />
+                  <div className="w-full flex items-center justify-center mb-2">
+                    <span className={cn(
+                      "text-2xl font-bold font-mono",
+                      doesUserOwnWinningSquare(pill.period)
+                        ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(231,184,68,0.8)]"
+                        : colors.text
+                    )}>
                       {pill.number}
                     </span>
                   </div>
+
+                  {/* Winner badge - full-width bar at bottom */}
+                  {doesUserOwnWinningSquare(pill.period) && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
+                      Winner
+                    </div>
+                  )}
                 </>
               ) : (
                 <>

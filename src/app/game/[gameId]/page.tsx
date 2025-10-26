@@ -1095,7 +1095,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-xs font-semibold uppercase",
                             doesUserOwnWinningSquare('q1')
-                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
                               : "text-white"
                           )}>
                             Q1
@@ -1111,7 +1111,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('q1')
-                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
                               : "text-white"
                           )}>
                             {q1WinningSquare}
@@ -1169,7 +1169,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-xs font-semibold uppercase",
                             doesUserOwnWinningSquare('q2')
-                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
                               : "text-white"
                           )}>
                             Q2
@@ -1185,7 +1185,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('q2')
-                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
                               : "text-white"
                           )}>
                             {q2WinningSquare}
@@ -1243,7 +1243,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-xs font-semibold uppercase",
                             doesUserOwnWinningSquare('q3')
-                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
                               : "text-white"
                           )}>
                             Q3
@@ -1259,7 +1259,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('q3')
-                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
                               : "text-white"
                           )}>
                             {q3WinningSquare}
@@ -1317,7 +1317,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-xs font-semibold uppercase",
                             doesUserOwnWinningSquare('final')
-                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
                               : "text-white"
                           )}>
                             Final
@@ -1333,7 +1333,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('final')
-                              ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(231,184,68,0.6)]"
+                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
                               : "text-white"
                           )}>
                             {finalWinningSquare}

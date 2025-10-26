@@ -331,70 +331,70 @@ function GamePageContent() {
         } 
         // BRANCH 2: Open board query (normal lobby flow)
         else {
-          const boardsQuery = query(
-            collection(db, 'boards'),
-            where('gameID', '==', gameDocRef),
-            where('amount', '==', selectedEntryAmount),
-            where('status', '==', 'open'),
-            limit(1)
-          );
-          const boardSnap = await getDocs(boardsQuery);
+        const boardsQuery = query(
+          collection(db, 'boards'),
+          where('gameID', '==', gameDocRef),
+          where('amount', '==', selectedEntryAmount),
+          where('status', '==', 'open'),
+          limit(1)
+        );
+        const boardSnap = await getDocs(boardsQuery);
 
-          if (!boardSnap.empty) {
-            const boardDoc = boardSnap.docs[0];
-            unsubscribeBoardListener = onSnapshot(doc(db, 'boards', boardDoc.id), (snapshot) => {
-              if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
-              setIsDisplayingDelayedLoader(false);
-              
-              if (snapshot.exists()) {
-                const boardData = snapshot.data();
-                if (gameDocRef) { 
-                  setCurrentBoard({
-                    id: snapshot.id,
-                    gameID: gameDocRef,
-                    prize: boardData.prize,
-                    entryFee: boardData.amount,
-                    isFreeEntry: boardData.amount === 0,
-                    selected_indexes: boardData.selected_indexes || [],
-                    status: boardData.status as 'open' | 'closed' | 'cancelled',
-                  });
-                } else {
-                   console.error("gameDocRef is undefined, cannot set current board with non-optional gameID");
-                   setCurrentBoard(null); // Still set to null if gameDocRef is missing
-                }
-                // Capture axis numbers when assigned
-                if (Array.isArray(boardData.home_numbers) && boardData.home_numbers.length === 10) {
-                  setHomeAxisNumbers(boardData.home_numbers.map(String));
-                } else {
-                  setHomeAxisNumbers([]);
-                }
-                if (Array.isArray(boardData.away_numbers) && boardData.away_numbers.length === 10) {
-                  setAwayAxisNumbers(boardData.away_numbers.map(String));
-                } else {
-                  setAwayAxisNumbers([]);
-                }
-                if (boardData.status !== 'open') {
-                  toast.error("This board is now closed.", { id: `board-closed-${snapshot.id}` });
-                  setSelectedSquares(new Set());
-                }
-              } else {
-                setCurrentBoard(null);
-                toast.error("The selected board is no longer available.", { id: `board-not-found-${boardDoc.id}` });
-              }
-              setIsLoadingBoard(false); // Done loading board data
-            }, (errorListener) => {
-              if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
-              setIsDisplayingDelayedLoader(false);
-              console.error("Error listening to board updates:", errorListener);
-              toast.error("Error listening to board updates.");
-              setCurrentBoard(null);
-              setIsLoadingBoard(false);
-            });
-          } else {
+        if (!boardSnap.empty) {
+          const boardDoc = boardSnap.docs[0];
+          unsubscribeBoardListener = onSnapshot(doc(db, 'boards', boardDoc.id), (snapshot) => {
             if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
             setIsDisplayingDelayedLoader(false);
-            setCurrentBoard(null); 
+            
+            if (snapshot.exists()) {
+              const boardData = snapshot.data();
+              if (gameDocRef) { 
+                setCurrentBoard({
+                  id: snapshot.id,
+                  gameID: gameDocRef,
+                  prize: boardData.prize,
+                  entryFee: boardData.amount,
+                  isFreeEntry: boardData.amount === 0,
+                  selected_indexes: boardData.selected_indexes || [],
+                  status: boardData.status as 'open' | 'closed' | 'cancelled',
+                });
+              } else {
+                 console.error("gameDocRef is undefined, cannot set current board with non-optional gameID");
+                 setCurrentBoard(null); // Still set to null if gameDocRef is missing
+              }
+              // Capture axis numbers when assigned
+              if (Array.isArray(boardData.home_numbers) && boardData.home_numbers.length === 10) {
+                setHomeAxisNumbers(boardData.home_numbers.map(String));
+              } else {
+                setHomeAxisNumbers([]);
+              }
+              if (Array.isArray(boardData.away_numbers) && boardData.away_numbers.length === 10) {
+                setAwayAxisNumbers(boardData.away_numbers.map(String));
+              } else {
+                setAwayAxisNumbers([]);
+              }
+              if (boardData.status !== 'open') {
+                toast.error("This board is now closed.", { id: `board-closed-${snapshot.id}` });
+                setSelectedSquares(new Set());
+              }
+            } else {
+              setCurrentBoard(null);
+              toast.error("The selected board is no longer available.", { id: `board-not-found-${boardDoc.id}` });
+            }
+            setIsLoadingBoard(false); // Done loading board data
+          }, (errorListener) => {
+            if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
+            setIsDisplayingDelayedLoader(false);
+            console.error("Error listening to board updates:", errorListener);
+            toast.error("Error listening to board updates.");
+            setCurrentBoard(null);
             setIsLoadingBoard(false);
+          });
+        } else {
+          if (loaderTimerId.current) { clearTimeout(loaderTimerId.current); loaderTimerId.current = null; }
+          setIsDisplayingDelayedLoader(false);
+          setCurrentBoard(null); 
+          setIsLoadingBoard(false);
           }
         }
       } catch (err: any) {
@@ -1095,7 +1095,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-xs font-semibold uppercase",
                             doesUserOwnWinningSquare('q1')
-                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
+                              ? "bg-gradient-to-r from-[#FFE55C] via-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(255,215,0,0.8)]"
                               : "text-white"
                           )}>
                             Q1
@@ -1111,7 +1111,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('q1')
-                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
+                              ? "bg-gradient-to-r from-[#FFE55C] via-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(255,215,0,0.8)]"
                               : "text-white"
                           )}>
                             {q1WinningSquare}
@@ -1122,7 +1122,7 @@ function GamePageContent() {
                         {doesUserOwnWinningSquare('q1') && (
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                          </div>
+                            </div>
                         )}
                       </>
                     ) : (
@@ -1169,7 +1169,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-xs font-semibold uppercase",
                             doesUserOwnWinningSquare('q2')
-                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
+                              ? "bg-gradient-to-r from-[#FFE55C] via-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(255,215,0,0.8)]"
                               : "text-white"
                           )}>
                             Q2
@@ -1185,7 +1185,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('q2')
-                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
+                              ? "bg-gradient-to-r from-[#FFE55C] via-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(255,215,0,0.8)]"
                               : "text-white"
                           )}>
                             {q2WinningSquare}
@@ -1196,7 +1196,7 @@ function GamePageContent() {
                         {doesUserOwnWinningSquare('q2') && (
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                          </div>
+                            </div>
                         )}
                       </>
                     ) : (
@@ -1243,7 +1243,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-xs font-semibold uppercase",
                             doesUserOwnWinningSquare('q3')
-                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
+                              ? "bg-gradient-to-r from-[#FFE55C] via-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(255,215,0,0.8)]"
                               : "text-white"
                           )}>
                             Q3
@@ -1259,7 +1259,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('q3')
-                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
+                              ? "bg-gradient-to-r from-[#FFE55C] via-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(255,215,0,0.8)]"
                               : "text-white"
                           )}>
                             {q3WinningSquare}
@@ -1270,7 +1270,7 @@ function GamePageContent() {
                         {doesUserOwnWinningSquare('q3') && (
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                          </div>
+                            </div>
                         )}
                       </>
                     ) : (
@@ -1317,7 +1317,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-xs font-semibold uppercase",
                             doesUserOwnWinningSquare('final')
-                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
+                              ? "bg-gradient-to-r from-[#FFE55C] via-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(255,215,0,0.8)]"
                               : "text-white"
                           )}>
                             Final
@@ -1333,7 +1333,7 @@ function GamePageContent() {
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('final')
-                              ? "text-[#FFD700] [text-shadow:_0_0_10px_rgba(255,215,0,0.8),_0_0_20px_rgba(255,215,0,0.5)]"
+                              ? "bg-gradient-to-r from-[#FFE55C] via-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(255,215,0,0.8)]"
                               : "text-white"
                           )}>
                             {finalWinningSquare}
@@ -1344,7 +1344,7 @@ function GamePageContent() {
                         {doesUserOwnWinningSquare('final') && (
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#C9962E] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                          </div>
+                            </div>
                         )}
                       </>
                     ) : (

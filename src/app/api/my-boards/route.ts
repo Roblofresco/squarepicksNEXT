@@ -307,7 +307,7 @@ export async function GET(request: NextRequest) {
       timestamp: Date.now()
     }, {
       headers: {
-        'Cache-Control': 'private, max-age=300', // 5 minutes cache
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120', // 1 minute cache, allow stale for 2 min
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
         'X-XSS-Protection': '1; mode=block'

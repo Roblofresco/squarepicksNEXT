@@ -100,6 +100,26 @@ export default function MyBoardsPage() {
     }
   }, [user, authLoading, fetchBoards]);
 
+  // Auto-refresh every 30 seconds and on window focus
+  useEffect(() => {
+    if (!user || authLoading) return;
+    
+    const interval = setInterval(() => {
+      fetchBoards();
+    }, 30000); // 30 seconds
+    
+    const handleFocus = () => {
+      fetchBoards();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user, authLoading, fetchBoards]);
+
   // Filter and sort boards
   const filteredActiveBoards = useMemo(() => {
     let filtered = activeBoards;

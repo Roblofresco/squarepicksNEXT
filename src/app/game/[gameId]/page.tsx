@@ -1146,8 +1146,8 @@ function GamePageContent() {
                             --
                           </span>
                         </div>
-                        <Separator className="w-full bg-white/20" />
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                        <Separator className="w-full bg-white/20 -mb-px" />
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex-1 flex items-center justify-center rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q1
                           </span>
@@ -1218,8 +1218,8 @@ function GamePageContent() {
                             --
                           </span>
                         </div>
-                        <Separator className="w-full bg-white/20" />
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                        <Separator className="w-full bg-white/20 -mb-px" />
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex-1 flex items-center justify-center rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q2
                           </span>
@@ -1290,8 +1290,8 @@ function GamePageContent() {
                             --
                           </span>
                         </div>
-                        <Separator className="w-full bg-white/20" />
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                        <Separator className="w-full bg-white/20 -mb-px" />
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex-1 flex items-center justify-center rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q3
                           </span>
@@ -1362,8 +1362,8 @@ function GamePageContent() {
                             --
                           </span>
                         </div>
-                        <Separator className="w-full bg-white/20" />
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                        <Separator className="w-full bg-white/20 -mb-px" />
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex-1 flex items-center justify-center rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-white">
                             Final
                           </span>

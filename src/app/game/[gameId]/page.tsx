@@ -51,6 +51,8 @@ interface GameDetails extends Omit<Game, 'teamA' | 'teamB'> {
   week?: number;
   away_team_id: DocumentReference;
   home_team_id: DocumentReference;
+  timeRemaining?: string;
+  time_remaining?: string;
 }
 
 interface GameBoard extends Omit<Board, 'teamA' | 'teamB' | 'selected_indexes'> {
@@ -240,6 +242,8 @@ function GamePageContent() {
           away_score: typeof gameData.away_team_score === 'number' ? gameData.away_team_score : undefined,
           startTime: (gameData.startTime as Timestamp) || (gameData.start_time as Timestamp),
           start_time: (gameData.start_time as Timestamp) || undefined,
+          timeRemaining: gameData.timeRemaining || gameData.time_remaining,
+          time_remaining: gameData.time_remaining,
         });
         setQ1WinningSquare(typeof gameData.q1WinningSquare === 'string' ? gameData.q1WinningSquare : null);
         setQ2WinningSquare(typeof gameData.q2WinningSquare === 'string' ? gameData.q2WinningSquare : null);
@@ -940,31 +944,35 @@ function GamePageContent() {
               <div className="text-center px-1 flex flex-col items-center">
                 {effectiveView === 'live' && (
                   <>
+                    <div className="text-xs sm:text-sm text-red-400 animate-pulse font-semibold mb-1">
+                      LIVE
+                    </div>
+                    
                     <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tabular-nums mb-1">
                       {gameDetails.awayScore ?? gameDetails.away_score ?? 0} - {gameDetails.homeScore ?? gameDetails.home_score ?? 0}
                     </div>
                     
-                    <div className="text-xs sm:text-sm text-red-400 animate-pulse font-semibold mb-0.5">
-                      {(() => {
-                        const period = gameDetails.period || gameDetails.quarter;
-                        if (!period) return 'LIVE';
-                        const periodStr = String(period).toLowerCase();
-                        if (periodStr === '1' || periodStr.includes('1')) return '1st Qtr';
-                        if (periodStr === '2' || periodStr.includes('2')) return '2nd Qtr';
-                        if (periodStr === '3' || periodStr.includes('3')) return '3rd Qtr';
-                        if (periodStr === '4' || periodStr.includes('4')) return '4th Qtr';
-                        return period.toUpperCase();
-                      })()}
-                    </div>
-                    
-                    {/* Time Remaining - Indented Container */}
-                    {((gameDetails as any).timeRemaining || (gameDetails as any).time_remaining) && (
-                      <div className="mb-1 px-3 py-1 rounded-md border border-white/10 bg-slate-950/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">
-                        <span className="text-[10px] sm:text-xs text-slate-300 font-mono tabular-nums">
-                          {(gameDetails as any).timeRemaining || (gameDetails as any).time_remaining}
-                        </span>
+                    {gameDetails.quarter && (
+                      <div className="text-xs text-slate-300 mb-0.5">
+                        {(() => {
+                          const quarterStr = String(gameDetails.quarter).toLowerCase();
+                          if (quarterStr === '1' || quarterStr.includes('1')) return '1st Qtr';
+                          if (quarterStr === '2' || quarterStr.includes('2')) return '2nd Qtr';
+                          if (quarterStr === '3' || quarterStr.includes('3')) return '3rd Qtr';
+                          if (quarterStr === '4' || quarterStr.includes('4')) return '4th Qtr';
+                          return '';
+                        })()}
                       </div>
                     )}
+                    
+                    {/* Time Remaining - Indented Container */}
+                    {gameDetails.timeRemaining || gameDetails.time_remaining ? (
+                      <div className="mb-1 px-3 py-1 rounded-md border border-white/10 bg-slate-950/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">
+                        <span className="text-[10px] sm:text-xs text-slate-300 font-mono tabular-nums">
+                          {gameDetails.timeRemaining || gameDetails.time_remaining}
+                        </span>
+                      </div>
+                    ) : null}
                   </>
                 )}
                 {effectiveView === 'scheduled' && (
@@ -977,10 +985,12 @@ function GamePageContent() {
                 )}
                 {effectiveView === 'final' && (
                   <>
+                    <div className="text-xs sm:text-sm text-slate-400 font-semibold mb-1">
+                      FINAL
+                    </div>
                     <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-300 tabular-nums mb-1">
                       {gameDetails.awayScore ?? gameDetails.away_score ?? 0} - {gameDetails.homeScore ?? gameDetails.home_score ?? 0}
                     </div>
-                    <div className="text-xs sm:text-sm text-slate-400 font-semibold">FINAL</div>
                   </>
                 )}
                 {(gameDetails.broadcastProvider || gameDetails.broadcast_provider) && (
@@ -1020,7 +1030,7 @@ function GamePageContent() {
 
           <div className="h-px w-full bg-white/10 mb-3" />
 
-          {gameDetails && gameDetails.status === 'scheduled' && (
+          {gameDetails && gameDetails.status === 'scheduled' && (!boardId || (currentBoard && currentBoard.status === 'open')) && (
             <div
               ref={entryFeeRef}
                   className={cn(
@@ -1054,13 +1064,16 @@ function GamePageContent() {
             </div>
           )}
 
-          {gameDetails && gameDetails.status === 'scheduled' && (
+          {gameDetails && gameDetails.status === 'scheduled' && (!boardId || (currentBoard && currentBoard.status === 'open')) && (
             <div className="mb-6">
               <h2 className="text-lg sm:text-xl font-semibold mb-3 text-center text-slate-100">Select Your Squares <span className="text-xs text-slate-400">(Max {MAX_SQUARE_SELECTION_LIMIT})</span></h2>
               {renderGrid()}
             </div>
           )}
-          {gameDetails && (boardId || gameDetails.status !== 'scheduled') && (
+          {gameDetails && (
+            (boardId && currentBoard && currentBoard.status !== 'open') || 
+            (!boardId && gameDetails.status !== 'scheduled')
+          ) && !isLoadingBoard && (
             <div className="mb-6">
               {/* Winners scoreboard */}
               <div 

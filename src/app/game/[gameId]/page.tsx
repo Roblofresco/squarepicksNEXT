@@ -1140,7 +1140,7 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes top, label bottom - match sizing */}
+                        {/* Unassigned: Dashes top (no gradient), label bottom (gradient like assigned) */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-2xl font-bold text-gray-500">
                             --
@@ -1148,7 +1148,10 @@ function GamePageContent() {
                         </div>
                         <Separator className="my-1 w-full bg-white/20" />
                         <div className="w-full flex items-center justify-center mb-2">
-                          <span className="text-xs font-semibold uppercase text-gray-400">
+                          <span className={cn(
+                            "text-xs font-semibold uppercase",
+                            "bg-gradient-to-r from-[#1bb0f2] to-[#108bcc] bg-clip-text text-transparent"
+                          )}>
                             Q1
                           </span>
                         </div>
@@ -1212,7 +1215,7 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes top, label bottom - match sizing */}
+                        {/* Unassigned: Dashes top (no gradient), label bottom (gradient like assigned) */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-2xl font-bold text-gray-500">
                             --
@@ -1220,7 +1223,10 @@ function GamePageContent() {
                         </div>
                         <Separator className="my-1 w-full bg-white/20" />
                         <div className="w-full flex items-center justify-center mb-2">
-                          <span className="text-xs font-semibold uppercase text-gray-400">
+                          <span className={cn(
+                            "text-xs font-semibold uppercase",
+                            "bg-gradient-to-r from-[#1bb0f2] to-[#108bcc] bg-clip-text text-transparent"
+                          )}>
                             Q2
                           </span>
                         </div>
@@ -1284,7 +1290,7 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes top, label bottom - match sizing */}
+                        {/* Unassigned: Dashes top (no gradient), label bottom (gradient like assigned) */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-2xl font-bold text-gray-500">
                             --
@@ -1292,7 +1298,10 @@ function GamePageContent() {
                         </div>
                         <Separator className="my-1 w-full bg-white/20" />
                         <div className="w-full flex items-center justify-center mb-2">
-                          <span className="text-xs font-semibold uppercase text-gray-400">
+                          <span className={cn(
+                            "text-xs font-semibold uppercase",
+                            "bg-gradient-to-r from-[#1bb0f2] to-[#108bcc] bg-clip-text text-transparent"
+                          )}>
                             Q3
                           </span>
                         </div>
@@ -1356,7 +1365,7 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes top, label bottom - match sizing */}
+                        {/* Unassigned: Dashes top (no gradient), label bottom (gradient like assigned) */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-2xl font-bold text-gray-500">
                             --
@@ -1364,7 +1373,10 @@ function GamePageContent() {
                         </div>
                         <Separator className="my-1 w-full bg-white/20" />
                         <div className="w-full flex items-center justify-center mb-2">
-                          <span className="text-xs font-semibold uppercase text-gray-400">
+                          <span className={cn(
+                            "text-xs font-semibold uppercase",
+                            "bg-gradient-to-r from-[#1bb0f2] to-[#108bcc] bg-clip-text text-transparent"
+                          )}>
                             Final
                           </span>
                         </div>

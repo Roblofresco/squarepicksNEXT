@@ -1140,18 +1140,15 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes top (no gradient), label bottom (gradient like assigned) */}
+                        {/* Unassigned: Dashes top (dull), label bottom (gradient container) */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-2xl font-bold text-gray-500">
                             --
                           </span>
                         </div>
                         <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center mb-2">
-                          <span className={cn(
-                            "text-xs font-semibold uppercase",
-                            "bg-gradient-to-r from-[#1bb0f2] to-[#108bcc] bg-clip-text text-transparent"
-                          )}>
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center mb-2 rounded-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                          <span className="text-xs font-semibold uppercase text-white">
                             Q1
                           </span>
                         </div>
@@ -1215,18 +1212,15 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes top (no gradient), label bottom (gradient like assigned) */}
+                        {/* Unassigned: Dashes top (dull), label bottom (gradient container) */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-2xl font-bold text-gray-500">
                             --
                           </span>
                         </div>
                         <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center mb-2">
-                          <span className={cn(
-                            "text-xs font-semibold uppercase",
-                            "bg-gradient-to-r from-[#1bb0f2] to-[#108bcc] bg-clip-text text-transparent"
-                          )}>
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center mb-2 rounded-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                          <span className="text-xs font-semibold uppercase text-white">
                             Q2
                           </span>
                         </div>
@@ -1290,18 +1284,15 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes top (no gradient), label bottom (gradient like assigned) */}
+                        {/* Unassigned: Dashes top (dull), label bottom (gradient container) */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-2xl font-bold text-gray-500">
                             --
                           </span>
                         </div>
                         <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center mb-2">
-                          <span className={cn(
-                            "text-xs font-semibold uppercase",
-                            "bg-gradient-to-r from-[#1bb0f2] to-[#108bcc] bg-clip-text text-transparent"
-                          )}>
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center mb-2 rounded-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                          <span className="text-xs font-semibold uppercase text-white">
                             Q3
                           </span>
                         </div>
@@ -1365,18 +1356,15 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes top (no gradient), label bottom (gradient like assigned) */}
+                        {/* Unassigned: Dashes top (dull), label bottom (gradient container) */}
                         <div className="w-full flex items-center justify-center">
                           <span className="text-2xl font-bold text-gray-500">
                             --
                           </span>
                         </div>
                         <Separator className="my-1 w-full bg-white/20" />
-                        <div className="w-full flex items-center justify-center mb-2">
-                          <span className={cn(
-                            "text-xs font-semibold uppercase",
-                            "bg-gradient-to-r from-[#1bb0f2] to-[#108bcc] bg-clip-text text-transparent"
-                          )}>
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center mb-2 rounded-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                          <span className="text-xs font-semibold uppercase text-white">
                             Final
                           </span>
                         </div>

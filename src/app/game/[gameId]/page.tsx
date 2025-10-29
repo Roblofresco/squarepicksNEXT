@@ -1140,19 +1140,17 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes container top, Label container bottom */}
-                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
-                          <div className="flex-1 flex items-center justify-center">
-                            <span className="text-2xl font-bold text-gray-500">
-                              --
-                            </span>
-                          </div>
-                          <Separator className="w-full bg-white/20" />
-                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
-                            <span className="text-xs font-semibold uppercase text-gray-400">
-                              Q1
-                            </span>
-                          </div>
+                        {/* Unassigned: Dashes top, label bottom - match sizing */}
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold text-gray-500">
+                            --
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center mb-2">
+                          <span className="text-xs font-semibold uppercase text-gray-400">
+                            Q1
+                          </span>
                         </div>
                       </>
                     )}
@@ -1214,19 +1212,17 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes container top, Label container bottom */}
-                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
-                          <div className="flex-1 flex items-center justify-center">
-                            <span className="text-2xl font-bold text-gray-500">
-                              --
-                            </span>
-                          </div>
-                          <Separator className="w-full bg-white/20" />
-                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
-                            <span className="text-xs font-semibold uppercase text-gray-400">
-                              Q2
-                            </span>
-                          </div>
+                        {/* Unassigned: Dashes top, label bottom - match sizing */}
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold text-gray-500">
+                            --
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center mb-2">
+                          <span className="text-xs font-semibold uppercase text-gray-400">
+                            Q2
+                          </span>
                         </div>
                       </>
                     )}
@@ -1288,19 +1284,17 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes container top, Label container bottom */}
-                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
-                          <div className="flex-1 flex items-center justify-center">
-                            <span className="text-2xl font-bold text-gray-500">
-                              --
-                            </span>
-                          </div>
-                          <Separator className="w-full bg-white/20" />
-                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
-                            <span className="text-xs font-semibold uppercase text-gray-400">
-                              Q3
-                            </span>
-                          </div>
+                        {/* Unassigned: Dashes top, label bottom - match sizing */}
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold text-gray-500">
+                            --
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center mb-2">
+                          <span className="text-xs font-semibold uppercase text-gray-400">
+                            Q3
+                          </span>
                         </div>
                       </>
                     )}
@@ -1362,20 +1356,18 @@ function GamePageContent() {
                       </>
                     ) : (
                       <>
-                        {/* Unassigned: Dashes container top, Label container bottom */}
-                        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
-                          <div className="flex-1 flex items-center justify-center">
-                            <span className="text-2xl font-bold text-gray-500">
-                              --
-                            </span>
-            </div>
-                          <Separator className="w-full bg-white/20" />
-                          <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
-                            <span className="text-xs font-semibold uppercase text-gray-400">
-                              Final
-                            </span>
-          </div>
-              </div>
+                        {/* Unassigned: Dashes top, label bottom - match sizing */}
+                        <div className="w-full flex items-center justify-center">
+                          <span className="text-2xl font-bold text-gray-500">
+                            --
+                          </span>
+                        </div>
+                        <Separator className="my-1 w-full bg-white/20" />
+                        <div className="w-full flex items-center justify-center mb-2">
+                          <span className="text-xs font-semibold uppercase text-gray-400">
+                            Final
+                          </span>
+                        </div>
                       </>
                     )}
               </div>

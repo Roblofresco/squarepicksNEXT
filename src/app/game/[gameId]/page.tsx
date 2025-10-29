@@ -1092,11 +1092,11 @@ function GamePageContent() {
                     return (
                   <div 
                     className={cn(
-                          "relative flex flex-col items-center justify-center px-3 pt-3 rounded-lg transition-all overflow-hidden",
+                          "relative flex flex-col items-center justify-center pt-3 rounded-lg transition-all overflow-hidden",
                           "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                       q1WinningSquare 
-                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] px-3" 
                             : "bg-black/30",
                           isQ1Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
                         )}
@@ -1147,7 +1147,7 @@ function GamePageContent() {
                           </span>
                         </div>
                         <Separator className="w-full bg-white/20 -mb-px" />
-                        <div className="absolute inset-x-0 bottom-0 relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q1
                           </span>
@@ -1164,11 +1164,11 @@ function GamePageContent() {
                     return (
                 <div 
                   className={cn(
-                          "relative flex flex-col items-center justify-center px-3 pt-3 rounded-lg transition-all overflow-hidden",
+                          "relative flex flex-col items-center justify-center pt-3 rounded-lg transition-all overflow-hidden",
                           "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     q2WinningSquare 
-                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] px-3" 
                             : "bg-black/30",
                           isQ2Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
                         )}
@@ -1219,7 +1219,7 @@ function GamePageContent() {
                           </span>
                         </div>
                         <Separator className="w-full bg-white/20 -mb-px" />
-                        <div className="absolute inset-x-0 bottom-0 relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q2
                           </span>
@@ -1236,11 +1236,11 @@ function GamePageContent() {
                     return (
                 <div 
                   className={cn(
-                          "relative flex flex-col items-center justify-center px-3 pt-3 rounded-lg transition-all overflow-hidden",
+                          "relative flex flex-col items-center justify-center pt-3 rounded-lg transition-all overflow-hidden",
                           "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     q3WinningSquare 
-                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] px-3" 
                             : "bg-black/30",
                           isQ3Current && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
                         )}
@@ -1291,7 +1291,7 @@ function GamePageContent() {
                           </span>
                         </div>
                         <Separator className="w-full bg-white/20 -mb-px" />
-                        <div className="absolute inset-x-0 bottom-0 relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-white">
                             Q3
                           </span>
@@ -1308,11 +1308,11 @@ function GamePageContent() {
                     return (
                 <div 
                   className={cn(
-                          "relative flex flex-col items-center justify-center px-3 pt-3 rounded-lg transition-all overflow-hidden",
+                          "relative flex flex-col items-center justify-center pt-3 rounded-lg transition-all overflow-hidden",
                           "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                           "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
                     finalWinningSquare 
-                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc]" 
+                            ? "bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] px-3" 
                             : "bg-black/30",
                           isFinalCurrent && "ring-2 ring-[#1bb0f2] ring-offset-2 ring-offset-transparent"
                         )}
@@ -1363,7 +1363,7 @@ function GamePageContent() {
                           </span>
                         </div>
                         <Separator className="w-full bg-white/20 -mb-px" />
-                        <div className="absolute inset-x-0 bottom-0 relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                        <div className="relative overflow-hidden bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
                           <span className="text-xs font-semibold uppercase text-white">
                             Final
                           </span>

@@ -1,18 +1,20 @@
 'use client';
 
-import React from 'react';
-import { useNotifications, Notification } from '@/context/NotificationContext'; // Adjusted path
+import React, { useState, useRef } from 'react';
+import { useNotifications, Notification } from '@/context/NotificationContext';
 import { useRouter } from 'next/navigation';
 import {
-  AlertCircle, // Example: for general alerts or errors
-  Award,       // Example: for achievements or winnings
-  CalendarCheck, // Example: for game starts or events
-  Info,        // Example: for informational messages
-  MessageSquare, // Example: for new messages or social interactions
-  Settings2,   // Example: for account updates
-  Users,       // Example: for friend requests or team updates
-  Wallet,      // Example: for transactions
-  CircleDot    // Default fallback icon
+  AlertCircle,
+  Award,
+  CalendarCheck,
+  Info,
+  MessageSquare,
+  Settings2,
+  Users,
+  Wallet,
+  CircleDot,
+  Eye,
+  Trash2
 } from 'lucide-react';
 
 interface NotificationItemProps {
@@ -35,23 +37,66 @@ const formatRelativeTime = (timestamp: Date | string): string => {
   return `${days}d ago`;
 };
 
-export const NotificationItem = ({ notification }: NotificationItemProps) => {
-  const { markAsRead } = useNotifications();
-  const router = useRouter();
+const MESSAGE_MAX_LENGTH = 120; // Characters before truncation
+const SLIDE_THRESHOLD = 50; // Pixels to swipe before snapping
+const SLIDE_MAX_DISTANCE = 160; // Maximum slide distance (80px per button)
 
-  const handleClick = () => {
-    if (!notification.isRead) {
-      markAsRead(notification.id);
+export const NotificationItem = ({ notification }: NotificationItemProps) => {
+  const { markAsRead, deleteNotification } = useNotifications();
+  const router = useRouter();
+  
+  const [isMessageExpanded, setIsMessageExpanded] = useState(false);
+  const [translateX, setTranslateX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const startXRef = useRef<number>(0);
+  const currentTranslateXRef = useRef<number>(0);
+
+  // Smart navigation logic
+  const getViewDestination = (notification: Notification): string | null => {
+    const tag = notification.tag || notification.type;
+    
+    if (tag) {
+      // Board-related notifications
+      if (tag.startsWith('board_') || 
+          ['board_full', 'board_active', 'board_entry', 'board_unfilled', 'winnings'].includes(tag)) {
+        return '/my-boards';
+      }
+      // Wallet-related notifications
+      if (['deposit', 'withdrawal', 'refund'].includes(tag)) {
+        return '/wallet';
+      }
     }
-    if (notification.link) {
-      router.push(notification.link);
+    
+    // Fallback: use boardId presence to determine My Boards
+    if (notification.boardId) {
+      return '/my-boards';
     }
-    // Potentially close the notification dropdown after click - depends on desired UX
-    // You might need to pass down the onClose function from NotificationList if you want that behavior here.
+    
+    // Last resort: use existing link
+    return notification.link || null;
   };
 
   const getIcon = () => {
     const iconProps = { className: "h-4 w-4" };
+    const tag = notification.tag || notification.type;
+    
+    // Check tag first, then type
+    switch (tag?.toLowerCase()) {
+      case 'board_full':
+      case 'board_active':
+      case 'board_entry':
+      case 'board_unfilled':
+        return <CalendarCheck {...iconProps} />;
+      case 'deposit':
+      case 'withdrawal':
+      case 'refund':
+        return <Wallet {...iconProps} />;
+      case 'winnings':
+        return <Award {...iconProps} />;
+    }
+    
+    // Fallback to type field if tag not found
     switch (notification.type?.toUpperCase()) {
       case 'GAME_ALERT':
       case 'GAME_START':
@@ -78,32 +123,227 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
     }
   };
 
+  // Truncate message for display
+  const shouldTruncate = notification.message.length > MESSAGE_MAX_LENGTH;
+  const displayMessage = isMessageExpanded || !shouldTruncate
+    ? notification.message
+    : notification.message.substring(0, MESSAGE_MAX_LENGTH) + '...';
+
+  // Touch event handlers for swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startXRef.current = e.touches[0].clientX;
+    currentTranslateXRef.current = translateX;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const currentX = e.touches[0].clientX;
+    const deltaX = currentX - startXRef.current;
+    const newTranslateX = currentTranslateXRef.current + deltaX;
+    
+    // Clamp between -SLIDE_MAX_DISTANCE and 0
+    const clampedX = Math.max(-SLIDE_MAX_DISTANCE, Math.min(0, newTranslateX));
+    setTranslateX(clampedX);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    
+    // Snap to open or closed based on threshold
+    if (Math.abs(translateX) > SLIDE_THRESHOLD) {
+      setTranslateX(-SLIDE_MAX_DISTANCE);
+    } else {
+      setTranslateX(0);
+    }
+  };
+
+  // Mouse event handlers for desktop drag
+  const handleMouseDown = (e: React.MouseEvent) => {
+    startXRef.current = e.clientX;
+    currentTranslateXRef.current = translateX;
+    setIsDragging(true);
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    
+    const currentX = e.clientX;
+    const deltaX = currentX - startXRef.current;
+    const newTranslateX = currentTranslateXRef.current + deltaX;
+    
+    const clampedX = Math.max(-SLIDE_MAX_DISTANCE, Math.min(0, newTranslateX));
+    setTranslateX(clampedX);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    
+    if (Math.abs(translateX) > SLIDE_THRESHOLD) {
+      setTranslateX(-SLIDE_MAX_DISTANCE);
+    } else {
+      setTranslateX(0);
+    }
+  };
+
+  // Prevent body scroll during drag
+  React.useEffect(() => {
+    if (isDragging) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isDragging]);
+
+  const handleClick = () => {
+    // Don't navigate if actions are open (slide left)
+    if (translateX < -SLIDE_THRESHOLD) {
+      return;
+    }
+    
+    if (!notification.isRead) {
+      markAsRead(notification.id);
+    }
+    
+    // Try smart navigation
+    const destination = getViewDestination(notification);
+    if (destination) {
+      router.push(destination);
+    }
+  };
+
+  const handleView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const destination = getViewDestination(notification);
+    if (destination) {
+      router.push(destination);
+    }
+    // Close the slide
+    setTranslateX(0);
+  };
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await deleteNotification(notification.id);
+    // Close the slide
+    setTranslateX(0);
+  };
+
+  const viewDestination = getViewDestination(notification);
+  const tagValue = notification.tag || notification.type || '';
+  const showTag = tagValue.length > 0;
+
   return (
-    <div
-      onClick={handleClick}
-      className={`flex items-start gap-3 p-3 border-b border-slate-700/50 last:border-b-0 
-                  hover:bg-slate-700/60 transition-colors duration-150 cursor-pointer 
-                  ${notification.isRead ? 'opacity-60 hover:opacity-80' : 'opacity-95 hover:opacity-100 font-medium'}`}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleClick()}
-    >
-      <div className={`mt-0.5 flex-shrink-0 ${notification.isRead ? 'text-slate-500' : 'text-accent-1'}`}>
-        {getIcon()}
+    <div className="relative overflow-hidden w-full">
+      {/* Sliding content */}
+      <div
+        className="flex items-start gap-3 p-3 border-b border-slate-700/50 last:border-b-0 
+                    hover:bg-slate-700/60 transition-transform duration-300 ease-out
+                    cursor-pointer bg-slate-800/50"
+        style={{ 
+          transform: `translateX(${translateX}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+        }}
+        onClick={handleClick}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleClick()}
+      >
+        {/* Icon */}
+        <div className={`mt-0.5 flex-shrink-0 ${notification.isRead ? 'text-slate-500' : 'text-accent-1'}`}>
+          {getIcon()}
+        </div>
+        
+        {/* Content */}
+        <div className="flex-grow min-w-0">
+          {/* Tag/Type Badge (value only, no label) */}
+          {showTag && (
+            <span className={`inline-block px-2 py-0.5 text-xs rounded-full mb-1 ${
+              notification.isRead 
+                ? 'bg-slate-700/50 text-slate-400' 
+                : 'bg-accent-1/20 text-accent-1'
+            }`}>
+              {tagValue}
+            </span>
+          )}
+          
+          {/* Title (value only, no label) */}
+          {notification.title && (
+            <h4 className={`font-semibold text-base mb-1 ${
+              notification.isRead ? 'text-slate-300' : 'text-slate-100'
+            }`}>
+              {notification.title}
+            </h4>
+          )}
+          
+          {/* Message (value only, no label) */}
+          <p className={`text-sm leading-snug ${
+            notification.isRead ? 'text-slate-400' : 'text-slate-100'
+          }`}>
+            {displayMessage}
+            {shouldTruncate && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMessageExpanded(!isMessageExpanded);
+                }}
+                className="ml-1 text-accent-1 hover:text-accent-2 underline text-xs"
+              >
+                {isMessageExpanded ? 'See less' : 'See more'}
+              </button>
+            )}
+          </p>
+          
+          {/* Timestamp */}
+          <p className={`text-xs mt-0.5 ${
+            notification.isRead ? 'text-slate-500' : 'text-slate-400'
+          }`}>
+            {formatRelativeTime(notification.timestamp)}
+          </p>
+        </div>
+        
+        {/* Unread indicator */}
+        {!notification.isRead && (
+          <div className="ml-auto flex-shrink-0 self-center pl-2">
+            <span className="w-2 h-2 bg-accent-1 rounded-full inline-block shadow-[0_0_6px_1px_#1bb0f2b3]" title="Unread"></span>
+          </div>
+        )}
       </div>
-      <div className="flex-grow min-w-0">
-        <p className={`text-sm leading-snug ${notification.isRead ? 'text-slate-400' : 'text-slate-100'}`}>
-          {notification.message}
-        </p>
-        <p className={`text-xs mt-0.5 ${notification.isRead ? 'text-slate-500' : 'text-slate-400'}`}>
-          {formatRelativeTime(notification.timestamp)}
-        </p>
-      </div>
-      {!notification.isRead && (
-        <div className="ml-auto flex-shrink-0 self-center pl-2">
-          <span className="w-2 h-2 bg-accent-1 rounded-full inline-block shadow-[0_0_6px_1px_#1bb0f2b3]" title="Unread"></span>
+      
+      {/* Action buttons (fixed on right, revealed when content slides left) */}
+      {translateX < -SLIDE_THRESHOLD && (
+        <div className="absolute right-0 top-0 h-full w-40 flex items-center">
+          {/* View Button */}
+          {viewDestination && (
+            <button
+              onClick={handleView}
+              className="h-full w-20 bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white transition-colors"
+              aria-label="View"
+            >
+              <Eye className="h-5 w-5" />
+            </button>
+          )}
+          
+          {/* Delete Button */}
+          <button
+            onClick={handleDelete}
+            className="h-full w-20 bg-red-600 hover:bg-red-700 flex items-center justify-center text-white transition-colors"
+            aria-label="Delete"
+          >
+            <Trash2 className="h-5 w-5" />
+          </button>
         </div>
       )}
     </div>
   );
-}; 
+};

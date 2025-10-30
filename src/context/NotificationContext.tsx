@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { toast } from 'sonner';
 import {
   getFirestore, collection, query, where, orderBy, onSnapshot,
-  doc, updateDoc, writeBatch, serverTimestamp, Timestamp, limit 
+  doc, updateDoc, writeBatch, serverTimestamp, Timestamp, limit, deleteDoc
 } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { db as firestoreInstance } from '@/lib/firebase'; // Assuming db is exported from your firebase config
@@ -19,6 +19,9 @@ export interface Notification {
   isRead: boolean;
   link?: string;
   type?: string; 
+  tag?: string; // Notification tag (e.g., "board_entry", "deposit", "winnings")
+  boardId?: string; // Board ID for board-related notifications
+  gameId?: string; // Game ID for game-related notifications
   relatedID?: string;
   // Add any other relevant fields, e.g., icon, category
 }
@@ -30,6 +33,7 @@ interface NotificationContextType {
   // fetchNotifications is now internal, triggered by auth state
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
+  deleteNotification: (notificationId: string) => Promise<void>;
   addNotification: (notificationData: Omit<Notification, 'id' | 'timestamp' | 'isRead'> & { toastType?: 'success' | 'error' | 'info' | 'warning' | 'normal' }) => void;
 }
 
@@ -78,6 +82,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
               isRead: data.isRead || false,
               link: data.link,
               type: data.type,
+              tag: data.tag,
+              boardId: data.boardId,
+              gameId: data.gameId,
               relatedID: data.relatedID,
             } as Notification;
           });
@@ -227,6 +234,28 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const deleteNotification = async (notificationId: string) => {
+    if (!currentFirebaseUser) {
+      toast.error("You must be logged in to delete notifications.");
+      return;
+    }
+
+    // Optimistic update: Remove from list immediately
+    const originalNotifications = [...notifications];
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+
+    try {
+      const notificationRef = doc(firestoreInstance, "notifications", notificationId);
+      await deleteDoc(notificationRef);
+      // console.log(`Notification ${notificationId} deleted from Firestore.`);
+    } catch (error) {
+      console.error("Error deleting notification: ", error);
+      toast.error("Failed to delete notification.");
+      // Revert optimistic update if Firestore delete fails
+      setNotifications(originalNotifications);
+    }
+  };
+
   return (
     <NotificationContext.Provider
       value={{
@@ -235,6 +264,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         markAsRead,
         markAllAsRead,
+        deleteNotification,
         addNotification,
       }}
     >

@@ -272,6 +272,9 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
   const tagValue = notification.tag || notification.type || '';
   const showTag = tagValue.length > 0;
   const formattedTag = formatTagText(tagValue);
+  
+  // Check if this is a sweepstakes notification
+  const isSweepstakesNotification = tagValue.startsWith('sweepstakes_');
 
   return (
     <div className="relative overflow-hidden w-full">
@@ -297,7 +300,13 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleClick()}
       >
         {/* Icon */}
-        <div className={`mt-0.5 flex-shrink-0 ${notification.isRead ? 'text-slate-500' : 'text-accent-1'}`}>
+        <div className={`mt-0.5 flex-shrink-0 ${
+          notification.isRead 
+            ? 'text-slate-500' 
+            : isSweepstakesNotification 
+              ? 'text-[#E7B844]' 
+              : 'text-accent-1'
+        }`}>
           {getIcon()}
         </div>
         
@@ -308,7 +317,9 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
             <span className={`inline-block px-2 py-0.5 text-xs rounded-full mb-1 ${
               notification.isRead 
                 ? 'bg-slate-700/50 text-slate-400' 
-                : 'bg-accent-1/20 text-accent-1'
+                : isSweepstakesNotification
+                  ? 'bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] text-white shadow-[0_0_8px_rgba(231,184,68,0.6)]'
+                  : 'bg-accent-1/20 text-accent-1'
             }`}>
               {formattedTag}
             </span>
@@ -334,7 +345,11 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
                   e.stopPropagation();
                   setIsMessageExpanded(!isMessageExpanded);
                 }}
-                className="ml-1 text-accent-1 hover:text-accent-2 underline text-xs"
+                className={`ml-1 underline text-xs ${
+                  isSweepstakesNotification 
+                    ? 'text-[#E7B844] hover:text-[#FFE08A]' 
+                    : 'text-accent-1 hover:text-accent-2'
+                }`}
               >
                 {isMessageExpanded ? 'See less' : 'See more'}
               </button>
@@ -352,7 +367,11 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
         {/* Unread indicator */}
         {!notification.isRead && (
           <div className="ml-auto flex-shrink-0 self-center pl-2">
-            <span className="w-2 h-2 bg-accent-1 rounded-full inline-block shadow-[0_0_6px_1px_#1bb0f2b3]" title="Unread"></span>
+            <span className={`w-2 h-2 rounded-full inline-block ${
+              isSweepstakesNotification
+                ? 'bg-[#E7B844] shadow-[0_0_6px_1px_rgba(231,184,68,0.8)]'
+                : 'bg-accent-1 shadow-[0_0_6px_1px_#1bb0f2b3]'
+            }`} title="Unread"></span>
           </div>
         )}
       </div>
@@ -364,7 +383,11 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
           {viewDestination && (
             <button
               onClick={handleView}
-              className="h-full w-20 bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white transition-colors"
+              className={`h-full w-20 flex items-center justify-center text-white transition-all duration-200 ${
+                isSweepstakesNotification
+                  ? 'bg-gradient-to-br from-[#FFE08A] to-[#E7B844] hover:from-[#E7B844] hover:to-[#E0B954]'
+                  : 'bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] hover:from-[#108bcc] hover:to-[#0c6ca3]'
+              }`}
               aria-label="View"
             >
               <Eye className="h-5 w-5" />
@@ -374,7 +397,7 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
           {/* Delete Button */}
           <button
             onClick={handleDelete}
-            className="h-full w-20 bg-red-600 hover:bg-red-700 flex items-center justify-center text-white transition-colors"
+            className="h-full w-20 bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 flex items-center justify-center text-white transition-all duration-200"
             aria-label="Delete"
           >
             <Trash2 className="h-5 w-5" />

@@ -633,14 +633,20 @@ function LobbyContent() {
   const [sportsTourSeen, setSportsTourSeen] = useState<UserTourState>({ done: false, loading: true });
 
   const handleReplayTour = useCallback(() => {
-    if (activeTour === 'sweepstakes') {
-      setTourStep(0);
-      setActiveTour('sweepstakes');
-    } else if (activeTour === 'sports') {
-      setTourStep(0);
-      setActiveTour('sports');
-    }
-  }, [activeTour]);
+    // Determine which tour to show based on current sport
+    const tourToShow = selectedSport === SWEEPSTAKES_SPORT_ID ? 'sweepstakes' : 'sports';
+    
+    // Reset tour state
+    setTourStep(0);
+    setTourPhase('A');
+    setMoreClicked(false);
+    setSweepstakesClicked(false);
+    setActiveTour(tourToShow);
+    setTourContentReady(false);
+    
+    // Open the tour
+    setTourOpen(true);
+  }, [selectedSport]);
   const [sweepstakesTourAutoTriggered, setSweepstakesTourAutoTriggered] = useState(false);
   const [sportsTourAutoTriggered, setSportsTourAutoTriggered] = useState(false);
   const tourOpenFrameRef = useRef<number | null>(null);

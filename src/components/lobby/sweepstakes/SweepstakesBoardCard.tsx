@@ -360,7 +360,11 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
             };
 
             if (board.sweepstakesID) {
-                payload.sweepstakesId = board.sweepstakesID; 
+                // Extract ID from DocumentReference if it's an object, otherwise use string directly
+                const sweepstakesRef = board.sweepstakesID as any; // Type may be string but can be DocumentReference in Firestore
+                payload.sweepstakesId = typeof sweepstakesRef === 'object' && sweepstakesRef?.id 
+                    ? sweepstakesRef.id 
+                    : String(sweepstakesRef || '');
             }
 
             const result = await enterBoardFn(payload);

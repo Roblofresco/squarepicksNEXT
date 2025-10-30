@@ -235,19 +235,14 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
   }, [isDragging]);
 
   const handleClick = () => {
-    // Don't navigate if actions are open (slide left)
+    // Don't do anything if actions are open (slide left)
     if (translateX < -SLIDE_THRESHOLD) {
       return;
     }
     
+    // Only mark as read, no navigation
     if (!notification.isRead) {
       markAsRead(notification.id);
-    }
-    
-    // Try smart navigation
-    const destination = getViewDestination(notification);
-    if (destination) {
-      router.push(destination);
     }
   };
 

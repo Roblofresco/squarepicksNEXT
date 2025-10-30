@@ -275,25 +275,27 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
       "w-full max-w-sm overflow-visible glass transition-shadow duration-300 ease-in-out flex flex-col gap-0 text-slate-100 h-full rounded-lg relative",
       status === 'full' && "ring-2 ring-orange-500/30 shadow-[0_0_20px_rgba(249,115,22,0.15)]"
     )}>
-      {/* Ribbons */}
-        {sport && (
-        <div className="absolute -top-3 left-3 z-20 pointer-events-none">
-          <div className="px-2 py-0.5 rounded-full bg-white/20 border border-white/30 text-[10px] uppercase tracking-wide text-white shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
-            {sport.toUpperCase()}
-          </div>
-        </div>
-      )}
-      {isSweepstakes && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+      {/* Top-left Ribbon: Sweepstakes (gold) or Sport */}
+      <div className="absolute -top-3 left-3 z-20 pointer-events-none">
+        {isSweepstakes ? (
           <div className="p-px rounded-full bg-gradient-to-r from-[#B8860B]/70 via-[#DAA520]/70 to-[#A0740A]/70">
             <div className="rounded-full bg-background-primary">
-              <div className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] uppercase tracking-wide text-[#B8860B] backdrop-blur-sm">
+              <div
+                className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] uppercase tracking-wide text-[#B8860B] backdrop-blur-sm max-w-[180px] truncate"
+                title={board.sweepstakesTitle || 'SWEEPSTAKES'}
+              >
                 {board.sweepstakesTitle || 'SWEEPSTAKES'}
               </div>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          sport && (
+            <div className="px-2 py-0.5 rounded-full bg-white/20 border border-white/30 text-[10px] uppercase tracking-wide text-white shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
+              {sport.toUpperCase()}
+            </div>
+          )
+        )}
+      </div>
       <div className="absolute -top-3 right-3 z-20 pointer-events-none">
         {(() => {
           const s = String(status);

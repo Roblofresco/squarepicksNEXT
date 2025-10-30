@@ -288,7 +288,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
           <div className="p-px rounded-full bg-gradient-to-r from-indigo-500/70 via-fuchsia-500/70 to-violet-500/70">
             <div className="rounded-full bg-background-primary">
               <div className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] uppercase tracking-wide text-white backdrop-blur-sm">
-                SWEEPSTAKES
+                {board.sweepstakesTitle || 'SWEEPSTAKES'}
           </div>
           </div>
         </div>

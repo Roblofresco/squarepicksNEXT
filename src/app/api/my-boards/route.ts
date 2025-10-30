@@ -164,6 +164,9 @@ export async function GET(request: NextRequest) {
           userWon_q2: bd?.userWon_q2 || false,
           userWon_q3: bd?.userWon_q3 || false,
           userWon_final: bd?.userWon_final || false,
+          // Sweepstakes metadata (fallback path doesn't fetch title)
+          sweepstakesID: typeof bd?.sweepstakesID?.id === 'string' ? bd.sweepstakesID.id : undefined,
+          sweepstakesTitle: undefined,
         };
       });
 
@@ -179,7 +182,7 @@ export async function GET(request: NextRequest) {
     const filteredBoards = allBoards;
     console.log(`[API] Returning ${filteredBoards.length} boards (all statuses)`);
 
-    // Step 4: Batch fetch related documents (games & teams)
+    // Step 4: Batch fetch related documents (games, teams, sweepstakes)
     const gameRefs = new Map<string, any>();
     filteredBoards.forEach(doc => {
       const gameID = (doc.data() as any)?.gameID;
@@ -219,6 +222,29 @@ export async function GET(request: NextRequest) {
     teams.forEach(teamDoc => {
       if (teamDoc.exists) {
         teamDataMap.set(teamDoc.ref.path, teamDoc.data());
+      }
+    });
+
+    // Collect sweepstakes refs from boards
+    const sweepstakesRefs = new Map<string, any>();
+    filteredBoards.forEach(doc => {
+      const bd = (doc.data() as any) || {};
+      const sweepRef = bd?.sweepstakesID;
+      if (sweepRef?.path) {
+        sweepstakesRefs.set(sweepRef.path, sweepRef);
+      }
+    });
+
+    // Batch fetch sweepstakes docs
+    const sweepstakesRefsArray = Array.from(sweepstakesRefs.values());
+    const sweepstakesDocs = sweepstakesRefsArray.length > 0 ? await db.getAll(...sweepstakesRefsArray) : [];
+
+    // Create sweepstakes data map
+    const sweepstakesDataMap = new Map<string, { id: string; title?: string }>();
+    sweepstakesDocs.forEach(swDoc => {
+      if (swDoc.exists) {
+        const data = swDoc.data() as any;
+        sweepstakesDataMap.set(swDoc.ref.path, { id: swDoc.id, title: data?.title });
       }
     });
 
@@ -262,6 +288,10 @@ export async function GET(request: NextRequest) {
       // Get user wins for this board
       const userWins = userWinsMap.get(boardDoc.id) || new Set();
 
+      // Sweepstakes
+      const sweepRef = boardData?.sweepstakesID;
+      const sweepMeta = sweepRef?.path ? sweepstakesDataMap.get(sweepRef.path) : undefined;
+
         return {
           id: boardDoc.id,
           gameId: gameData?.id || boardData.gameID?.id || boardDoc.id,
@@ -296,6 +326,9 @@ export async function GET(request: NextRequest) {
         userWon_q2: userWins.has('q2'),
         userWon_q3: userWins.has('q3'),
         userWon_final: userWins.has('final'),
+        // Sweepstakes metadata
+        sweepstakesTitle: sweepMeta?.title,
+        sweepstakesID: sweepMeta?.id || (typeof sweepRef?.id === 'string' ? sweepRef.id : undefined),
       };
     });
 

@@ -20,7 +20,8 @@ service cloud.firestore {
       );
     }
     function boardIsOpen(boardId) {
-      return get(/databases/$(database)/documents/boards/$(boardId)).data.status == "open";
+      let boardDoc = get(/databases/$(database)/documents/boards/$(boardId));
+      return boardDoc != null && boardDoc.data.status == "open";
     }
 
     // --- users Collection ---
@@ -33,6 +34,11 @@ service cloud.firestore {
       match /bets/{document}    { allow read, create, update, delete: if signedIn() && request.auth.uid == userId; }
       match /wallet/{document}  { allow read, create, update, delete: if signedIn() && request.auth.uid == userId; }
       match /wins/{winId}       { allow read: if signedIn() && request.auth.uid == userId; allow create, update, delete: if false; }
+      match /fcmTokens/{tokenId} {
+        // FCM tokens for push notifications - Cloud Functions manage, users can delete
+        allow read, create, delete: if signedIn() && request.auth.uid == userId;
+        allow update: if false;
+      }
     }
 
     // --- games / sports / teams (public read) ---
@@ -42,12 +48,14 @@ service cloud.firestore {
 
     // --- boards Collection ---
     match /boards/{boardId} {
-      // Boards visible if open, or to any signed-in user, or to service accounts
+      // Boards visible if open (public), or to any signed-in user, or to service accounts
       allow read: if resource.data.status == "open" || signedIn() || request.auth.token.admin == true;
       allow create: if signedIn();
       allow update, delete: if false;
 
-      // Squares subcollection
+      // NOTE: Squares subcollection rules below kept for reference but not used
+      // Actual implementation uses top-level /squares collection
+      // TODO: Consider migration to subcollection for better data locality
       match /squares/{squareId} {
         // Publicly readable while board is open (for grid rendering)
         // Otherwise only the square owner can read, or service accounts
@@ -58,6 +66,26 @@ service cloud.firestore {
       match /winners/{periodId} {
         allow read: if true; allow create, update, delete: if false;
       }
+    }
+
+    // --- squares Collection (TOP-LEVEL) ---
+    match /squares/{squareId} {
+      // Squares are stored as top-level collection for better query performance
+      // Owner can read their own squares, or if board is open (grid rendering)
+      allow read: if signedIn() && (
+        resource.data.userID == request.auth.uid ||
+        (resource.data.userID is string && (
+          resource.data.userID == request.auth.uid ||
+          resource.data.userID == ('users/' + request.auth.uid)
+        )) ||
+        (resource.data.userID is map && resource.data.userID.id == request.auth.uid) ||
+        (resource.data.userID is path && resource.data.userID == ownerUserPath())
+      ) || (
+        signedIn() && 
+        resource.data.boardId is string && 
+        boardIsOpen(resource.data.boardId)
+      );
+      allow create, update, delete: if false; // Cloud Functions only
     }
 
     // --- sweepstakes Collection ---

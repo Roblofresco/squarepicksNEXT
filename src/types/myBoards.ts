@@ -72,4 +72,7 @@ export interface AppBoard {
   userWon_q2?: boolean;
   userWon_q3?: boolean;
   userWon_final?: boolean;
+  // Sweepstakes metadata (when linked to a sweepstakes)
+  sweepstakesTitle?: string;
+  sweepstakesID?: string;
 } 

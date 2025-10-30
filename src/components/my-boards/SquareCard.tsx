@@ -285,15 +285,15 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
       )}
       {isSweepstakes && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-          <div className="p-px rounded-full bg-gradient-to-r from-indigo-500/70 via-fuchsia-500/70 to-violet-500/70">
+          <div className="p-px rounded-full bg-gradient-to-r from-[#B8860B]/70 via-[#DAA520]/70 to-[#A0740A]/70">
             <div className="rounded-full bg-background-primary">
               <div className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] uppercase tracking-wide text-white backdrop-blur-sm">
                 {board.sweepstakesTitle || 'SWEEPSTAKES'}
-          </div>
+              </div>
+            </div>
           </div>
         </div>
-          </div>
-        )}
+      )}
       <div className="absolute -top-3 right-3 z-20 pointer-events-none">
         {(() => {
           const s = String(status);

@@ -318,7 +318,7 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
               notification.isRead 
                 ? 'bg-slate-700/50 text-slate-400' 
                 : isSweepstakesNotification
-                  ? 'bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] text-white shadow-[0_0_8px_rgba(231,184,68,0.6)]'
+                  ? 'bg-[#E7B844] text-white shadow-[0_0_8px_rgba(231,184,68,0.4)]'
                   : 'bg-accent-1/20 text-accent-1'
             }`}>
               {formattedTag}
@@ -385,7 +385,7 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
               onClick={handleView}
               className={`h-full w-20 flex items-center justify-center text-white transition-all duration-200 ${
                 isSweepstakesNotification
-                  ? 'bg-gradient-to-br from-[#FFE08A] to-[#E7B844] hover:from-[#E7B844] hover:to-[#E0B954]'
+                  ? 'bg-[#E7B844] hover:bg-[#E0B954]'
                   : 'bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] hover:from-[#108bcc] hover:to-[#0c6ca3]'
               }`}
               aria-label="View"

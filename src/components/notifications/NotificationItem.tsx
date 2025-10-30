@@ -40,6 +40,7 @@ const formatRelativeTime = (timestamp: Date | string): string => {
 const MESSAGE_MAX_LENGTH = 120; // Characters before truncation
 const SLIDE_THRESHOLD = 50; // Pixels to swipe before snapping
 const SLIDE_MAX_DISTANCE = 160; // Maximum slide distance (80px per button)
+const SLIDE_RIGHT_MAX = 30; // Maximum right swipe distance
 
 export const NotificationItem = ({ notification }: NotificationItemProps) => {
   const { markAsRead, deleteNotification } = useNotifications();
@@ -51,6 +52,15 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
   
   const startXRef = useRef<number>(0);
   const currentTranslateXRef = useRef<number>(0);
+
+  // Format tag text from snake_case to Title Case
+  const formatTagText = (tag: string): string => {
+    if (!tag) return '';
+    return tag
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
   // Smart navigation logic
   const getViewDestination = (notification: Notification): string | null => {
@@ -143,15 +153,27 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
     const deltaX = currentX - startXRef.current;
     const newTranslateX = currentTranslateXRef.current + deltaX;
     
-    // Clamp between -SLIDE_MAX_DISTANCE and 0
-    const clampedX = Math.max(-SLIDE_MAX_DISTANCE, Math.min(0, newTranslateX));
+    // Allow sliding right (positive, up to SLIDE_RIGHT_MAX) or left (negative, up to -SLIDE_MAX_DISTANCE)
+    const clampedX = Math.max(-SLIDE_MAX_DISTANCE, Math.min(SLIDE_RIGHT_MAX, newTranslateX));
     setTranslateX(clampedX);
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     setIsDragging(false);
     
-    // Snap to open or closed based on threshold
+    const currentX = e.changedTouches[0].clientX;
+    const deltaX = currentX - startXRef.current;
+    
+    // Handle right swipe (closing actions and marking as read)
+    if (deltaX > 0 && translateX < 0) {
+      setTranslateX(0);
+      if (!notification.isRead) {
+        markAsRead(notification.id);
+      }
+      return;
+    }
+    
+    // Handle left swipe (opening actions)
     if (Math.abs(translateX) > SLIDE_THRESHOLD) {
       setTranslateX(-SLIDE_MAX_DISTANCE);
     } else {
@@ -174,13 +196,27 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
     const deltaX = currentX - startXRef.current;
     const newTranslateX = currentTranslateXRef.current + deltaX;
     
-    const clampedX = Math.max(-SLIDE_MAX_DISTANCE, Math.min(0, newTranslateX));
+    // Allow sliding right (positive, up to SLIDE_RIGHT_MAX) or left (negative, up to -SLIDE_MAX_DISTANCE)
+    const clampedX = Math.max(-SLIDE_MAX_DISTANCE, Math.min(SLIDE_RIGHT_MAX, newTranslateX));
     setTranslateX(clampedX);
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: React.MouseEvent) => {
     setIsDragging(false);
     
+    const currentX = e.clientX;
+    const deltaX = currentX - startXRef.current;
+    
+    // Handle right swipe (closing actions and marking as read)
+    if (deltaX > 0 && translateX < 0) {
+      setTranslateX(0);
+      if (!notification.isRead) {
+        markAsRead(notification.id);
+      }
+      return;
+    }
+    
+    // Handle left swipe (opening actions)
     if (Math.abs(translateX) > SLIDE_THRESHOLD) {
       setTranslateX(-SLIDE_MAX_DISTANCE);
     } else {
@@ -235,6 +271,7 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
   const viewDestination = getViewDestination(notification);
   const tagValue = notification.tag || notification.type || '';
   const showTag = tagValue.length > 0;
+  const formattedTag = formatTagText(tagValue);
 
   return (
     <div className="relative overflow-hidden w-full">
@@ -273,7 +310,7 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
                 ? 'bg-slate-700/50 text-slate-400' 
                 : 'bg-accent-1/20 text-accent-1'
             }`}>
-              {tagValue}
+              {formattedTag}
             </span>
           )}
           

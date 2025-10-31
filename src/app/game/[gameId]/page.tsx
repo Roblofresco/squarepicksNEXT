@@ -1173,7 +1173,7 @@ function GamePageContent() {
                             ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] shadow-[0_0_8px_rgba(231,184,68,0.6)]"
                             : "bg-white/20"
                         )} />
-                        <div className="w-full flex items-center justify-center mb-2">
+                        <div className="w-full flex items-center justify-center mb-3">
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('q1')
@@ -1186,9 +1186,9 @@ function GamePageContent() {
                         
                         {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('q1') && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-0.5 text-[9px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                             </div>
+                          </div>
                         )}
                       </>
                     ) : (
@@ -1245,7 +1245,7 @@ function GamePageContent() {
                             ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] shadow-[0_0_8px_rgba(231,184,68,0.6)]"
                             : "bg-white/20"
                         )} />
-                        <div className="w-full flex items-center justify-center mb-2">
+                        <div className="w-full flex items-center justify-center mb-3">
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('q2')
@@ -1258,9 +1258,9 @@ function GamePageContent() {
                         
                         {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('q2') && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-0.5 text-[9px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                             </div>
+                          </div>
                         )}
                       </>
                     ) : (
@@ -1317,7 +1317,7 @@ function GamePageContent() {
                             ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] shadow-[0_0_8px_rgba(231,184,68,0.6)]"
                             : "bg-white/20"
                         )} />
-                        <div className="w-full flex items-center justify-center mb-2">
+                        <div className="w-full flex items-center justify-center mb-3">
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('q3')
@@ -1330,9 +1330,9 @@ function GamePageContent() {
                         
                         {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('q3') && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-0.5 text-[9px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                             </div>
+                          </div>
                         )}
                       </>
                     ) : (
@@ -1389,7 +1389,7 @@ function GamePageContent() {
                             ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] shadow-[0_0_8px_rgba(231,184,68,0.6)]"
                             : "bg-white/20"
                         )} />
-                        <div className="w-full flex items-center justify-center mb-2">
+                        <div className="w-full flex items-center justify-center mb-3">
                           <span className={cn(
                             "text-2xl font-bold font-mono",
                             doesUserOwnWinningSquare('final')
@@ -1402,9 +1402,9 @@ function GamePageContent() {
                         
                         {/* Winner badge - full-width bar at bottom */}
                         {doesUserOwnWinningSquare('final') && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-0.5 text-[9px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                             </div>
+                          </div>
                         )}
                       </>
                     ) : (

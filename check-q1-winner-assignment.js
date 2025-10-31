@@ -23,11 +23,11 @@ try {
 
   const db = admin.firestore();
 
-  async function checkQ2Winner() {
+  async function checkQ1WinnerAssignment() {
     try {
-      const gameId = process.argv[2] || '401772943';
+      const gameId = process.argv[2] || '401772943'; // Default to live game
       
-      console.log(`Checking Q2 winner assignment for game: ${gameId}\n`);
+      console.log(`Checking Q1 winner assignment for game: ${gameId}\n`);
 
       // Get game document
       const gameDoc = await db.collection('games').doc(gameId).get();
@@ -46,28 +46,27 @@ try {
       console.log(`   isOver: ${gameData.isOver || false}`);
       console.log(`   Home Score: ${gameData.homeScore || 0}`);
       console.log(`   Away Score: ${gameData.awayScore || 0}`);
+      console.log(`   Home Q1 Score: ${gameData.homeQ1score || 'Not set'}`);
+      console.log(`   Away Q1 Score: ${gameData.awayQ1score || 'Not set'}`);
       console.log(`   Home Q2 Score: ${gameData.homeQ2score || 'Not set'}`);
       console.log(`   Away Q2 Score: ${gameData.awayQ2score || 'Not set'}\n`);
 
-      // Check for Q2 winning square
-      console.log('🎯 Q2 Winner Assignment:');
-      const q2WinningSquare = gameData.q2WinningSquare;
-      if (q2WinningSquare) {
-        console.log(`   ✅ Q2 Winning Square: ${q2WinningSquare}`);
+      // Check for Q1 winning square
+      console.log('🎯 Q1 Winner Assignment:');
+      const q1WinningSquare = gameData.q1WinningSquare;
+      if (q1WinningSquare) {
+        console.log(`   ✅ Q1 Winning Square: ${q1WinningSquare}`);
       } else {
-        console.log(`   ❌ Q2 Winning Square: NOT ASSIGNED`);
+        console.log(`   ❌ Q1 Winning Square: NOT ASSIGNED`);
       }
 
-      // Calculate what Q2 winning square should be
-      if (gameData.homeQ2score !== undefined && gameData.awayQ2score !== undefined) {
-        const homeLast = gameData.homeQ2score % 10;
-        const awayLast = gameData.awayQ2score % 10;
+      // Calculate what Q1 winning square should be
+      if (gameData.homeQ1score !== undefined && gameData.awayQ1score !== undefined) {
+        const homeLast = gameData.homeQ1score % 10;
+        const awayLast = gameData.awayQ1score % 10;
         const calculatedSquare = `${awayLast}${homeLast}`;
-        console.log(`   📐 Calculated from Q2 scores: ${calculatedSquare}`);
-        console.log(`      (Away: ${gameData.awayQ2score} → last digit ${awayLast}, Home: ${gameData.homeQ2score} → last digit ${homeLast})`);
-        
-        // Check if we have squares with this value
-        console.log(`\n🔍 Checking for squares with value "${calculatedSquare}":`);
+        console.log(`   📐 Calculated from Q1 scores: ${calculatedSquare}`);
+        console.log(`      (Away: ${gameData.awayQ1score} → last digit ${awayLast}, Home: ${gameData.homeQ1score} → last digit ${homeLast})`);
       }
 
       // Check boards for this game
@@ -86,28 +85,22 @@ try {
         console.log(`   Status: ${boardData.status}`);
         console.log(`   Amount: $${boardData.amount || 'Unknown'}`);
         
-        if (boardData.winners && boardData.winners.q2) {
-          const q2Winner = boardData.winners.q2;
-          console.log(`   ✅ Q2 Winner assigned: ${q2Winner.assigned ? 'Yes' : 'No'}`);
-          if (q2Winner.winningIndex !== undefined) {
-            console.log(`      Winning Index: ${q2Winner.winningIndex}`);
+        if (boardData.winners && boardData.winners.q1) {
+          const q1Winner = boardData.winners.q1;
+          console.log(`   ✅ Q1 Winner assigned: ${q1Winner.assigned ? 'Yes' : 'No'}`);
+          if (q1Winner.winningIndex !== undefined) {
+            console.log(`      Winning Index: ${q1Winner.winningIndex}`);
           }
-          if (q2Winner.assignedAt) {
-            console.log(`      Assigned At: ${q2Winner.assignedAt.toDate().toISOString()}`);
-          }
-          if (q2Winner.paid !== undefined) {
-            console.log(`      Paid: ${q2Winner.paid ? 'Yes' : 'No'}`);
-            if (q2Winner.paidAmount !== undefined) {
-              console.log(`      Paid Amount: $${q2Winner.paidAmount}`);
-            }
+          if (q1Winner.assignedAt) {
+            console.log(`      Assigned At: ${q1Winner.assignedAt.toDate().toISOString()}`);
           }
         } else {
-          console.log(`   ❌ Q2 Winner: NOT ASSIGNED in board metadata`);
+          console.log(`   ❌ Q1 Winner: NOT ASSIGNED in board metadata`);
         }
 
         // Check for public winner summary
         const winnerSummaryRef = db.collection('boards').doc(boardDoc.id)
-          .collection('winners').doc('q2');
+          .collection('winners').doc('Q1');
         const winnerSummary = await winnerSummaryRef.get();
         
         if (winnerSummary.exists) {
@@ -126,29 +119,32 @@ try {
 
       // Summary
       console.log('\n📝 Summary:');
-      if (q2WinningSquare) {
-        console.log(`   ✅ Q2 winning square is assigned: ${q2WinningSquare}`);
+      if (q1WinningSquare) {
+        console.log(`   ✅ Q1 winning square is assigned: ${q1WinningSquare}`);
       } else {
-        console.log(`   ❌ Q2 winning square is NOT assigned`);
-        if (gameData.status === 'halftime' || gameData.quarter >= 3) {
-          console.log(`   ⚠️  Halftime has been reached but Q2 winner not assigned!`);
+        console.log(`   ❌ Q1 winning square is NOT assigned`);
+        if (gameData.quarter >= 2) {
+          console.log(`   ⚠️  Q2 has begun (quarter: ${gameData.quarter}) but Q1 winner not assigned!`);
         }
-        if (gameData.homeQ2score !== undefined && gameData.awayQ2score !== undefined) {
-          console.log(`   ⚠️  Q2 scores exist but winner not calculated`);
+        if (gameData.homeQ1score !== undefined && gameData.awayQ1score !== undefined) {
+          console.log(`   ⚠️  Q1 scores exist but winner not calculated`);
         }
       }
       
     } catch (error) {
-      console.error('❌ Error checking Q2 winner:', error);
+      console.error('❌ Error checking Q1 winner:', error);
       throw error;
     } finally {
       process.exit(0);
     }
   }
 
-  checkQ2Winner();
+  checkQ1WinnerAssignment();
 
 } catch (error) {
   console.error('❌ Firebase Admin SDK initialization FAILED:', error);
   process.exit(1);
 }
+
+
+

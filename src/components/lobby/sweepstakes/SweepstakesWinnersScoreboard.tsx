@@ -129,9 +129,10 @@ export default function SweepstakesWinnersScoreboard({
             <div
               key={pill.period}
               className={cn(
-                "relative flex flex-col items-center justify-center p-3 rounded-lg transition-all overflow-hidden",
+                "relative flex flex-col items-center justify-center pt-3 rounded-lg transition-all overflow-hidden",
                 "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none",
                 "shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+                isAssigned && "px-3",
                 colors.bg,
                 colors.border && "border-2",
                 colors.border,
@@ -157,7 +158,7 @@ export default function SweepstakesWinnersScoreboard({
                       ? "bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] shadow-[0_0_8px_rgba(231,184,68,0.6)]"
                       : "bg-white/20"
                   )} />
-                  <div className="w-full flex items-center justify-center mb-2">
+                  <div className="w-full flex items-center justify-center mb-3">
                     <span className={cn(
                       "text-2xl font-bold font-mono",
                       doesUserOwnWinningSquare(pill.period)
@@ -170,26 +171,24 @@ export default function SweepstakesWinnersScoreboard({
 
                   {/* Winner badge - full-width bar at bottom */}
                   {doesUserOwnWinningSquare(pill.period) && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-1 text-[10px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-0.5 text-[9px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                       Winner
                     </div>
                   )}
                 </>
               ) : (
                 <>
-                  {/* Unassigned: Dashes container top, Label container bottom */}
-                  <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
-                    <div className="flex-1 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-gray-500">
-                        --
-                      </span>
-                    </div>
-                    <Separator className="w-full bg-white/20" />
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#B8860B] to-[#A0740A] flex items-center justify-center py-3 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
-                          <span className="text-xs font-semibold uppercase text-gray-400">
-                            {pill.label}
-                          </span>
-                        </div>
+                  {/* Unassigned: Dashes top (dull), label bottom (gradient container) */}
+                  <div className="w-full flex items-center justify-center">
+                    <span className="text-2xl font-bold text-gray-500">
+                      --
+                    </span>
+                  </div>
+                  <Separator className="w-full bg-white/20 -mb-px" />
+                  <div className="w-full relative overflow-hidden bg-gradient-to-br from-[#B8860B] to-[#A0740A] flex items-center justify-center py-2 rounded-b-lg before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-transparent before:pointer-events-none">
+                    <span className="text-xs font-semibold uppercase text-white">
+                      {pill.label}
+                    </span>
                   </div>
                 </>
               )}

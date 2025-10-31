@@ -141,6 +141,8 @@ function GamePageContent() {
   const prevSelectedCountRef = useRef<number>(0);
   const scrollDownTimerRef = useRef<number | null>(null);
   const scrollUpTimerRef = useRef<number | null>(null);
+  const cachedTeamARef = useRef<TeamInfo | null>(null);
+  const cachedTeamBRef = useRef<TeamInfo | null>(null);
 
   // Animation variants for light switch flip
   const switchVariants = {
@@ -208,52 +210,103 @@ function GamePageContent() {
 
   const entryAmounts = [1, 5, 10, 20];
 
+  // Real-time game data listener
   useEffect(() => {
     if (!gameId) return;
     setIsLoadingGame(true);
     setError(null);
-    const fetchGame = async () => {
-      try {
-        const gameRef = doc(db, 'games', gameId);
-        const gameSnap = await getDoc(gameRef);
-        if (!gameSnap.exists()) throw new Error('Game not found');
-        const gameData = gameSnap.data();
-        const awayRef = gameData.awayTeam instanceof DocumentReference ? gameData.awayTeam : undefined;
-        const homeRef = gameData.homeTeam instanceof DocumentReference ? gameData.homeTeam : undefined;
-        const teamAData = await getTeamData(awayRef);
-        const teamBData = await getTeamData(homeRef);
-        setGameDetails({
-          id: gameSnap.id,
-          sport: gameData.sport,
-          status: (gameData.isLive ?? gameData.is_live) ? 'live' : ((gameData.isOver ?? gameData.is_over) ? 'final' : 'scheduled'),
-          teamA: teamAData, teamB: teamBData,
-          away_team_id: gameData.away_team_id as DocumentReference,
-          home_team_id: gameData.home_team_id as DocumentReference,
-          time: !(gameData.isLive ?? gameData.is_live) && !(gameData.isOver ?? gameData.is_over) && (gameData.startTime || gameData.start_time) ? new Date(((gameData.startTime || gameData.start_time) as Timestamp).toMillis()).toLocaleTimeString([], { hour: 'numeric', minute:'2-digit' }) : undefined,
-          date: !(gameData.isLive ?? gameData.is_live) && !(gameData.isOver ?? gameData.is_over) && (gameData.startTime || gameData.start_time) ? new Date(((gameData.startTime || gameData.start_time) as Timestamp).toMillis()).toLocaleDateString([], { month: 'short', day: 'numeric' }) : undefined,
-          period: (gameData.isLive ?? gameData.is_live) ? (gameData.period?.toString() || 'Live') : undefined,
-          quarter: gameData.quarter,
-          broadcastProvider: gameData.broadcastProvider || gameData.broadcast_provider || undefined,
-          broadcast_provider: gameData.broadcast_provider || undefined,
-          week: gameData.week,
-          homeScore: typeof gameData.homeScore === 'number' ? gameData.homeScore : (gameData.home_team_score ?? 0),
-          awayScore: typeof gameData.awayScore === 'number' ? gameData.awayScore : (gameData.away_team_score ?? 0),
-          home_score: typeof gameData.home_team_score === 'number' ? gameData.home_team_score : undefined,
-          away_score: typeof gameData.away_team_score === 'number' ? gameData.away_team_score : undefined,
-          startTime: (gameData.startTime as Timestamp) || (gameData.start_time as Timestamp),
-          start_time: (gameData.start_time as Timestamp) || undefined,
-          timeRemaining: gameData.timeRemaining || gameData.time_remaining,
-          time_remaining: gameData.time_remaining,
-        });
-        setQ1WinningSquare(typeof gameData.q1WinningSquare === 'string' ? gameData.q1WinningSquare : null);
-        setQ2WinningSquare(typeof gameData.q2WinningSquare === 'string' ? gameData.q2WinningSquare : null);
-        setQ3WinningSquare(typeof gameData.q3WinningSquare === 'string' ? gameData.q3WinningSquare : null);
-        setFinalWinningSquare(typeof gameData.finalWinningSquare === 'string' ? gameData.finalWinningSquare : null);
-        console.log('Game data:', { away_team_id: gameData.away_team_id, awayTeam: gameData.awayTeam, home_team_id: gameData.home_team_id, homeTeam: gameData.homeTeam, awayRef, homeRef, teamAData, teamBData });
-      } catch (err: any) { setError(err.message || 'Failed to load game details.'); }
-      finally { setIsLoadingGame(false); }
+    
+    // Reset cached teams when game changes
+    cachedTeamARef.current = null;
+    cachedTeamBRef.current = null;
+    
+    let unsubscribeGameListener: (() => void) | null = null;
+    let isInitialSnapshot = true;
+
+    const gameRef = doc(db, 'games', gameId);
+    
+    unsubscribeGameListener = onSnapshot(
+      gameRef,
+      async (gameSnap) => {
+        try {
+          if (!gameSnap.exists()) {
+            setError('Game not found');
+            setIsLoadingGame(false);
+            return;
+          }
+
+          const gameData = gameSnap.data();
+          const awayRef = gameData.awayTeam instanceof DocumentReference ? gameData.awayTeam : undefined;
+          const homeRef = gameData.homeTeam instanceof DocumentReference ? gameData.homeTeam : undefined;
+
+          // Fetch team data only on initial snapshot or if not cached
+          if (isInitialSnapshot || !cachedTeamARef.current || !cachedTeamBRef.current) {
+            const teamAData = await getTeamData(awayRef);
+            const teamBData = await getTeamData(homeRef);
+            cachedTeamARef.current = teamAData;
+            cachedTeamBRef.current = teamBData;
+          }
+          
+          // Use cached team data (guaranteed to exist after check above)
+          const teamAData = cachedTeamARef.current!;
+          const teamBData = cachedTeamBRef.current!;
+
+          // Update game details with real-time data
+          setGameDetails({
+            id: gameSnap.id,
+            sport: gameData.sport,
+            status: (gameData.isLive ?? gameData.is_live) ? 'live' : ((gameData.isOver ?? gameData.is_over) ? 'final' : 'scheduled'),
+            teamA: teamAData,
+            teamB: teamBData,
+            away_team_id: gameData.away_team_id as DocumentReference,
+            home_team_id: gameData.home_team_id as DocumentReference,
+            time: !(gameData.isLive ?? gameData.is_live) && !(gameData.isOver ?? gameData.is_over) && (gameData.startTime || gameData.start_time) ? new Date(((gameData.startTime || gameData.start_time) as Timestamp).toMillis()).toLocaleTimeString([], { hour: 'numeric', minute:'2-digit' }) : undefined,
+            date: !(gameData.isLive ?? gameData.is_live) && !(gameData.isOver ?? gameData.is_over) && (gameData.startTime || gameData.start_time) ? new Date(((gameData.startTime || gameData.start_time) as Timestamp).toMillis()).toLocaleDateString([], { month: 'short', day: 'numeric' }) : undefined,
+            period: (gameData.isLive ?? gameData.is_live) ? (gameData.period?.toString() || 'Live') : undefined,
+            quarter: gameData.quarter,
+            broadcastProvider: gameData.broadcastProvider || gameData.broadcast_provider || undefined,
+            broadcast_provider: gameData.broadcast_provider || undefined,
+            week: gameData.week,
+            homeScore: typeof gameData.homeScore === 'number' ? gameData.homeScore : (gameData.home_team_score ?? 0),
+            awayScore: typeof gameData.awayScore === 'number' ? gameData.awayScore : (gameData.away_team_score ?? 0),
+            home_score: typeof gameData.home_team_score === 'number' ? gameData.home_team_score : undefined,
+            away_score: typeof gameData.away_team_score === 'number' ? gameData.away_team_score : undefined,
+            startTime: (gameData.startTime as Timestamp) || (gameData.start_time as Timestamp),
+            start_time: (gameData.start_time as Timestamp) || undefined,
+            timeRemaining: gameData.timeRemaining || gameData.time_remaining,
+            time_remaining: gameData.time_remaining,
+          });
+
+          // Update winning squares in real-time
+          setQ1WinningSquare(typeof gameData.q1WinningSquare === 'string' ? gameData.q1WinningSquare : null);
+          setQ2WinningSquare(typeof gameData.q2WinningSquare === 'string' ? gameData.q2WinningSquare : null);
+          setQ3WinningSquare(typeof gameData.q3WinningSquare === 'string' ? gameData.q3WinningSquare : null);
+          setFinalWinningSquare(typeof gameData.finalWinningSquare === 'string' ? gameData.finalWinningSquare : null);
+
+          if (isInitialSnapshot) {
+            console.log('Game data loaded:', { away_team_id: gameData.away_team_id, awayTeam: gameData.awayTeam, home_team_id: gameData.home_team_id, homeTeam: gameData.homeTeam, awayRef, homeRef, teamAData, teamBData });
+          }
+          
+          isInitialSnapshot = false;
+          setIsLoadingGame(false);
+        } catch (err: any) {
+          console.error('Error processing game snapshot:', err);
+          setError(err.message || 'Failed to load game details.');
+          setIsLoadingGame(false);
+        }
+      },
+      (errorListener) => {
+        console.error('Error listening to game updates:', errorListener);
+        setError('Error loading game. Please refresh the page.');
+        setIsLoadingGame(false);
+      }
+    );
+
+    return () => {
+      if (unsubscribeGameListener) {
+        unsubscribeGameListener();
+      }
     };
-    fetchGame();
   }, [gameId]);
 
   // Fetch Board Details Effect (and re-fetch on entrySuccessCount change)

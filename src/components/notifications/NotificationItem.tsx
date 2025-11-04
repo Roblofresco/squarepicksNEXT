@@ -300,11 +300,11 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
         </button>
       </div>
       
-      {/* Sliding content (above the buttons with higher z-index) */}
+      {/* Sliding content (above the buttons) */}
       <div
-        className="relative z-10 flex items-start gap-3 p-3 border-b border-slate-700/50 last:border-b-0 
-                    hover:bg-slate-700/60 transition-transform duration-300 ease-out
-                    cursor-pointer bg-slate-800/50"
+        className="relative flex items-start gap-3 p-3 border-b border-slate-700 last:border-b-0 
+                    hover:bg-slate-700 transition-transform duration-300 ease-out
+                    cursor-pointer bg-slate-800"
         style={{ 
           transform: `translateX(${translateX}px)`,
           transition: isDragging ? 'none' : 'transform 0.3s ease-out'

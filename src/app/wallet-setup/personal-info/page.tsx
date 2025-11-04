@@ -1,7 +1,5 @@
 'use client'
 
-export const runtime = 'edge';
-
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';

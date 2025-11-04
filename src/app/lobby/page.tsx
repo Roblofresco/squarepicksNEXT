@@ -1,7 +1,5 @@
 'use client'
 
-export const runtime = 'edge';
-
 import { useState, useEffect, useCallback, useRef, Suspense, useMemo } from 'react';
 // driver removed
 import { getNFLWeekRange, getFirestoreTimestampRange, formatDateRange } from '@/lib/date-utils';
@@ -31,19 +29,23 @@ import SweepstakesBoardCard from '@/components/lobby/sweepstakes/SweepstakesBoar
 import SweepstakesWinnersScoreboard from '@/components/lobby/sweepstakes/SweepstakesWinnersScoreboard';
 import TourSweepstakesBoardCard from '@/components/lobby/sweepstakes/TourSweepstakesBoardCard';
 import {
-  collection, query, where, onSnapshot, doc, getDoc,
+  collection, query, where, onSnapshot, doc, getDoc, getDocFromCache, getDocFromServer,
   Timestamp, DocumentReference, DocumentData, orderBy, limit, setDoc,
 } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
-import TourOverlay from '@/components/tour/TourOverlay';
 import { AlertCircle } from 'lucide-react';
 import { useWallet } from '@/hooks/useWallet';
 
 // Import StarfieldBackground dynamically to prevent SSR issues
 import dynamic from 'next/dynamic';
 
-// Dynamic import with no SSR to prevent build errors
+// Dynamic imports with no SSR to prevent build errors
 const StarfieldBackground = dynamic(() => import('@/components/effects/StarfieldBackground'), { 
+  ssr: false,
+  loading: () => null
+});
+
+const TourOverlay = dynamic(() => import('@/components/tour/TourOverlay'), {
   ssr: false,
   loading: () => null
 });
@@ -63,7 +65,7 @@ interface UserTourState {
 const userDocRef = (uid: string) => doc(db, 'users', uid);
 
 // Helper to fetch multiple team documents by their DocumentReferences
-// Adjusted to take DocumentReferences and return a map with TeamInfo
+// Cache-first strategy: try cache, fall back to server
 const fetchMultipleTeams = async (teamRefs: DocumentReference[]): Promise<Record<string, TeamInfo>> => {
   const uniqueTeamRefs = teamRefs.filter((ref, index, self) => 
     ref && self.findIndex(r => r && r.id === ref.id) === index
@@ -71,12 +73,18 @@ const fetchMultipleTeams = async (teamRefs: DocumentReference[]): Promise<Record
   if (uniqueTeamRefs.length === 0) return {};
   
   const teamsMap: Record<string, TeamInfo> = {};
-  // Firestore getDocs can take up to 30 DocumentReferences in a single call via `in` query on documentId()
-  // However, for simplicity with references, we'll fetch them one by one or in smaller batches if performance becomes an issue.
-  // For now, getDoc in a loop (can be parallelized with Promise.all)
+  
   const teamPromises = uniqueTeamRefs.map(async (teamRef) => {
     try {
-      const teamSnap = await getDoc(teamRef);
+      // Try cache first, fall back to server
+      let teamSnap;
+      try {
+        teamSnap = await getDocFromCache(teamRef);
+      } catch (cacheError) {
+        // Cache miss, fetch from server
+        teamSnap = await getDocFromServer(teamRef);
+      }
+      
       if (teamSnap.exists()) {
         const data = teamSnap.data();
         teamsMap[teamSnap.id] = {
@@ -118,9 +126,10 @@ function LobbyContent() {
   const pathname = usePathname();
 
   const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
-  const [isWalletSetupDialogOpen, setIsWalletSetupDialogOpen] = useState(false);
-  const [isDepositDialogOpen, setIsDepositDialogOpen] = useState(false);
+  
+  // Consolidated modal state
+  type ModalType = 'login' | 'wallet-setup' | 'deposit' | null;
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [requiredDepositAmount, setRequiredDepositAmount] = useState(0);
   const [setupDialogContent, setSetupDialogContent] = useState({
     title: 'Wallet Setup Required',
@@ -542,11 +551,11 @@ function LobbyContent() {
           description: 'Set up your wallet to manage entries and winnings securely.',
           buttonText: 'Go to Wallet Setup',
         });
-        setIsWalletSetupDialogOpen(true);
+        setActiveModal('wallet-setup');
         break;
       case 'deposit':
         setRequiredDepositAmount(reqAmount);
-        setIsDepositDialogOpen(true);
+        setActiveModal('deposit');
         break;
       case 'sweepstakes':
         setSetupDialogContent({
@@ -554,18 +563,18 @@ function LobbyContent() {
           description: 'Verify your wallet to complete sweepstakes entries and receive payouts.',
           buttonText: 'Go to Wallet Setup',
         });
-        setIsWalletSetupDialogOpen(true);
+        setActiveModal('wallet-setup');
         break;
       default:
         break;
     }
   }, []);
 
-  const handleProtectedAction = useCallback(() => setIsLoginModalOpen(true), []);
+  const handleProtectedAction = useCallback(() => setActiveModal('login'), []);
 
   const handleBoardAction = useCallback(async (action: string, boardId: string, value?: number | string | null) => {
     if (['START_ENTRY', 'SET_NUMBER', 'REQUEST_CONFIRM', 'CANCEL_CONFIRM'].includes(action) && !userId) {
-        setIsLoginModalOpen(true); 
+        setActiveModal('login'); 
         return;
     }
 
@@ -882,6 +891,12 @@ function LobbyContent() {
     [games.length, isLoadingGamesAndTeams, sportsDataVersion]
   );
 
+  // Memoized date range formatting
+  const formattedDateRange = useMemo(() => {
+    if (!dateRange) return '';
+    return formatDateRange(dateRange.startTimestamp.toDate(), dateRange.endTimestamp.toDate());
+  }, [dateRange]);
+
   const openTour = useCallback((tour: 'sweepstakes' | 'sports') => {
     setActiveTour(tour);
     setTourStep(0);
@@ -1167,7 +1182,7 @@ function LobbyContent() {
                         {selectedSport.toUpperCase() === 'NFL' && (
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-accent-1 font-medium">Week {weekNumber}</span>
-                            <span className="text-xs text-white/50">{dateRange ? formatDateRange(dateRange.startTimestamp.toDate(), dateRange.endTimestamp.toDate()) : ''}</span>
+                            <span className="text-xs text-white/50">{formattedDateRange}</span>
                           </div>
                         )}
                       </div>
@@ -1353,7 +1368,7 @@ function LobbyContent() {
                             <div className="bg-accent-1/5 border border-accent-1/10 rounded-lg p-4 max-w-md text-center backdrop-blur-sm">
                               <p className="text-white/70">
                                 {selectedSport.toUpperCase() === 'NFL' 
-                                  ? `No NFL games scheduled for Week ${weekNumber}${dateRange ? ` (${formatDateRange(dateRange.startTimestamp.toDate(), dateRange.endTimestamp.toDate())})` : ''}.`
+                                  ? `No NFL games scheduled for Week ${weekNumber}${formattedDateRange ? ` (${formattedDateRange})` : ''}.`
                                   : `No games available for ${initialSportsData.find(s => s.id === selectedSport)?.name || selectedSport.toUpperCase()}.`
                                 }
                               </p>
@@ -1372,7 +1387,7 @@ function LobbyContent() {
       </div>
       <BottomNav user={user} onProtectedAction={handleProtectedAction} />
       <Footer />
-      {(isLoginModalOpen || isWalletSetupDialogOpen || isDepositDialogOpen) && <StarfieldBackground className="z-40" />}
+      {activeModal && <StarfieldBackground className="z-40" />}
       {tourOpen && activeTour && (
         <TourOverlay
           steps={stepsForRender}
@@ -1470,7 +1485,7 @@ function LobbyContent() {
         />
       )}
       {/* Login Dialog */}
-      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
+      <Dialog open={activeModal === 'login'} onOpenChange={(open) => !open && setActiveModal(null)}>
         <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
           <DialogHeader className="text-center space-y-2">
             <DialogTitle className="text-2xl font-bold">Login Required</DialogTitle>
@@ -1497,7 +1512,7 @@ function LobbyContent() {
       </Dialog>
 
       {/* Wallet Setup Dialog */}
-      <Dialog open={isWalletSetupDialogOpen} onOpenChange={setIsWalletSetupDialogOpen}>
+      <Dialog open={activeModal === 'wallet-setup'} onOpenChange={(open) => !open && setActiveModal(null)}>
         <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
           <DialogHeader className="text-center space-y-2">
             <DialogTitle className="text-2xl font-bold flex items-center justify-center gap-2">
@@ -1511,13 +1526,13 @@ function LobbyContent() {
       <Button
         type="button"
         variant="outline"
-        onClick={() => setIsWalletSetupDialogOpen(false)}
+        onClick={() => setActiveModal(null)}
               className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white py-6 text-lg"
             >
               Cancel
             </Button>
             <Button
-              onClick={() => { setIsWalletSetupDialogOpen(false); router.push('/wallet-setup/location'); }}
+              onClick={() => { setActiveModal(null); router.push('/wallet-setup/location'); }}
               className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90 py-6 text-lg"
             >
               {setupDialogContent.buttonText}
@@ -1527,7 +1542,7 @@ function LobbyContent() {
       </Dialog>
 
       {/* Deposit Dialog */}
-      <Dialog open={isDepositDialogOpen} onOpenChange={setIsDepositDialogOpen}>
+      <Dialog open={activeModal === 'deposit'} onOpenChange={(open) => !open && setActiveModal(null)}>
         <DialogContent className="sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
           <DialogHeader className="space-y-2">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
@@ -1540,7 +1555,7 @@ function LobbyContent() {
           <DialogFooter className="sm:justify-start gap-3 mt-6">
             <Button
               type="button"
-              onClick={() => { setIsDepositDialogOpen(false); router.push('/deposit'); }}
+              onClick(() => { setActiveModal(null); router.push('/deposit'); }}
               className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90"
             >
               Add Funds
@@ -1548,7 +1563,7 @@ function LobbyContent() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsDepositDialogOpen(false)}
+              onClick={() => setActiveModal(null)}
               className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
       >
         Cancel

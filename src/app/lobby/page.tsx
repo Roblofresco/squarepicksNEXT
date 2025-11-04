@@ -1532,7 +1532,10 @@ function LobbyContent() {
               Cancel
             </Button>
             <Button
-              onClick={() => { setActiveModal(null); router.push('/wallet-setup/location'); }}
+              onClick={() => {
+                setActiveModal(null);
+                router.push('/wallet-setup/location');
+              }}
               className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90 py-6 text-lg"
             >
               {setupDialogContent.buttonText}
@@ -1555,7 +1558,10 @@ function LobbyContent() {
           <DialogFooter className="sm:justify-start gap-3 mt-6">
             <Button
               type="button"
-              onClick(() => { setActiveModal(null); router.push('/deposit'); }}
+              onClick={() => {
+                setActiveModal(null);
+                router.push('/deposit');
+              }}
               className="flex-1 bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 hover:opacity-90"
             >
               Add Funds
@@ -1565,8 +1571,8 @@ function LobbyContent() {
               variant="outline"
               onClick={() => setActiveModal(null)}
               className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
-      >
-        Cancel
+            >
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,5 +1,0 @@
-[33m5a860e0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Implement secure wallet updates using Firebase best practices
-[33m4927e54[m Implement secure PayPal integration following official patterns
-[33m7f73d8f[m Fix home page footer layout for mobile
-[33m52691a4[m Improve deposit and withdraw page UI
-[33md8047c0[m Remove hero animations and enhance withdraw page with best practices

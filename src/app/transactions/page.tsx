@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth'; // Assuming you have an auth hook
 import { db } from '@/lib/firebase'; // Assuming Firebase initialized here
-import { collection, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { Transaction } from '@/types'; // Import your Transaction type
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -17,6 +17,66 @@ import { motion } from 'framer-motion'
 import Breadcrumbs from '@/components/navigation/Breadcrumbs';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+// Helper function to get team names from game data
+async function getGameTeamNames(db: any, gameId: string): Promise<{ home: string; away: string } | null> {
+  try {
+    const gameRef = doc(db, 'games', gameId);
+    const gameSnap = await getDoc(gameRef);
+    if (!gameSnap.exists()) return null;
+    
+    const gameData = gameSnap.data();
+    if (!gameData.homeTeam || !gameData.awayTeam) return null;
+    
+    const homeTeamSnap = await getDoc(gameData.homeTeam);
+    const awayTeamSnap = await getDoc(gameData.awayTeam);
+    
+    const homeName = homeTeamSnap.data()?.full_name || homeTeamSnap.data()?.city || 'Unknown';
+    const awayName = awayTeamSnap.data()?.full_name || awayTeamSnap.data()?.city || 'Unknown';
+    
+    return { home: homeName, away: awayName };
+  } catch (error) {
+    console.error('Error fetching game team names:', error);
+    return null;
+  }
+}
+
+// Helper to format transaction title (like notifications)
+function formatTransactionTitle(tx: Transaction, teamNames: { home: string; away: string } | null): string | null {
+  // For deposit/withdrawal, return null (use description as-is)
+  if (tx.type === 'deposit' || tx.type === 'withdrawal_request') {
+    return null;
+  }
+  
+  // For board-related transactions, format like notifications
+  if (tx.type === 'entry_fee' || tx.type === 'sweepstakes_entry' || tx.type === 'winnings' || tx.type === 'refund') {
+    if (!teamNames) return null;
+    
+    // Extract amount prefix from description or use defaults
+    let amountPrefix = '';
+    if (tx.type === 'entry_fee') {
+      const match = tx.description?.match(/Cost: \$(\d+)/);
+      amountPrefix = match ? `$${match[1]}` : '$0';
+    } else if (tx.type === 'sweepstakes_entry') {
+      amountPrefix = 'Free Board';
+    } else if (tx.type === 'winnings') {
+      // Extract period from description or use period field
+      const periodMatch = tx.description?.match(/(first|second|third|final) quarter/i);
+      if (periodMatch) {
+        const period = periodMatch[1];
+        amountPrefix = period.charAt(0).toUpperCase() + period.slice(1) + (period === 'final' ? '' : ' Quarter');
+      } else {
+        amountPrefix = 'Winnings';
+      }
+    } else if (tx.type === 'refund') {
+      amountPrefix = 'Refund';
+    }
+    
+    return `${amountPrefix} - ${teamNames.away} @ ${teamNames.home}`;
+  }
+  
+  return null;
+}
+
 // --- Main Component ---
 export default function TransactionsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -25,6 +85,7 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [gameDataMap, setGameDataMap] = useState<Record<string, { home: string; away: string }>>({});
 
   // --- Filtering & Sorting State ---
   const [filterType, setFilterType] = useState<string>('all');
@@ -69,6 +130,30 @@ export default function TransactionsPage() {
             fetchedTransactions.push({ id: doc.id, ...doc.data() } as Transaction);
           });
           setTransactions(fetchedTransactions);
+
+          // Collect unique gameIds from transactions
+          const uniqueGameIds = Array.from(
+            new Set(
+              fetchedTransactions
+                .filter(tx => tx.gameId && (tx.type === 'entry_fee' || tx.type === 'sweepstakes_entry' || tx.type === 'winnings' || tx.type === 'refund'))
+                .map(tx => tx.gameId!)
+            )
+          );
+
+          // Fetch game data for all unique gameIds in parallel
+          const gameDataPromises = uniqueGameIds.map(async (gameId) => {
+            const teamNames = await getGameTeamNames(db, gameId);
+            return { gameId, teamNames };
+          });
+
+          const gameDataResults = await Promise.all(gameDataPromises);
+          const gameDataMapResult: Record<string, { home: string; away: string }> = {};
+          gameDataResults.forEach(({ gameId, teamNames }) => {
+            if (teamNames) {
+              gameDataMapResult[gameId] = teamNames;
+            }
+          });
+          setGameDataMap(gameDataMapResult);
 
         } catch (err) {
           console.error("Error fetching transactions:", err);
@@ -234,22 +319,29 @@ export default function TransactionsPage() {
                 <div className="text-xs font-semibold text-white/70 mb-2 tracking-wide">{dateKey}</div>
                 <div className="h-px bg-white/10 mb-3" />
                 <div className="space-y-3">
-                  {list.map((tx) => (
-                    <div key={tx.id} className="rounded-xl border border-white/5 bg-background-primary/60 backdrop-blur px-4 py-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="text-[11px] font-bold tracking-wide text-white/90 uppercase">{tx.type.replace('_', ' ')}</div>
-                          <div className="text-xs text-white/60">{tx.description || 'Bank of America xxxx432'}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs text-white/60">{format(tx.timestamp.toDate(), 'hh:mm a').toUpperCase()}</div>
-                          <div className={`text-sm font-semibold ${tx.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {tx.amount >= 0 ? '+' : ''}${Math.abs(tx.amount).toFixed(2)}
+                  {list.map((tx) => {
+                    const teamNames = tx.gameId ? gameDataMap[tx.gameId] || null : null;
+                    const title = formatTransactionTitle(tx, teamNames);
+                    return (
+                      <div key={tx.id} className="rounded-xl border border-white/5 bg-background-primary/60 backdrop-blur px-4 py-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="text-[11px] font-bold tracking-wide text-white/90 uppercase">{tx.type.replace('_', ' ')}</div>
+                            {title && (
+                              <div className="text-sm font-semibold text-white/90 mt-1">{title}</div>
+                            )}
+                            <div className="text-xs text-white/60 mt-1">{tx.description || 'Bank of America xxxx432'}</div>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <div className="text-xs text-white/60">{format(tx.timestamp.toDate(), 'hh:mm a').toUpperCase()}</div>
+                            <div className={`text-sm font-semibold ${tx.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                              {tx.amount >= 0 ? '+' : ''}${Math.abs(tx.amount).toFixed(2)}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))

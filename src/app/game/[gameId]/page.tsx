@@ -223,7 +223,7 @@ function GamePageContent() {
     let unsubscribeGameListener: (() => void) | null = null;
     let isInitialSnapshot = true;
 
-    const gameRef = doc(db, 'games', gameId);
+        const gameRef = doc(db, 'games', gameId);
     
     unsubscribeGameListener = onSnapshot(
       gameRef,
@@ -235,14 +235,14 @@ function GamePageContent() {
             return;
           }
 
-          const gameData = gameSnap.data();
-          const awayRef = gameData.awayTeam instanceof DocumentReference ? gameData.awayTeam : undefined;
-          const homeRef = gameData.homeTeam instanceof DocumentReference ? gameData.homeTeam : undefined;
+        const gameData = gameSnap.data();
+        const awayRef = gameData.awayTeam instanceof DocumentReference ? gameData.awayTeam : undefined;
+        const homeRef = gameData.homeTeam instanceof DocumentReference ? gameData.homeTeam : undefined;
 
           // Fetch team data only on initial snapshot or if not cached
           if (isInitialSnapshot || !cachedTeamARef.current || !cachedTeamBRef.current) {
-            const teamAData = await getTeamData(awayRef);
-            const teamBData = await getTeamData(homeRef);
+        const teamAData = await getTeamData(awayRef);
+        const teamBData = await getTeamData(homeRef);
             cachedTeamARef.current = teamAData;
             cachedTeamBRef.current = teamBData;
           }
@@ -252,36 +252,36 @@ function GamePageContent() {
           const teamBData = cachedTeamBRef.current!;
 
           // Update game details with real-time data
-          setGameDetails({
-            id: gameSnap.id,
-            sport: gameData.sport,
-            status: (gameData.isLive ?? gameData.is_live) ? 'live' : ((gameData.isOver ?? gameData.is_over) ? 'final' : 'scheduled'),
+        setGameDetails({
+          id: gameSnap.id,
+          sport: gameData.sport,
+          status: (gameData.isLive ?? gameData.is_live) ? 'live' : ((gameData.isOver ?? gameData.is_over) ? 'final' : 'scheduled'),
             teamA: teamAData,
             teamB: teamBData,
-            away_team_id: gameData.away_team_id as DocumentReference,
-            home_team_id: gameData.home_team_id as DocumentReference,
-            time: !(gameData.isLive ?? gameData.is_live) && !(gameData.isOver ?? gameData.is_over) && (gameData.startTime || gameData.start_time) ? new Date(((gameData.startTime || gameData.start_time) as Timestamp).toMillis()).toLocaleTimeString([], { hour: 'numeric', minute:'2-digit' }) : undefined,
-            date: !(gameData.isLive ?? gameData.is_live) && !(gameData.isOver ?? gameData.is_over) && (gameData.startTime || gameData.start_time) ? new Date(((gameData.startTime || gameData.start_time) as Timestamp).toMillis()).toLocaleDateString([], { month: 'short', day: 'numeric' }) : undefined,
-            period: (gameData.isLive ?? gameData.is_live) ? (gameData.period?.toString() || 'Live') : undefined,
-            quarter: gameData.quarter,
-            broadcastProvider: gameData.broadcastProvider || gameData.broadcast_provider || undefined,
-            broadcast_provider: gameData.broadcast_provider || undefined,
-            week: gameData.week,
-            homeScore: typeof gameData.homeScore === 'number' ? gameData.homeScore : (gameData.home_team_score ?? 0),
-            awayScore: typeof gameData.awayScore === 'number' ? gameData.awayScore : (gameData.away_team_score ?? 0),
-            home_score: typeof gameData.home_team_score === 'number' ? gameData.home_team_score : undefined,
-            away_score: typeof gameData.away_team_score === 'number' ? gameData.away_team_score : undefined,
-            startTime: (gameData.startTime as Timestamp) || (gameData.start_time as Timestamp),
-            start_time: (gameData.start_time as Timestamp) || undefined,
-            timeRemaining: gameData.timeRemaining || gameData.time_remaining,
-            time_remaining: gameData.time_remaining,
-          });
+          away_team_id: gameData.away_team_id as DocumentReference,
+          home_team_id: gameData.home_team_id as DocumentReference,
+          time: !(gameData.isLive ?? gameData.is_live) && !(gameData.isOver ?? gameData.is_over) && (gameData.startTime || gameData.start_time) ? new Date(((gameData.startTime || gameData.start_time) as Timestamp).toMillis()).toLocaleTimeString([], { hour: 'numeric', minute:'2-digit' }) : undefined,
+          date: !(gameData.isLive ?? gameData.is_live) && !(gameData.isOver ?? gameData.is_over) && (gameData.startTime || gameData.start_time) ? new Date(((gameData.startTime || gameData.start_time) as Timestamp).toMillis()).toLocaleDateString([], { month: 'short', day: 'numeric' }) : undefined,
+          period: (gameData.isLive ?? gameData.is_live) ? (gameData.period?.toString() || 'Live') : undefined,
+          quarter: gameData.quarter,
+          broadcastProvider: gameData.broadcastProvider || gameData.broadcast_provider || undefined,
+          broadcast_provider: gameData.broadcast_provider || undefined,
+          week: gameData.week,
+          homeScore: typeof gameData.homeScore === 'number' ? gameData.homeScore : (gameData.home_team_score ?? 0),
+          awayScore: typeof gameData.awayScore === 'number' ? gameData.awayScore : (gameData.away_team_score ?? 0),
+          home_score: typeof gameData.home_team_score === 'number' ? gameData.home_team_score : undefined,
+          away_score: typeof gameData.away_team_score === 'number' ? gameData.away_team_score : undefined,
+          startTime: (gameData.startTime as Timestamp) || (gameData.start_time as Timestamp),
+          start_time: (gameData.start_time as Timestamp) || undefined,
+          timeRemaining: gameData.timeRemaining || gameData.time_remaining,
+          time_remaining: gameData.time_remaining,
+        });
 
           // Update winning squares in real-time
-          setQ1WinningSquare(typeof gameData.q1WinningSquare === 'string' ? gameData.q1WinningSquare : null);
-          setQ2WinningSquare(typeof gameData.q2WinningSquare === 'string' ? gameData.q2WinningSquare : null);
-          setQ3WinningSquare(typeof gameData.q3WinningSquare === 'string' ? gameData.q3WinningSquare : null);
-          setFinalWinningSquare(typeof gameData.finalWinningSquare === 'string' ? gameData.finalWinningSquare : null);
+        setQ1WinningSquare(typeof gameData.q1WinningSquare === 'string' ? gameData.q1WinningSquare : null);
+        setQ2WinningSquare(typeof gameData.q2WinningSquare === 'string' ? gameData.q2WinningSquare : null);
+        setQ3WinningSquare(typeof gameData.q3WinningSquare === 'string' ? gameData.q3WinningSquare : null);
+        setFinalWinningSquare(typeof gameData.finalWinningSquare === 'string' ? gameData.finalWinningSquare : null);
 
           if (isInitialSnapshot) {
             console.log('Game data loaded:', { away_team_id: gameData.away_team_id, awayTeam: gameData.awayTeam, home_team_id: gameData.home_team_id, homeTeam: gameData.homeTeam, awayRef, homeRef, teamAData, teamBData });
@@ -1188,7 +1188,7 @@ function GamePageContent() {
                         {doesUserOwnWinningSquare('q1') && (
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-0.5 text-[9px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                          </div>
+                             </div>
                         )}
                       </>
                     ) : (
@@ -1260,7 +1260,7 @@ function GamePageContent() {
                         {doesUserOwnWinningSquare('q2') && (
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-0.5 text-[9px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                          </div>
+                             </div>
                         )}
                       </>
                     ) : (
@@ -1332,7 +1332,7 @@ function GamePageContent() {
                         {doesUserOwnWinningSquare('q3') && (
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-0.5 text-[9px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                          </div>
+                             </div>
                         )}
                       </>
                     ) : (
@@ -1404,7 +1404,7 @@ function GamePageContent() {
                         {doesUserOwnWinningSquare('final') && (
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#FFE08A] via-[#E7B844] to-[#E0B954] flex items-center justify-center py-0.5 text-[9px] font-bold text-white uppercase shadow-[0_0_12px_rgba(231,184,68,0.8)] z-10 rounded-b-lg">
                             Winner
-                          </div>
+                             </div>
                         )}
                       </>
                     ) : (

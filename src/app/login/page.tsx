@@ -40,6 +40,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     setIsMounted(true); // Set mounted state
+    // Prevent scrolling on login page
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    return () => {
+      // Re-enable scrolling when component unmounts
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
   }, []);
 
   // Pointer tracking (mouse + touch) with scroll redraw
@@ -101,7 +109,7 @@ export default function LoginPage() {
 
     let animationFrameId: number;
     const stars: any[] = [];
-    const numStars = 150;
+    const numStars = 100; // Reduced for better performance during login
     const minOpacity = 0.1;
     const maxOpacity = 0.7;
     const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -165,13 +173,29 @@ export default function LoginPage() {
       });
     };
 
-    const animate = () => {
-      renderFrame();
+    let lastFrameTime = 0;
+    const targetFPS = 60;
+    const frameInterval = 1000 / targetFPS;
+
+    const animate = (currentTime: number) => {
+      // Frame rate limiting for better performance
+      const elapsed = currentTime - lastFrameTime;
+      
+      if (elapsed > frameInterval) {
+        lastFrameTime = currentTime - (elapsed % frameInterval);
+        try {
+          renderFrame();
+        } catch (error) {
+          console.error("Canvas render error:", error);
+          cancelAnimationFrame(animationFrameId);
+        }
+      }
+      
       animationFrameId = requestAnimationFrame(animate);
     };
 
     setup();
-    animate();
+    animate(0);
     drawNowRef.current = renderFrame;
 
     const handleResize = () => {
@@ -211,52 +235,38 @@ export default function LoginPage() {
         await signInWithEmailAndPassword(auth, email, password);
         // After signInWithEmailAndPassword, auth.currentUser should be set.
 
-        const checkVerificationAndRedirect = async (attempt: number): Promise<boolean> => {
-            console.log(`[LoginPage] Attempt ${attempt}: Reloading user for email verification check.`);
-            
+        const checkVerificationAndRedirect = async (): Promise<boolean> => {
             const currentUser = auth.currentUser;
             if (!currentUser) {
-                console.error(`[LoginPage] Attempt ${attempt}: No current user found before reload. This should not happen after successful signIn.`);
-                // This scenario implies something went very wrong, or the user was signed out immediately.
+                console.error("[LoginPage] No current user found after signIn.");
                 setError("Authentication error. Please try again.");
                 setIsLoading(false); 
-                return false; // Cannot proceed without a user
+                return false;
             }
+            
+            // Reload user to get latest verification status
             await currentUser.reload();
-            const freshUser = auth.currentUser; // Re-fetch after reload to be certain
+            const freshUser = auth.currentUser;
 
             if (freshUser && freshUser.emailVerified) {
-                console.log(`[LoginPage] Attempt ${attempt}: Email verified for UID: ${freshUser.uid}. Preparing to redirect.`);
-                // Add a small delay here to allow useWallet's onAuthStateChanged to process
-                await new Promise(resolve => setTimeout(resolve, 500)); // 0.5 second delay
-                console.log("[LoginPage] Redirecting to /loading");
+                console.log("[LoginPage] Email verified. Redirecting to /loading");
+                // Brief delay to allow auth state to propagate
+                await new Promise(resolve => setTimeout(resolve, 300));
                 router.push('/loading');
-                // No need to setIsLoading(false) here because of the redirect
-                return true; // Verified and redirected
+                return true;
             }
-            console.log(`[LoginPage] Attempt ${attempt}: Email still not showing as verified. UID: ${freshUser?.uid}, Status: ${freshUser?.emailVerified}`);
-            return false; // Not verified yet
+            return false;
         };
 
-        // Attempt 1: Immediately after login and first reload
-        if (await checkVerificationAndRedirect(1)) return;
+        // Single verification check with one retry after short delay
+        if (await checkVerificationAndRedirect()) return;
 
-        // Attempt 2: After a short delay
-        console.log("[LoginPage] Email not verified on first check. Waiting for a moment...");
-        setError("Verifying email status, please wait..."); 
-        // isLoading is already true
-        await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay
-        if (await checkVerificationAndRedirect(2)) return;
-        
-        // Attempt 3: After a longer delay (an additional 3 seconds)
-        console.log("[LoginPage] Email not verified on second check. Waiting a bit longer...");
-        // Error message is already "Verifying email status..."
-        await new Promise(resolve => setTimeout(resolve, 3000)); // Additional 3-second delay
-        if (await checkVerificationAndRedirect(3)) return;
+        // If not verified, wait briefly and check once more
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        if (await checkVerificationAndRedirect()) return;
 
-        // If still not verified after all attempts
-        console.log("[LoginPage] Email STILL NOT verified after all attempts.");
-        setError("Email not verified. Please check your inbox or resend the verification email from the banner. If you recently verified, please wait a few moments and try logging in again.");
+        // If still not verified, show error
+        setError("Email not verified. Please check your inbox or resend the verification email.");
         setIsLoading(false);
         // Optional: Sign out the user if email verification is mandatory to proceed.
         // await signOut(auth);
@@ -304,7 +314,7 @@ export default function LoginPage() {
 
   return (
     // Use bg-background-primary like welcome page
-    <main className="relative w-full h-[100dvh] overflow-hidden flex flex-col bg-background-primary text-white">
+    <main className="relative w-full h-screen overflow-hidden flex flex-col bg-background-primary text-white">
       {/* Add background elements from page.tsx */}
       <canvas
         ref={canvasRef}

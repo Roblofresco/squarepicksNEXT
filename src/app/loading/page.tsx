@@ -29,17 +29,26 @@ export default function LoadingPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const drawNowRef = useRef<() => void>(() => {});
 
+  // Track if component is mounted to prevent operations after unmount
+  const isMountedRef = useRef(true);
+
   // Added mount effect & navigation timer
   useEffect(() => {
     setIsMounted(true);
+    isMountedRef.current = true;
 
     // 3.5-second timer for auto-navigation to lobby
     const autoNavigationTimer = setTimeout(() => {
-      router.push('/lobby');
+      if (isMountedRef.current) {
+        router.push('/lobby');
+      }
     }, 3500); // 3.5 seconds
 
     // Cleanup function for auto-navigation timer
-    return () => clearTimeout(autoNavigationTimer);
+    return () => {
+      isMountedRef.current = false;
+      clearTimeout(autoNavigationTimer);
+    };
   }, [router]); // Added router dependency
 
   // Force disable body scroll specifically for this page via inline styles
@@ -236,7 +245,7 @@ export default function LoadingPage() {
 
   // Canvas Animation for Forward Movement Starfield + pointer glow/warp
   useEffect(() => {
-    if (!isMounted || !canvasRef.current) return;
+    if (!isMounted || !canvasRef.current || !isMountedRef.current) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -244,7 +253,7 @@ export default function LoadingPage() {
 
     let animationFrameId: number;
     const stars: Array<{ x: number; y: number; angle: number; speed: number; size: number; opacity: number; dist: number; }> = [];
-    const numStars = 200; // Reduced from 400 for better performance
+    const numStars = 120; // Further reduced for better performance on first-time login
     const baseSpeedFactor = 0.003; // Slightly slower for smoother movement
     const baseSpeedOffset = 0.03; // Minimum outward speed
     const maxSpeedPxPerFrame = 2.0; // Reduced clamp for smoother animation
@@ -367,12 +376,25 @@ export default function LoadingPage() {
     };
 
     const animate = (currentTime: number) => {
-      // Frame rate limiting for smoother animation
+      // Stop if component unmounted
+      if (!isMountedRef.current) {
+        cancelAnimationFrame(animationFrameId);
+        return;
+      }
+
+      // Frame rate limiting for smoother animation and reduced CPU usage
       const elapsed = currentTime - lastFrameTime;
       
       if (elapsed > frameInterval) {
         lastFrameTime = currentTime - (elapsed % frameInterval);
-        renderFrame();
+        try {
+          renderFrame();
+        } catch (error) {
+          console.error("Canvas render error:", error);
+          // Stop animation on error to prevent crashes
+          cancelAnimationFrame(animationFrameId);
+          return;
+        }
       }
       
       animationFrameId = requestAnimationFrame(animate);

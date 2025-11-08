@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { auth, db } from '@/lib/firebase';
-import { onAuthStateChanged, User, sendEmailVerification, useDeviceLanguage } from 'firebase/auth';
+import { onAuthStateChanged, User, sendEmailVerification, useDeviceLanguage, updateProfile } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 
 interface WalletState {
@@ -24,9 +24,20 @@ export function useWallet() {
     emailVerified: null,
   });
 
+  // Store snapshot unsubscribe function to properly clean it up
+  const unsubscribeSnapshotRef = useRef<(() => void) | null>(null);
+
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       console.log("[useWallet] onAuthStateChanged triggered. User:", user ? user.uid : null, "Email Verified:", user ? user.emailVerified : null);
+      
+      // Clean up previous snapshot listener if it exists
+      if (unsubscribeSnapshotRef.current) {
+        console.log("[useWallet] Cleaning up previous snapshot listener");
+        unsubscribeSnapshotRef.current();
+        unsubscribeSnapshotRef.current = null;
+      }
+
       if (user) {
         if (user.emailVerified) {
           console.warn("[useWallet] User is VERIFIED:", user.uid, "Email:", user.email);
@@ -76,8 +87,8 @@ export function useWallet() {
           });
         });
 
-        // Return the snapshot listener cleanup function
-        return () => unsubscribeSnapshot();
+        // Store the snapshot unsubscribe function
+        unsubscribeSnapshotRef.current = unsubscribeSnapshot;
 
       } else {
         // No user logged in
@@ -94,7 +105,14 @@ export function useWallet() {
     });
 
     // Return the auth listener cleanup function
-    return () => unsubscribeAuth();
+    return () => {
+      unsubscribeAuth();
+      // Also clean up snapshot listener if it exists
+      if (unsubscribeSnapshotRef.current) {
+        unsubscribeSnapshotRef.current();
+        unsubscribeSnapshotRef.current = null;
+      }
+    };
   }, []);
 
   // Function to initialize the wallet for a user
@@ -142,6 +160,22 @@ export function useWallet() {
       return { success: false, message: 'No user logged in to resend verification email.' };
     }
     try {
+      // Ensure displayName is set for email template personalization
+      if (!auth.currentUser.displayName) {
+        try {
+          const userDocRef = doc(db, 'users', auth.currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const displayName = userData.display_name || userData.firstName || auth.currentUser.email?.split('@')[0] || 'User';
+            await updateProfile(auth.currentUser, { displayName });
+          }
+        } catch (updateError) {
+          console.warn("Could not update displayName before resending verification email:", updateError);
+          // Continue anyway - email will still be sent
+        }
+      }
+      
       useDeviceLanguage(auth);
       await sendEmailVerification(auth.currentUser);
       return { success: true, message: 'Verification email sent! Please check your inbox (and spam folder).' };

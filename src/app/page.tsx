@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { useGesture } from '@use-gesture/react';
 import { useSpring, animated } from '@react-spring/web';
-import { FiSearch, FiGrid, FiShoppingCart, FiAward } from 'react-icons/fi'
+import { FiGrid, FiShoppingCart, FiAward } from 'react-icons/fi'
 import { LogoIcon } from "@/components/LogoIcon";
 import { LogoWithText } from "@/components/LogoWithText";
 import Link from 'next/link';
@@ -355,23 +355,23 @@ export default function Home() {
   // How to Play steps (enhanced)
   const howToPlaySteps = [
     {
-      title: "Find a Board",
-      content: "Open the Lobby, filter by sport or time, and pick a $1 board or a featured free board.",
-      icon: FiSearch,
-    },
-    {
-      title: "Know the Grid",
-      content: "Each board is a 10×10 grid. Numbers 0–9 are randomly assigned to rows and columns once the board fills.",
-      icon: FiGrid,
-    },
-    {
-      title: "Pick Your Squares",
-      content: "Tap any open square. Choose one or many; confirm your selection to lock it in.",
+      title: "Pick Your Square",
+      content: "Choose any open square on the board to enter. You can pick one square or many squares.",
       icon: FiShoppingCart,
     },
     {
-      title: "Win & Payouts",
-      content: "If your row/column digits match the score at set intervals, you win. Winnings are added to your wallet.",
+      title: "Board Fills Up",
+      content: "Wait for all 100 squares to be taken. Once the board is full, random numbers 0-9 are automatically assigned to each row and column.",
+      icon: FiGrid,
+    },
+    {
+      title: "Your Random Pick",
+      content: "Your square gets assigned two numbers - one from its row and one from its column. These numbers are randomly chosen after the board fills.",
+      icon: FiGrid,
+    },
+    {
+      title: "Match & Win",
+      content: "Watch the game! If your square's numbers match the score digits at the end of Q1, Q2, Q3, or Final Score, you win. Winnings are automatically added to your wallet.",
       icon: FiAward,
     },
   ];
@@ -652,8 +652,8 @@ export default function Home() {
                   $
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold mb-2 text-white">Payouts & Sweepstakes</h3>
-                  <p className="text-gray-300">Each board has a total pot based on the entry fees, with winners receiving 20% of the pot for each defined period. The platform retains 20% as a fee. SquarePicks operates as a promotional sweepstakes with a weekly free entry opportunity on featured $1 boards.</p>
+                  <h3 className="text-xl font-semibold mb-2 text-white">Payouts</h3>
+                  <p className="text-gray-300">Each board has a prize pot. There are four chances to win: at the end of the 1st quarter, 2nd quarter, 3rd quarter, and final score. Each winner gets 20% of the pot.</p>
                 </div>
               </div>
             </motion.div>

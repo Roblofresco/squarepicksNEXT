@@ -8,7 +8,7 @@ import { FiCheck } from 'react-icons/fi'; // Remove unused icons
 import SignupProgressDots from '@/components/SignupProgressDots'; // Import dots
 // Firebase Imports
 import { auth, db } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, signOut, updateProfile } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { MailCheck, Loader2, CheckCircle, XCircle } from 'lucide-react';
@@ -92,7 +92,12 @@ export default function UsernamePage() {
       const user = userCredential.user;
       console.log("Firebase Auth user created:", user.uid);
 
-      // 2. Send verification email with explicit actionCodeSettings for local testing
+      // 2. Set display name on user profile for email template personalization
+      const displayName = signupData.firstName || username;
+      await updateProfile(user, { displayName });
+      console.log("User display name set:", displayName);
+
+      // 3. Send verification email with explicit actionCodeSettings for local testing
       const actionCodeSettings = {
         url: 'http://localhost:3000/email-verified', // For local testing
         handleCodeInApp: true,
@@ -100,7 +105,7 @@ export default function UsernamePage() {
       await sendEmailVerification(user, actionCodeSettings);
       console.log("Verification email sent with actionCodeSettings pointing to localhost.");
 
-      // 3. Create user document in Firestore (as before)
+      // 4. Create user document in Firestore (as before)
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
         email: signupData.email.toLowerCase(),
@@ -111,11 +116,11 @@ export default function UsernamePage() {
       });
       console.log("Firestore user document created.");
 
-      // 4. SIGN THE USER OUT IMMEDIATELY
+      // 5. SIGN THE USER OUT IMMEDIATELY
       await signOut(auth);
       console.log("[SignupPage] User signed out. auth.currentUser:", auth.currentUser);
 
-      // 5. Show success message and then redirect to login
+      // 6. Show success message and then redirect to login
       setShowSuccessMessage(true);
       toast.success("Signup successful! Please check your email to verify your account before logging in.", { duration: 4000 });
       console.log("[SignupPage] Success message shown. Redirecting to /login in 4 seconds...");
@@ -147,6 +152,7 @@ export default function UsernamePage() {
           A verification email has been sent to <strong className="text-foreground">{signupData.email}</strong>. 
           Please click the link in the email to verify your account before logging in.
         </p>
+        <p className="text-xs text-muted-foreground">Don't see it? Check your spam folder.</p>
         <p className="text-sm text-muted-foreground">
           You will be redirected to the login page shortly...
         </p>

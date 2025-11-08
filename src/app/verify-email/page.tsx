@@ -84,6 +84,7 @@ const VerifyEmailPage = () => {
           </p>
         )}
         <p className="text-sm text-gray-300">We sent a verification link to your email. Click the link to activate your account.</p>
+        <p className="text-xs text-gray-400">Don't see it? Check your spam folder.</p>
         <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
           <Button onClick={handleResendEmail} disabled={isResending} className="w-full bg-gradient-accent1-accent4 hover:bg-gradient-accent2-accent3">
             {isResending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending…</> : 'Resend verification email'}

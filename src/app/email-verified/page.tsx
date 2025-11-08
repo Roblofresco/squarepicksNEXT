@@ -27,13 +27,15 @@ function EmailVerifiedContent() {
 
   useEffect(() => {
     const mode = searchParams.get('mode')
-    const oobCode = searchParams.get('oobCode')
+    const oobCode = searchParams.get('oobCode') || searchParams.get('oobcode')
 
+    // Handle password reset - redirect immediately
     if (mode === 'resetPassword' && oobCode) {
       router.replace(`/reset-password/confirm?oobCode=${encodeURIComponent(oobCode)}`)
       return
     }
 
+    // Handle email verification
     if (mode === 'verifyEmail' && oobCode) {
       setIsVerifying(true)
       applyActionCode(auth, oobCode)
@@ -42,12 +44,14 @@ function EmailVerifiedContent() {
           headingRef.current?.focus()
           setTimeout(() => router.push('/login'), 1500)
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Email verification error:', error)
           setIsSuccess(false)
           headingRef.current?.focus()
         })
         .finally(() => setIsVerifying(false))
     } else {
+      // Invalid or missing parameters
       setIsVerifying(false)
       setIsSuccess(false)
       headingRef.current?.focus()

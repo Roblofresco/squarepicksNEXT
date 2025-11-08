@@ -30,8 +30,11 @@ async function getGameTeamNames(db: any, gameId: string): Promise<{ home: string
     const homeTeamSnap = await getDoc(gameData.homeTeam);
     const awayTeamSnap = await getDoc(gameData.awayTeam);
     
-    const homeName = homeTeamSnap.data()?.full_name || homeTeamSnap.data()?.city || 'Unknown';
-    const awayName = awayTeamSnap.data()?.full_name || awayTeamSnap.data()?.city || 'Unknown';
+    const homeTeamData = homeTeamSnap.data() as { full_name?: string; city?: string } | undefined;
+    const awayTeamData = awayTeamSnap.data() as { full_name?: string; city?: string } | undefined;
+    
+    const homeName = homeTeamData?.full_name || homeTeamData?.city || 'Unknown';
+    const awayName = awayTeamData?.full_name || awayTeamData?.city || 'Unknown';
     
     return { home: homeName, away: awayName };
   } catch (error) {

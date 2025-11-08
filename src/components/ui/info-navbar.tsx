@@ -14,6 +14,7 @@ const infoLinks = [
   { href: '/information-and-support/terms', label: 'Terms & Conditions' },
   { href: '/information-and-support/privacy', label: 'Privacy Policy' },
   { href: '/information-and-support/responsible-gaming', label: 'Responsible Gaming' },
+  { href: '/contact-support', label: 'Contact Support' },
 ]
 
 export default function InfoNavbar() {

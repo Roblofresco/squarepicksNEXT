@@ -94,10 +94,10 @@ export function HowToPlayContent({ content }: HowToPlayContentProps) {
           <p className="text-gray-300">
             Contact our support team through the{' '}
             <a 
-              href="/support" 
+              href="/contact-support" 
               className="font-medium text-accent-1 underline underline-offset-4 hover:text-accent-1/80 transition-colors"
             >
-              Help Center
+              Contact Support
             </a>
             {' '}for assistance.
           </p>

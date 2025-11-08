@@ -72,7 +72,7 @@ We reserve the right, at our sole discretion, to modify or replace these Terms a
 
 ## 10. Contact Information
 
-If you have any questions about these Terms, please contact us at: contact@squarpicks.com
+If you have any questions about these Terms, please contact us at: contact@squarepicks.com
 
 ---
 `

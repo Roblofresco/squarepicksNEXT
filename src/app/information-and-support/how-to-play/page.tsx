@@ -44,8 +44,10 @@ You can get to a specific Game Page in two ways:
 
 ### When You Win
 Prizes are awarded based on:
-- Quarter scores (1st, 2nd, 3rd)
-- Final score
+- End of 1st Quarter (Q1)
+- Halftime
+- End of 3rd Quarter (Q3)
+- Final Score
 - Special event squares (when available)
 
 ### Getting Paid

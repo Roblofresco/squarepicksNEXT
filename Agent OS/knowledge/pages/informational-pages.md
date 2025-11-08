@@ -15,35 +15,35 @@ All pages in this category now share a common background shell:
   - Optional back button
 - The page itself renders Markdown or JSX content inside.
 
-### a. `/how-to-play`
+### a. `/information-and-support/how-to-play`
 
 -   **Content:** Contains a detailed, multi-step guide explaining how to find games, understand the board and number assignment, select squares, and track winnings.
--   **Source:** Renders the `howToPlayMarkdown` constant.
+-   **Source:** Renders the `howToPlayMarkdown` constant using `HowToPlayContent` component.
 
-### b. `/faq` (Frequently Asked Questions)
+### b. `/information-and-support/faq` (Frequently Asked Questions)
 
 -   **Content:** Provides answers to common questions regarding gameplay, legality, rules, and account verification.
--   **Source:** Renders the `faqMarkdown` constant.
+-   **Source:** Renders the `faqMarkdown` constant using `MarkdownContent` component.
 
-### c. `/terms` (Terms and Conditions)
+### c. `/information-and-support/terms` (Terms and Conditions)
 
 -   **Content:** Displays the legal terms of service that govern the use of the application, with a strong emphasis on its operation as a legal sweepstakes.
--   **Source:** Renders the `termsMarkdown` constant.
+-   **Source:** Renders the `termsMarkdown` constant using `MarkdownContent` component.
 
-### d. `/privacy` (Privacy Policy)
+### d. `/information-and-support/privacy` (Privacy Policy)
 
 -   **Content:** Outlines the policies regarding the collection, use, and disclosure of user data.
--   **Source:** Renders the `privacyMarkdown` constant.
+-   **Source:** Renders the `privacyMarkdown` constant using `MarkdownContent` component.
 
-### e. `/responsible-gaming-policy`
+### e. `/information-and-support/responsible-gaming`
 
 -   **Content:** Details the company's commitment to responsible play, including tools for setting limits and providing resources for help.
--   **Source:** Renders the `responsibleGamingMarkdown` constant.
+-   **Source:** Renders the `responsibleGamingMarkdown` constant using `MarkdownContent` component.
 
-### f. `/account-guide`
+### f. `/information-and-support/account-guide`
 
 -   **Content:** Explains how to manage account funds, including details on deposits, withdrawals, verification, and profile settings.
--   **Source:** Renders the `accountGuideMarkdown` constant.
+-   **Source:** Renders the `accountGuideMarkdown` constant using `MarkdownContent` component.
 
 ### g. `/contact-support`
 
@@ -52,4 +52,27 @@ All pages in this category now share a common background shell:
 
 ## 3. Background Implementation
 
-The previous duplicated background logic has been centralized into `InfoPageShell`. Pages pass a `canvasId` for unique canvas instances and receive consistent visuals and performance behavior across desktop and mobile.
+The previous duplicated background logic has been centralized into `InfoPageShell` (located at `@/components/ui/info-page-shell`). Pages pass a `canvasId` for unique canvas instances and receive consistent visuals and performance behavior across desktop and mobile.
+
+## 4. Navigation
+
+All information pages include a consistent navigation bar (`InfoNavbar`) that provides links to:
+- Home (`/information-and-support`)
+- How to Play
+- Account Guide
+- FAQ
+- Terms & Conditions
+- Privacy Policy
+- Responsible Gaming
+- Contact Support
+
+## 5. Contact Information
+
+All pages consistently use `contact@squarepicks.com` as the support email address.
+
+## 6. Component Usage
+
+- Most pages use the `MarkdownContent` component to render markdown strings
+- The How to Play page uses `HowToPlayContent` component which includes additional help card
+- Contact Support page uses custom JSX instead of markdown
+- All pages use `InfoPageShell` from `@/components/ui/info-page-shell` for consistent layout

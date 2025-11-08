@@ -7,12 +7,13 @@ import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 
 const infoLinks = [
-  { href: '/how-to-play', label: 'How to Play' },
-  { href: '/account-guide', label: 'Account Guide' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/terms', label: 'Terms & Conditions' },
-  { href: '/privacy', label: 'Privacy Policy' },
-  { href: '/responsible-gaming-policy', label: 'Responsible Gaming' },
+  { href: '/information-and-support/how-to-play', label: 'How to Play' },
+  { href: '/information-and-support/account-guide', label: 'Account Guide' },
+  { href: '/information-and-support/faq', label: 'FAQ' },
+  { href: '/information-and-support/terms', label: 'Terms & Conditions' },
+  { href: '/information-and-support/privacy', label: 'Privacy Policy' },
+  { href: '/information-and-support/responsible-gaming', label: 'Responsible Gaming' },
+  { href: '/contact-support', label: 'Contact Support' },
 ]
 
 export function InfoNavbar() {

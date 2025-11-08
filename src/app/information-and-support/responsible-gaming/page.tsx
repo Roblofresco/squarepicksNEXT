@@ -56,7 +56,7 @@ We encourage parents to be aware of their children's online activities. If minor
 
 ## 7. Contact Us
 
-If you have questions about our Responsible Gaming Policy or the tools available, please contact us at: contact@squarpicks.com
+If you have questions about our Responsible Gaming Policy or the tools available, please contact us at: contact@squarepicks.com
 
 ---
 `

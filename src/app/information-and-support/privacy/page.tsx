@@ -97,7 +97,7 @@ We may update our Privacy Policy from time to time. We will notify you of any ch
 
 ## 11. Contact Us
 
-If you have any questions about this Privacy Policy or wish to exercise any of your data protection rights, please contact us at: contact@squarpicks.com
+If you have any questions about this Privacy Policy or wish to exercise any of your data protection rights, please contact us at: contact@squarepicks.com
 
 ---
 `

@@ -31,7 +31,7 @@ Ready to cash out? Here's how withdrawals work at SquarePicks:
     *   A specific debit card (if used for deposit and eligible for payouts).
     *   *Note:* Withdrawals cannot be sent to credit cards or certain other deposit-only methods.
 *   **Playthrough Requirement:** Funds deposited, as well as any promotional credits or bonuses received, must be used for contest entries (played through at least once) before associated winnings can be withdrawn. This policy helps prevent misuse of funds and promotions.
-*   **Minimum Amount:** The minimum withdrawal request amount is **$10**.
+*   **Minimum Amount:** The minimum withdrawal request amount is **$5.00**.
 *   **Frequency Limit:** Only **one withdrawal request can be processed per user within a 24-hour period.**
 *   **Processing Schedule:** We typically batch-process approved withdrawal requests once daily around **2:00 PM ET**. Requests made after this time will generally be processed the next cycle. While we process promptly, initial withdrawals or those requiring additional review may take longer. The time for funds to appear in your destination account after processing depends on your payment provider.
 *   **Taxes:** Winnings may be subject to taxes. If your net winnings (winnings minus entry fees) exceed $600 in a calendar year, SquarePicks LLC will issue a Form 1099-MISC using the verified SSN and information associated with your account.

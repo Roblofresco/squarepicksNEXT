@@ -356,22 +356,22 @@ export default function Home() {
   const howToPlaySteps = [
     {
       title: "Pick Your Square",
-      content: "Choose any open square on the board to enter. You can pick one square or many squares.",
+      content: "Choose any open square on the board to enter.",
       icon: FiShoppingCart,
     },
     {
-      title: "Board Fills Up",
-      content: "Wait for all 100 squares to be taken. Once the board is full, random numbers 0-9 are automatically assigned to each row and column.",
+      title: "Boards Fill Up",
+      content: "Wait for all 100 squares to be taken. Once the board is full, square pick are calculated.",
       icon: FiGrid,
     },
     {
-      title: "Your Random Pick",
-      content: "Your square gets assigned two numbers - one from its row and one from its column. These numbers are randomly chosen after the board fills.",
+      title: "Pick Assignment",
+      content: "Your square get assigned two digit number randomly calculated by the grid axis shuffle.",
       icon: FiGrid,
     },
     {
-      title: "Match & Win",
-      content: "Watch the game! If your square's numbers match the score digits at the end of Q1, Q2, Q3, or Final Score, you win. Winnings are automatically added to your wallet.",
+      title: "Watch & Win",
+      content: "Watch the board's featured game. At each period's end a winning square is assigned by the away score last digit and the home score last digit. If you pick matches the winning square you win!",
       icon: FiAward,
     },
   ];
@@ -653,7 +653,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold mb-2 text-white">Payouts</h3>
-                  <p className="text-gray-300">Each board has a prize pot. There are four chances to win: at the end of the 1st quarter, 2nd quarter, 3rd quarter, and final score. Each winner gets 20% of the pot.</p>
+                  <p className="text-gray-300">Each board has a prize pot. There are four chances to win: at the end of the 1st quarter, 2nd quarter, 3rd quarter, and final score. Each winner gets 20% of the pot. Winnings are automatically added to your wallet!</p>
                 </div>
               </div>
             </motion.div>
@@ -722,8 +722,8 @@ export default function Home() {
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-4">
                 <LogoWithText size="md" />
                 <div className="flex items-center gap-4 text-sm text-gray-400">
-                  <a href="/faq" className="hover:text-white hover:underline">FAQ</a>
-                  <a href="/terms" className="hover:text-white hover:underline">Terms</a>
+                  <Link href="/information-and-support/faq" className="hover:text-white hover:underline">FAQ</Link>
+                  <Link href="/information-and-support/terms" className="hover:text-white hover:underline">Terms</Link>
                 </div>
               </div>
               <div className="text-gray-400 text-sm">

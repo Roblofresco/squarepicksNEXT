@@ -156,18 +156,18 @@ export default function UsernamePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-background">
+    <div className="flex flex-col justify-between bg-background w-full h-full min-h-0">
       {/* Main content block matching email */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex-grow flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
-          <h1 className="text-2xl font-semibold text-white mb-6">Choose a username</h1>
-          <p className="text-sm text-text-secondary mb-6">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto min-h-0 overflow-hidden">
+          <h1 className="text-2xl font-semibold text-white mb-4">Choose a username</h1>
+          <p className="text-sm text-text-secondary mb-4">
              Create a username between 3 to 20 characters, letters and numbers only no spaces.
           </p>
 
           <form 
             id="username-form"
             onSubmit={(e) => { e.preventDefault(); handleComplete(); }}
-            className="space-y-6 w-full"
+            className="space-y-4 w-full"
             noValidate
           >
              {/* Input field */}
@@ -206,19 +206,19 @@ export default function UsernamePage() {
           {/* Checkbox container is MOVED to footer */}
       </motion.div>
       {/* Footer block matching email */}
-      <div className="w-full max-w-sm mx-auto px-5 pb-8">
+      <div className="w-full max-w-sm mx-auto px-5 pb-8 flex-shrink-0">
         {/* Checkbox and Terms - Moved here, remove mt-4, add mb-4 */}
-        <div className="mb-4">
-            <div className="flex items-start space-x-3 p-4 bg-gradient-to-b from-background-primary from-2% to-gray-800/30 border border-text-secondary shadow-[0_0_0_1px_rgba(255,255,255,0.5)] rounded-lg">
+        <div className="mb-3">
+            <div className="flex items-start space-x-3 p-3 bg-gradient-to-b from-background-primary from-2% to-gray-800/30 border border-text-secondary shadow-[0_0_0_1px_rgba(255,255,255,0.5)] rounded-lg">
             <input
                 id="terms"
                 type="checkbox"
                 checked={termsAccepted}
                 onChange={(e) => setTermsAccepted(e.target.checked)}
                 required
-                className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-700 accent-accent-3 focus:ring-accent-3"
+                className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-700 accent-accent-3 focus:ring-accent-3 flex-shrink-0"
             />
-            <label htmlFor="terms" className="text-sm text-gray-300">
+            <label htmlFor="terms" className="text-xs text-gray-300 leading-tight">
                 By clicking here, and confirming below, you agree to create an account and confirm you have read, understand, and agree to Square Picks&apos; 
                 <Link href="/terms" className="font-medium text-blue-400 hover:text-blue-300 underline"> General Term of Use</Link> and 
                 <Link href="/privacy" className="font-medium text-blue-400 hover:text-blue-300 underline"> Privacy Policy</Link>.

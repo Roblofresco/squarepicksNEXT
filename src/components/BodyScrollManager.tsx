@@ -8,16 +8,19 @@ const noScrollPaths = [
   // '/',          // Welcome page - Removed to allow scrolling
   '/login',        // Login page
   '/loading',      // Loading page
-  '/signup/email', // Signup email page (Update if needed)
-  // Add any other specific signup/auth paths here if needed
+  '/signup/email', // Signup email page
+  '/signup/password', // Signup password page
+  '/signup/identity', // Signup identity page
+  '/signup/username', // Signup username page
 ];
 
 export default function BodyScrollManager({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check if the current path starts with any of the no-scroll paths
-    const shouldDisableScroll = noScrollPaths.some(path => pathname === path);
+    // Check if the current path matches any of the no-scroll paths
+    // Also check if pathname starts with /signup/ to catch all signup routes
+    const shouldDisableScroll = noScrollPaths.some(path => pathname === path) || pathname?.startsWith('/signup/');
 
     if (shouldDisableScroll) {
       document.body.classList.add('no-scroll');

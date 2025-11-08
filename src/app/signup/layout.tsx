@@ -13,7 +13,7 @@ export default function SignupLayout({
     <SignupProvider>
       <main className="relative w-full h-[100dvh] overflow-hidden flex flex-col bg-background-primary">
         <SignupHeader />
-        <div className="flex-grow flex flex-col items-center w-full overflow-y-auto">
+        <div className="flex-grow flex flex-col items-center justify-between w-full overflow-hidden">
           {children}
         </div>
       </main>

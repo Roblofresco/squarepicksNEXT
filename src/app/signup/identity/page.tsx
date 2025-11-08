@@ -74,18 +74,18 @@ export default function IdentityPage() {
   };
 
   return (
-    <>
+    <div className="flex flex-col justify-between w-full h-full min-h-0">
       {/* Main content block matching email */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex-grow flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto min-h-0 overflow-hidden">
           <h1 className="text-2xl font-semibold text-white mb-1">Verify Your Identity</h1>
-          <p className="text-sm text-text-secondary mb-6">
+          <p className="text-sm text-text-secondary mb-4">
             Please make sure your details match exactly what&apos;s on your photo I.D. or passport.
           </p>
 
           <form 
             id="identity-form"
             onSubmit={handleNext} 
-            className="space-y-6 w-full"
+            className="space-y-4 w-full"
             noValidate
           >
             {/* First Name */}
@@ -140,7 +140,7 @@ export default function IdentityPage() {
           </form>
       </motion.div>
       {/* Footer block matching email */}
-      <div className="w-full max-w-sm mx-auto px-5 pb-8">
+      <div className="w-full max-w-sm mx-auto px-5 pb-8 flex-shrink-0">
         <SignupProgressDots currentStep={currentStep} totalSteps={totalSteps} />
         <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
           <Button
@@ -156,6 +156,6 @@ export default function IdentityPage() {
           <Link href="/signup/password" className="text-sm text-gray-400 hover:text-white hover:underline">Back</Link>
         </div>
       </div>
-    </>
+    </div>
   );
 } 

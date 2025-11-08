@@ -196,8 +196,7 @@ export default function LoginPage() {
     router.push(href);
   };
 
-  const handleLogin = async (e?: React.FormEvent<HTMLFormElement>) => {
-    if (e) e.preventDefault();
+  const handleLogin = async () => {
     setIsLoading(true);
     setError(''); // Clear previous errors
 

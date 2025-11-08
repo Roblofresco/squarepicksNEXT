@@ -1486,7 +1486,7 @@ function LobbyContent() {
               Login
             </Button>
             <Button 
-              onClick={() => router.push('/signup-soon')} 
+              onClick={() => router.push('/signup/email')} 
               variant="outline"
               className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
             >

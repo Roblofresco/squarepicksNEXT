@@ -24,18 +24,31 @@ export default function AuthGuard({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setUser(user);
-        
-        // Check email verification if required
-        if (requireEmailVerification && !user.emailVerified) {
-          setError('Email verification required');
+        // Reload to get latest verification status
+        try {
+          await user.reload();
+          const freshUser = auth.currentUser;
+          
+          if (requireEmailVerification && freshUser && !freshUser.emailVerified) {
+            setError('Email verification required');
+            setUser(freshUser);
+            setLoading(false);
+            return;
+          }
+          
+          setUser(freshUser);
           setLoading(false);
-          return;
+        } catch (error) {
+          // Handle reload error - fallback to original user
+          console.error('Error reloading user:', error);
+          if (requireEmailVerification && !user.emailVerified) {
+            setError('Email verification required');
+          }
+          setUser(user);
+          setLoading(false);
         }
-        
-        setLoading(false);
       } else {
         // No user logged in
         setUser(null);

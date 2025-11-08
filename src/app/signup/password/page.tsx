@@ -9,6 +9,8 @@ import SignupProgressDots from '@/components/SignupProgressDots'; // Import dots
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { motion } from 'framer-motion'
+import { validatePassword as firebaseValidatePassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function PasswordPage() {
   const router = useRouter();
@@ -18,6 +20,7 @@ export default function PasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
 
   const totalSteps = 4;
   const currentStep = 2; // Step 2
@@ -41,15 +44,64 @@ export default function PasswordPage() {
     return '';
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    // First, check client-side validation for immediate feedback
     const validationError = validatePassword();
     if (validationError) {
       setError(validationError);
       return;
     }
+
+    // Then validate with Firebase for server-side policy consistency
+    setIsValidating(true);
     setError('');
-    setSignupData(prev => ({ ...prev, password })); // Store the password
-    router.push('/signup/identity'); // Navigate to the identity step
+    
+    try {
+      const firebaseStatus = await firebaseValidatePassword(auth, password);
+      if (!firebaseStatus.isValid) {
+        // Build error message from Firebase validation status
+        const firebaseErrors: string[] = [];
+        // Check for length violations (using optional chaining for type safety)
+        if ((firebaseStatus as any).minLengthViolated === true) {
+          firebaseErrors.push('Password is too short according to security policy.');
+        }
+        if ((firebaseStatus as any).maxLengthViolated === true) {
+          firebaseErrors.push('Password is too long.');
+        }
+        // Check character requirements
+        if (firebaseStatus.containsLowercaseLetter === false) {
+          firebaseErrors.push('Password must include a lowercase letter.');
+        }
+        if (firebaseStatus.containsUppercaseLetter === false) {
+          firebaseErrors.push('Password must include an uppercase letter.');
+        }
+        // Check for number and symbol (may be named differently in TypeScript types)
+        if ((firebaseStatus as any).containsNumber === false) {
+          firebaseErrors.push('Password must include a number.');
+        }
+        if ((firebaseStatus as any).containsSymbol === false) {
+          firebaseErrors.push('Password must include a special character.');
+        }
+        
+        setError(firebaseErrors.length > 0 ? firebaseErrors.join(' ') : 'Password does not meet security requirements.');
+        setIsValidating(false);
+        return;
+      }
+      
+      // Password passes both validations
+      setError('');
+      setSignupData(prev => ({ ...prev, password })); // Store the password
+      router.push('/signup/identity'); // Navigate to the identity step
+    } catch (error) {
+      // Fallback to custom validation if Firebase validation fails (e.g., network error)
+      console.error('Firebase password validation error:', error);
+      // Proceed with custom validation only
+      setError('');
+      setSignupData(prev => ({ ...prev, password })); // Store the password
+      router.push('/signup/identity'); // Navigate to the identity step
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   return (
@@ -136,10 +188,11 @@ export default function PasswordPage() {
           <Button
             type="submit"
             form="password-form"
-            className="w-full flex items-center justify-center gap-2 text-gray-800 font-medium text-base py-3.5 px-5 rounded-lg hover:opacity-90 transition-opacity mt-6"
+            disabled={isValidating}
+            className="w-full flex items-center justify-center gap-2 text-gray-800 font-medium text-base py-3.5 px-5 rounded-lg hover:opacity-90 transition-opacity mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: '#1bb0f2' }}
           >
-            Next <FiArrowRight />
+            {isValidating ? 'Validating...' : 'Next'} {!isValidating && <FiArrowRight />}
           </Button>
         </motion.div>
         <div className="text-center mt-4">

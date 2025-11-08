@@ -24,27 +24,42 @@ export function useAuthGuard(requireEmailVerification: boolean = true): UseAuthG
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setUser(user);
+        // Reload to get latest verification status
+        let freshUser: User | null = user;
+        try {
+          await user.reload();
+          freshUser = auth.currentUser || user;
+        } catch (error) {
+          // Handle reload error - fallback to original user
+          console.error('Error reloading user:', error);
+          freshUser = user;
+        }
+        
+        // Ensure freshUser is not null (should always be user at minimum)
+        if (!freshUser) {
+          freshUser = user;
+        }
         
         // Check email verification if required
-        if (requireEmailVerification && !user.emailVerified) {
+        if (requireEmailVerification && !freshUser.emailVerified) {
           setError('Email verification required');
+          setUser(freshUser);
           setLoading(false);
           return;
         }
 
         // Ensure user document exists in Firestore
         try {
-          const userDocRef = doc(db, 'users', user.uid);
+          const userDocRef = doc(db, 'users', freshUser.uid);
           const userDoc = await getDoc(userDocRef);
           
           if (!userDoc.exists()) {
             // Create user document if it doesn't exist
             await setDoc(userDocRef, {
               createdAt: new Date(),
-              email: user.email,
-              display_name: user.displayName || 'User',
-              emailVerified: user.emailVerified,
+              email: freshUser.email,
+              display_name: freshUser.displayName || 'User',
+              emailVerified: freshUser.emailVerified,
               lastLogin: new Date()
             }, { merge: true });
           }
@@ -53,6 +68,7 @@ export function useAuthGuard(requireEmailVerification: boolean = true): UseAuthG
           // Don't set error here as this is not critical for basic auth
         }
         
+        setUser(freshUser);
         setLoading(false);
       } else {
         // No user logged in

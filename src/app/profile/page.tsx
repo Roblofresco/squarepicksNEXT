@@ -352,7 +352,7 @@ const ProfilePage = () => {
                     Login
                  </Button>
                  <Button 
-                    onClick={() => { setIsLoginModalOpen(false); router.push('/signup-soon'); }} 
+                    onClick={() => { setIsLoginModalOpen(false); router.push('/signup/email'); }} 
                     variant="outline" 
                     className="flex-1 bg-transparent border-gray-500 hover:bg-gray-500/20 text-gray-300 font-semibold hover:text-gray-300"
                  >

@@ -5,6 +5,7 @@ import { AuthProvider } from '@/context/AuthContext'
 import { NotificationProvider } from '@/context/NotificationContext'
 import { PayPalProvider } from './providers/PayPalProvider'
 import { StripeProvider } from './providers/StripeProvider'
+import BodyScrollManager from './BodyScrollManager'
 import { useEffect } from 'react'
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -20,7 +21,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <NotificationProvider>
           <PayPalProvider>
             <StripeProvider>
-              {children}
+              <BodyScrollManager>
+                {children}
+              </BodyScrollManager>
             </StripeProvider>
           </PayPalProvider>
         </NotificationProvider>

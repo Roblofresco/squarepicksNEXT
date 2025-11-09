@@ -33,8 +33,8 @@ export default function EmailPage() {
   };
 
   return (
-    <>
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex-grow flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
+    <div className="flex flex-col justify-between w-full h-full min-h-0">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-start justify-start px-5 pt-2 w-full max-w-sm mx-auto">
         <h1 className="text-2xl font-semibold text-white mb-6 text-left">Enter Your Email</h1>
         
         <form 
@@ -59,7 +59,7 @@ export default function EmailPage() {
         </form>
       </motion.div>
 
-      <div className="w-full max-w-sm mx-auto px-5 pb-8">
+      <div className="w-full max-w-sm mx-auto px-5 pb-8 flex-shrink-0">
         <SignupProgressDots currentStep={currentStep} totalSteps={totalSteps} />
         <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
           <Button
@@ -72,6 +72,6 @@ export default function EmailPage() {
           </Button>
         </motion.div>
       </div>
-    </>
+    </div>
   );
 }

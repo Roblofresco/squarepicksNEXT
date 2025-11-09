@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, memo, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, ChangeEvent, memo, useCallback, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils'; // Assuming you have this utility
 import { User } from 'firebase/auth'; // Import User type
@@ -179,6 +179,7 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
   const [isCurrentUserParticipant, setIsCurrentUserParticipant] = useState<boolean>(false);
   const [isLoadingParticipantStatus, setIsLoadingParticipantStatus] = useState<boolean>(true);
   const [agreeToSweepstakes, setAgreeToSweepstakes] = useState<boolean | null>(null);
+  const buttonActionRef = useRef<{ lastAction: string; timestamp: number } | null>(null);
 
   const isActive = entryInteraction.boardId === board.id;
   const currentStage = isActive ? entryInteraction.stage : 'idle';
@@ -392,6 +393,19 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
     handleBoardAction('CANCEL_CONFIRM', board.id);
   }, [handleBoardAction, board.id]);
 
+  const handleButtonClick = useCallback((action: () => void, actionName: string) => {
+    const now = Date.now();
+    const lastAction = buttonActionRef.current;
+    
+    // Prevent double-firing within 300ms
+    if (lastAction && lastAction.lastAction === actionName && (now - lastAction.timestamp) < 300) {
+      return;
+    }
+    
+    buttonActionRef.current = { lastAction: actionName, timestamp: now };
+    action();
+  }, []);
+
   const accentGlowRgb = '184, 134, 11';
 
   const sweepstakesGridTheme: SweepstakesMiniGridThemeProps = {
@@ -477,24 +491,59 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
                 (currentStage === 'confirming' && isActive) ? (
                     <>
                         <Button
-                            onClick={processEnterOrConfirm}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleButtonClick(processEnterOrConfirm, 'confirm');
+                            }}
+                            onPointerDown={(e) => {
+                                if (e.pointerType === 'touch') {
+                                    e.stopPropagation();
+                                    if (!walletIsLoading && !isLoadingSelections) {
+                                        handleButtonClick(processEnterOrConfirm, 'confirm');
+                                    }
+                                }
+                            }}
                             disabled={walletIsLoading || isLoadingSelections}
-                            className="px-3 py-2 text-sm font-semibold rounded-md border h-auto bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors flex-1 min-w-0"
+                            className="px-3 py-2 text-sm font-semibold rounded-md border h-auto bg-[#DAA520] hover:bg-[#B8860B] border-[#8B4513] text-white transition-colors flex-1 min-w-0 touch-manipulation cursor-pointer relative z-10 active:scale-95"
+                            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                         >
                             {(walletIsLoading || isLoadingSelections) && <Loader2 className="h-4 w-4 animate-spin mr-1 inline-block" />}CONFIRM
                         </Button>
                         <Button
-                            onClick={handleCancelConfirm}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleButtonClick(handleCancelConfirm, 'cancel');
+                            }}
+                            onPointerDown={(e) => {
+                                if (e.pointerType === 'touch') {
+                                    e.stopPropagation();
+                                    if (!walletIsLoading && !isLoadingSelections) {
+                                        handleButtonClick(handleCancelConfirm, 'cancel');
+                                    }
+                                }
+                            }}
                             disabled={walletIsLoading || isLoadingSelections}
                             variant="outline"
-                            className="px-3 py-2 text-sm font-semibold rounded-md border h-auto border-[#B8860B]/70 text-[#B8860B] hover:bg-[#B8860B]/20 hover:text-yellow-300 transition-colors flex-1 min-w-0"
+                            className="px-3 py-2 text-sm font-semibold rounded-md border h-auto border-[#B8860B]/70 text-[#B8860B] hover:bg-[#B8860B]/20 hover:text-yellow-300 transition-colors flex-1 min-w-0 touch-manipulation cursor-pointer relative z-10 active:scale-95"
+                            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                         >
                             CANCEL
                         </Button>
                     </>
                 ) : (
                     <Button
-                        onClick={processEnterOrConfirm}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleButtonClick(processEnterOrConfirm, 'enter');
+                        }}
+                        onPointerDown={(e) => {
+                            if (e.pointerType === 'touch') {
+                                e.stopPropagation();
+                                if (!walletIsLoading && !isLoadingSelections) {
+                                    handleButtonClick(processEnterOrConfirm, 'enter');
+                                }
+                            }
+                        }}
                         disabled={
                             walletIsLoading || isLoadingSelections ||
                             inputValue.trim() === '' || 
@@ -505,8 +554,10 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
                             `px-4 py-2 text-sm font-semibold rounded-md border transition-colors h-10`,
                             'text-white border-yellow-700 hover:border-yellow-600',
                             'bg-gradient-to-br from-yellow-600 via-yellow-700 to-yellow-800 hover:from-yellow-500 hover:via-yellow-600 hover:to-yellow-700',
-                            'disabled:bg-gradient-to-br disabled:from-yellow-800/50 disabled:via-yellow-900/50 disabled:to-yellow-950/50 disabled:border-yellow-900/60 disabled:text-yellow-300/60 disabled:cursor-not-allowed'
+                            'disabled:bg-gradient-to-br disabled:from-yellow-800/50 disabled:via-yellow-900/50 disabled:to-yellow-950/50 disabled:border-yellow-900/60 disabled:text-yellow-300/60 disabled:cursor-not-allowed',
+                            'touch-manipulation cursor-pointer relative z-10 active:scale-95'
                         )}
+                        style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                     >
                         {(walletIsLoading || isLoadingSelections) && <Loader2 className="h-4 w-4 animate-spin mr-1 inline-block" />}ENTER
                     </Button>

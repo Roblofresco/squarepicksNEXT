@@ -1,8 +1,12 @@
 # CODEOWNERS
 
-# Protect Agent OS structure and docs
-/Agent OS/* @robeo
-/Agent OS/product/* @robeo
-/Agent OS/knowledge/* @robeo
-/Agent OS/commands/* @robeo
-/Agent OS/stories/* @robeo 
+# Protect knowledge documentation (architecture, business rules, functions, etc.)
+/knowledge/* @robeo
+
+# Protect critical architectural and governance documentation
+/ARCHITECTURE.md @robeo
+/CONTRIBUTING.md @robeo
+
+# Note: Agent OS structure (/Agent OS/product/*, /Agent OS/commands/*, /Agent OS/stories/*) 
+# was refactored into /knowledge/* structure. All governance-critical documentation 
+# is now protected under /knowledge/* above.

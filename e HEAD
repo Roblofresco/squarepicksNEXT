@@ -1,0 +1,22 @@
+[1mdiff --git a/src/app/login/page.tsx b/src/app/login/page.tsx[m
+[1mindex 580863b..f14ee8a 100644[m
+[1m--- a/src/app/login/page.tsx[m
+[1m+++ b/src/app/login/page.tsx[m
+[36m@@ -254,13 +254,10 @@[m [mexport default function LoginPage() {[m
+         await new Promise(resolve => setTimeout(resolve, 3000)); // Additional 3-second delay[m
+         if (await checkVerificationAndRedirect(3)) return;[m
+ [m
+[31m-        // If still not verified after all attempts[m
+[31m-        console.log("[LoginPage] Email STILL NOT verified after all attempts.");[m
+[31m-        setError("Email not verified. Please check your inbox or resend the verification email from the banner. If you recently verified, please wait a few moments and try logging in again.");[m
+[31m-        setIsLoading(false);[m
+[31m-        // Optional: Sign out the user if email verification is mandatory to proceed.[m
+[31m-        // await signOut(auth);[m
+[31m-        // console.log("[LoginPage] User signed out as email is not verified.");[m
+[32m+[m[32m        // If still not verified after all attempts, redirect to verify-email page[m
+[32m+[m[32m        console.log("[LoginPage] Email STILL NOT verified after all attempts. Redirecting to /verify-email");[m
+[32m+[m[32m        router.push('/verify-email');[m
+[32m+[m[32m        // No need to setIsLoading(false) here because of the redirect[m
+ [m
+     } catch (firebaseError: any) {[m
+         console.error("Login Error:", firebaseError);[m

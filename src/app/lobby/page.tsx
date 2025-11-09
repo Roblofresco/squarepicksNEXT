@@ -31,7 +31,7 @@ import SweepstakesBoardCard from '@/components/lobby/sweepstakes/SweepstakesBoar
 import SweepstakesWinnersScoreboard from '@/components/lobby/sweepstakes/SweepstakesWinnersScoreboard';
 import TourSweepstakesBoardCard from '@/components/lobby/sweepstakes/TourSweepstakesBoardCard';
 import {
-  collection, query, where, onSnapshot, doc, getDoc,
+  collection, query, where, onSnapshot, doc, getDoc, getDocs,
   Timestamp, DocumentReference, DocumentData, orderBy, limit, setDoc,
 } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -156,6 +156,9 @@ function LobbyContent() {
     boardId: null, stage: 'idle', selectedNumber: null
   });
   const [agreeToSweepstakes, setAgreeToSweepstakes] = useState<boolean | null>(null);
+  const [isSweepstakesGuidelinesOpen, setIsSweepstakesGuidelinesOpen] = useState(false);
+  const [pendingWalletDialogType, setPendingWalletDialogType] = useState<'setup' | 'deposit' | 'sweepstakes' | null>(null);
+  const [pendingWalletDialogOptions, setPendingWalletDialogOptions] = useState<{ reqAmount?: number; boardIdToEnter?: string | null; isFree?: boolean } | null>(null);
 
   // Use useWallet for auth and wallet status
   const { userId, emailVerified, isLoading: isWalletLoading, balance, hasWallet } = useWallet();
@@ -174,6 +177,28 @@ function LobbyContent() {
       setUser(null);
     }
   }, [userId]); // Re-run when userId from useWallet changes
+
+  // Load agreeToSweepstakes from Firestore when user logs in
+  useEffect(() => {
+    if (!userId) {
+      setAgreeToSweepstakes(null);
+      return;
+    }
+
+    const loadUserAgreement = async () => {
+      try {
+        const userDoc = await getDoc(userDocRef(userId));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setAgreeToSweepstakes(data.agreeToSweepstakes ?? null);
+        }
+      } catch (err) {
+        console.error('[LobbyPage] Failed to load sweepstakes agreement', err);
+      }
+    };
+
+    loadUserAgreement();
+  }, [userId]);
 
   useEffect(() => {
     const sportFromQuery = searchParams.get('sport');
@@ -286,11 +311,38 @@ function LobbyContent() {
           debugLog("[LobbyPage] Active sweepstakes found:", sweepstakesDoc.id);
 
           try {
-            const boardRef = sweepstakesData.boardIDs?.[0];
             const gameRef = sweepstakesData.gameID;
+            const boardIDs = sweepstakesData.boardIDs || [];
 
-            if (!boardRef || !gameRef) {
+            if (!gameRef || boardIDs.length === 0) {
               throw new Error("Sweepstakes missing board or game reference");
+            }
+
+            // Find the featured board (status: active, featured: true) or fall back to first board
+            let boardRef = boardIDs[0]; // Default to first board
+            
+            // Query for featured board if multiple boards exist
+            if (boardIDs.length > 1) {
+              try {
+                // Query boards by gameID with featured status
+                const boardsQuery = query(
+                  collection(db, 'boards'),
+                  where('gameID', '==', gameRef),
+                  where('status', '==', 'active'),
+                  where('featured', '==', true),
+                  where('amount', '==', 0), // Sweepstakes boards have amount === 0
+                  limit(1)
+                );
+                const featuredBoardSnap = await getDocs(boardsQuery);
+                if (!featuredBoardSnap.empty) {
+                  boardRef = db.doc(`boards/${featuredBoardSnap.docs[0].id}`);
+                  debugLog("[LobbyPage] Found featured board:", featuredBoardSnap.docs[0].id);
+                } else {
+                  debugLog("[LobbyPage] No featured board found, using first board");
+                }
+              } catch (queryError) {
+                console.warn("[LobbyPage] Could not query for featured board, using first board:", queryError);
+              }
             }
 
             // Set up board listener (real-time square updates)
@@ -311,6 +363,7 @@ function LobbyContent() {
                     status: boardDataFirestore.status,
                     selected_indexes: boardDataFirestore.selected_indexes || [],
                     sweepstakes_select: boardDataFirestore.sweepstakes_select,
+                    featured: boardDataFirestore.featured || false,
                     isFreeEntry: boardDataFirestore.amount === 0 || boardDataFirestore.sweepstakes_select === true,
                     sweepstakesID: sweepstakesDoc.id,
                   } as BoardType;
@@ -535,6 +588,14 @@ function LobbyContent() {
     }
     const { reqAmount = 0 } = options;
 
+    // If on sweepstakes page and user hasn't agreed to sweepstakes, show guidelines first
+    if (type === 'sweepstakes' && selectedSport === SWEEPSTAKES_SPORT_ID && (agreeToSweepstakes === null || agreeToSweepstakes === false)) {
+      setPendingWalletDialogType(type);
+      setPendingWalletDialogOptions(options);
+      setIsSweepstakesGuidelinesOpen(true);
+      return;
+    }
+
     switch (type) {
       case 'setup':
         setSetupDialogContent({
@@ -559,9 +620,52 @@ function LobbyContent() {
       default:
         break;
     }
-  }, []);
+  }, [selectedSport, agreeToSweepstakes]);
 
   const handleProtectedAction = useCallback(() => setIsLoginModalOpen(true), []);
+
+  const handleSweepstakesGuidelinesAction = useCallback(async (action: 'skip' | 'agree') => {
+    const agreed = action === 'agree';
+    setAgreeToSweepstakes(agreed);
+    
+    if (userId) {
+      try {
+        await setDoc(userDocRef(userId), { agreeToSweepstakes: agreed }, { merge: true });
+      } catch (err) {
+        console.error('[LobbyPage] Failed to persist sweepstakes agreement', err);
+      }
+    }
+
+    setIsSweepstakesGuidelinesOpen(false);
+
+    // Now show the pending wallet dialog
+    if (pendingWalletDialogType) {
+      const type = pendingWalletDialogType;
+      const options = pendingWalletDialogOptions || {};
+      setPendingWalletDialogType(null);
+      setPendingWalletDialogOptions(null);
+      
+      // Call openWalletDialog again, but this time it will proceed since agreement is set
+      if (type === 'sweepstakes') {
+        setSetupDialogContent({
+          title: 'Wallet Setup Required',
+          description: 'Verify your wallet to complete sweepstakes entries and receive payouts.',
+          buttonText: 'Go to Wallet Setup',
+        });
+        setIsWalletSetupDialogOpen(true);
+      } else if (type === 'deposit') {
+        setRequiredDepositAmount(options.reqAmount || 0);
+        setIsDepositDialogOpen(true);
+      } else if (type === 'setup') {
+        setSetupDialogContent({
+          title: 'Wallet Setup Required',
+          description: 'Set up your wallet to manage entries and winnings securely.',
+          buttonText: 'Go to Wallet Setup',
+        });
+        setIsWalletSetupDialogOpen(true);
+      }
+    }
+  }, [userId, pendingWalletDialogType, pendingWalletDialogOptions]);
 
   const handleBoardAction = useCallback(async (action: string, boardId: string, value?: number | string | null) => {
     if (['START_ENTRY', 'SET_NUMBER', 'REQUEST_CONFIRM', 'CANCEL_CONFIRM'].includes(action) && !userId) {
@@ -1372,7 +1476,7 @@ function LobbyContent() {
       </div>
       <BottomNav user={user} onProtectedAction={handleProtectedAction} />
       <Footer />
-      {(isLoginModalOpen || isWalletSetupDialogOpen || isDepositDialogOpen) && <StarfieldBackground className="z-40" />}
+      {(isLoginModalOpen || isWalletSetupDialogOpen || isDepositDialogOpen || isSweepstakesGuidelinesOpen) && <StarfieldBackground className="z-40" />}
       {tourOpen && activeTour && (
         <TourOverlay
           steps={stepsForRender}
@@ -1492,6 +1596,56 @@ function LobbyContent() {
             >
               Sign Up
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Sweepstakes Guidelines Dialog */}
+      <Dialog open={isSweepstakesGuidelinesOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsSweepstakesGuidelinesOpen(false);
+          setPendingWalletDialogType(null);
+          setPendingWalletDialogOptions(null);
+        }
+      }}>
+        {isSweepstakesGuidelinesOpen && (
+          <StarfieldBackground className="fixed inset-0 z-[1200] opacity-90" />
+        )}
+        <DialogContent className="z-[1201] sm:max-w-md bg-gradient-to-b from-background-primary/80 via-background-primary/70 to-accent-2/10 border border-white/10 text-white backdrop-blur-xl shadow-[0_0_1px_1px_rgba(255,255,255,0.1)] backdrop-saturate-150">
+          <DialogHeader className="text-center space-y-2">
+            <DialogTitle className="text-2xl font-bold">Sweepstakes Guidelines</DialogTitle>
+            <DialogDescription className="text-white/70">
+              SquarePicks contests are promotional sweepstakes. Review the guidelines before continuing.
+            </DialogDescription>
+          </DialogHeader>
+          <div
+            className="mt-5 max-h-64 overflow-y-auto rounded-lg border border-white/10 bg-white/5 p-4 text-left text-sm text-white/85 space-y-3"
+          >
+            <ul className="space-y-2 list-disc list-inside">
+              <li>One free weekly entry is available on the featured $1 board. Use it once per weekly period.</li>
+              <li>Unclaimed squares at kickoff convert to house squares and are not eligible to win.</li>
+              <li>Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with $25 credited for each period.</li>
+              <li>Confirm profile and wallet details so winnings can be credited immediately. Review full rules and other entry options in the Help Center.</li>
+            </ul>
+            <p className="text-xs text-white/60">
+              By agreeing, you confirm you are eligible to play and agree to share your personal information for tax purposes and location checks.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <button
+              type="button"
+              onClick={() => handleSweepstakesGuidelinesAction('skip')}
+              className="flex-1 rounded-md border border-white/20 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 hover:text-white"
+            >
+              Skip
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSweepstakesGuidelinesAction('agree')}
+              className="flex-1 rounded-md bg-gradient-to-r from-accent-2/60 via-accent-1/45 to-accent-2/60 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              Agree
+            </button>
           </div>
         </DialogContent>
       </Dialog>

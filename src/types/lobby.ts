@@ -113,6 +113,7 @@ export interface Board {
   
   // For sweepstakes boards, as per schema
   sweepstakes_select?: boolean;
+  featured?: boolean;       // Indicates if this is the featured sweepstakes board
   // isFreeEntry can be derived: amount === 0 || sweepstakes_select === true
   isFreeEntry?: boolean; 
 

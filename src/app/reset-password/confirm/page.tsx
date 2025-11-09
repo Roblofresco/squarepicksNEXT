@@ -1,7 +1,5 @@
 'use client'
 
-export const runtime = 'edge';
-
 import React, { Suspense, useEffect, useRef, useState } from 'react'
 import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth'
 import { auth } from '@/lib/firebase'

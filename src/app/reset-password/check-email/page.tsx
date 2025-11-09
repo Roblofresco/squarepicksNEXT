@@ -1,7 +1,5 @@
 'use client'
 
-export const runtime = 'edge';
-
 import React, { Suspense } from 'react'
 import AuthBackground from '@/components/layout/AuthBackground'
 import Link from 'next/link'

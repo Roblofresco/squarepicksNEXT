@@ -273,11 +273,38 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
 
   return (
     <div className="relative overflow-hidden w-full">
-      {/* Sliding content */}
+      {/* Action buttons (always present, behind the sliding content) */}
+      <div className="absolute right-0 top-0 h-full w-40 flex items-center">
+        {/* View Button */}
+        {viewDestination && (
+          <button
+            onClick={handleView}
+            className={`h-full w-20 flex items-center justify-center text-white transition-all duration-200 ${
+              isSweepstakesNotification
+                ? 'bg-[#E7B844] hover:bg-[#E0B954]'
+                : 'bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] hover:from-[#108bcc] hover:to-[#0c6ca3]'
+            }`}
+            aria-label="View"
+          >
+            <Eye className="h-5 w-5" />
+          </button>
+        )}
+        
+        {/* Delete Button */}
+        <button
+          onClick={handleDelete}
+          className="h-full w-20 bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 flex items-center justify-center text-white transition-all duration-200"
+          aria-label="Delete"
+        >
+          <Trash2 className="h-5 w-5" />
+        </button>
+      </div>
+      
+      {/* Sliding content (above the buttons) */}
       <div
-        className="flex items-start gap-3 p-3 border-b border-slate-700/50 last:border-b-0 
-                    hover:bg-slate-700/60 transition-transform duration-300 ease-out
-                    cursor-pointer bg-slate-800/50"
+        className="relative flex items-start gap-3 p-3 border-b border-slate-700 last:border-b-0 
+                    hover:bg-slate-700 transition-transform duration-300 ease-out
+                    cursor-pointer bg-slate-800"
         style={{ 
           transform: `translateX(${translateX}px)`,
           transition: isDragging ? 'none' : 'transform 0.3s ease-out'
@@ -370,35 +397,6 @@ export const NotificationItem = ({ notification }: NotificationItemProps) => {
           </div>
         )}
       </div>
-      
-      {/* Action buttons (fixed on right, revealed when content slides left) */}
-      {translateX < -SLIDE_THRESHOLD && (
-        <div className="absolute right-0 top-0 h-full w-40 flex items-center">
-          {/* View Button */}
-          {viewDestination && (
-            <button
-              onClick={handleView}
-              className={`h-full w-20 flex items-center justify-center text-white transition-all duration-200 ${
-                isSweepstakesNotification
-                  ? 'bg-[#E7B844] hover:bg-[#E0B954]'
-                  : 'bg-gradient-to-br from-[#1bb0f2] to-[#108bcc] hover:from-[#108bcc] hover:to-[#0c6ca3]'
-              }`}
-              aria-label="View"
-            >
-              <Eye className="h-5 w-5" />
-            </button>
-          )}
-          
-          {/* Delete Button */}
-          <button
-            onClick={handleDelete}
-            className="h-full w-20 bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 flex items-center justify-center text-white transition-all duration-200"
-            aria-label="Delete"
-          >
-            <Trash2 className="h-5 w-5" />
-          </button>
-        </div>
-      )}
     </div>
   );
 };

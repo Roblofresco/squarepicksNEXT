@@ -335,7 +335,7 @@ function LobbyContent() {
                 );
                 const featuredBoardSnap = await getDocs(boardsQuery);
                 if (!featuredBoardSnap.empty) {
-                  boardRef = db.doc(`boards/${featuredBoardSnap.docs[0].id}`);
+                  boardRef = doc(db, `boards/${featuredBoardSnap.docs[0].id}`);
                   debugLog("[LobbyPage] Found featured board:", featuredBoardSnap.docs[0].id);
                 } else {
                   debugLog("[LobbyPage] No featured board found, using first board");

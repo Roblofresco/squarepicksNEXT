@@ -662,11 +662,11 @@ export default function TourOverlay({ steps, open, stepIndex, onNext, onClose, n
                   <ul className="space-y-2 list-disc list-inside">
                     <li>One free weekly entry is available on the featured $1 board. Use it once per weekly period.</li>
                     <li>Unclaimed squares at kickoff convert to house squares and are not eligible to win.</li>
-                    <li>Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with 20% of the credited pot each.</li>
-                    <li>Confirm profile and wallet details so winnings can be credited immediately. Review full rules and alternate entry methods in the Help Center.</li>
+                    <li>Prizes pay out across four periods (end of Q1, halftime, end of Q3, final score) with $25 credited for each period.</li>
+                    <li>Confirm profile and wallet details so winnings can be credited immediately. Review full rules and other entry options in the Help Center.</li>
                   </ul>
                   <p className="text-xs text-white/60">
-                    By agreeing, you acknowledge eligibility and consent to location verification during wallet setup.
+                    By agreeing, you confirm you are eligible to play and agree to share your personal information for tax purposes and location checks.
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 mt-6">

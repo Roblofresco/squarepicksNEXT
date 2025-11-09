@@ -1083,7 +1083,7 @@ function GamePageContent() {
 
           <div className="h-px w-full bg-white/10 mb-3" />
 
-          {gameDetails && gameDetails.status === 'scheduled' && (!boardId || (currentBoard && currentBoard.status === 'open')) && (
+          {gameDetails && gameDetails.status === 'scheduled' && (!boardId || (currentBoard && currentBoard.status === 'open')) && !(boardId && currentBoard && currentBoard.status === 'open' && currentBoard.isFreeEntry === true) && (
             <div
               ref={entryFeeRef}
                   className={cn(
@@ -1117,7 +1117,7 @@ function GamePageContent() {
             </div>
           )}
 
-          {gameDetails && gameDetails.status === 'scheduled' && (!boardId || (currentBoard && currentBoard.status === 'open')) && (
+          {gameDetails && gameDetails.status === 'scheduled' && (!boardId || (currentBoard && currentBoard.status === 'open')) && !(boardId && currentBoard && currentBoard.status === 'open' && currentBoard.isFreeEntry === true) && (
             <div className="mb-6">
               <h2 className="text-lg sm:text-xl font-semibold mb-3 text-center text-slate-100">Select Your Squares <span className="text-xs text-slate-400">(Max {MAX_SQUARE_SELECTION_LIMIT})</span></h2>
               {renderGrid()}
@@ -1125,7 +1125,8 @@ function GamePageContent() {
           )}
           {gameDetails && (
             (boardId && currentBoard && currentBoard.status !== 'open') || 
-            (!boardId && gameDetails.status !== 'scheduled')
+            (!boardId && gameDetails.status !== 'scheduled') ||
+            (boardId && currentBoard && currentBoard.status === 'open' && currentBoard.isFreeEntry === true)
           ) && !isLoadingBoard && (
             <div className="mb-6">
               {/* Winners scoreboard */}

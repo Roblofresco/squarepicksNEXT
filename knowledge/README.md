@@ -1,284 +1,256 @@
-# SquarePicks Knowledge Base
+# SquarePicks Technical Documentation
 
-Complete foundation documentation for the SquarePicks sports squares platform.
+## Overview
+Comprehensive technical documentation for the SquarePicks application - an NFL squares pool betting platform built with Next.js, Firebase, and modern web technologies.
 
 ## Documentation Structure
 
-### 📊 [Data Models](./data-models/)
-Database schema and collection structures for all 8 Firestore collections:
-- [users](./data-models/users.md) - User accounts and wallets
-- [games](./data-models/games.md) - Sports game data
-- [boards](./data-models/boards.md) - 100-square boards
-- [squares](./data-models/squares.md) - Individual square selections
-- [transactions](./data-models/transactions.md) - Financial records
-- [notifications](./data-models/notifications.md) - User notifications
-- [sweepstakes](./data-models/sweepstakes.md) - Free board promotions
-- [teams](./data-models/teams.md) - Team reference data
+### 📚 [Quick Start Guide](./QUICK-START.md)
+Get up and running with development in minutes
 
-### 📋 [Business Rules](./business-rules/)
-Core business logic and calculation rules:
-- [Game Lifecycle](./business-rules/game-lifecycle.md) - Game state transitions
-- [Board Lifecycle](./business-rules/board-lifecycle.md) - Board management
-- [Winner Calculation](./business-rules/winner-calculation.md) - Scoring algorithm
-- [Payout Rules](./business-rules/payout-rules.md) - Winner compensation
-- [Entry Fees](./business-rules/entry-fees.md) - Entry pricing and validation
-- [Sweepstakes](./business-rules/sweepstakes.md) - Free board rules
-- [Withdrawals](./business-rules/withdrawals.md) - Cash-out process
+### 🔍 [Complete Index](./INDEX.md)
+Full navigation to all documentation sections
 
-### 🏗️ [Architecture](./architecture/)
-System design and technical architecture:
-- [System Overview](./architecture/system-overview.md) - Technology stack
-- [Data Flow](./architecture/data-flow.md) - Request/response flows
-- [Real-Time Updates](./architecture/real-time-updates.md) - ESPN polling, Firestore listeners
-- [Payment Architecture](./architecture/payment-architecture.md) - PayPal integration
-- [Notification System](./architecture/notification-system.md) - In-app and push notifications
+## Core Documentation Sections
 
-### 🔄 [Workflows](./workflows/)
-End-to-end user journeys:
-- [Signup](./workflows/signup.md) - New user registration
-- [Board Entry](./workflows/board-entry.md) - Select and enter boards
-- [Game Lifecycle (User)](./workflows/game-lifecycle-user.md) - From entry to payout
-- [Deposit](./workflows/deposit.md) - Add funds via PayPal
-- [Withdrawal](./workflows/withdrawal.md) - Cash out winnings
-- [Sweepstakes Entry](./workflows/sweepstakes-entry.md) - Free board entry
+### 🎣 [Custom Hooks](./hooks/)
+React hooks for authentication, wallet management, and push notifications
+- `useAuth` - Firebase authentication state
+- `useAuthGuard` - Protected route authentication
+- `useWallet` - Wallet balance and management
+- `useFcmToken` - Push notification tokens
 
-## Quick Reference
+### 🛠️ [Utilities](./utils/)
+Helper functions and utilities
+- `cn()` - Tailwind class merging
+- Date utilities - NFL week calculations
+- Firestore timestamp helpers
+
+### 🔌 [External Integrations](./integrations/)
+Third-party service integrations
+- **ESPN API** - Game data and live scores
+- **PayPal** - Payment processing
+- **Stripe** - Alternative payment processing
+- **Firebase** - Auth, database, cloud messaging
+- **Google Auth** - OAuth sign-in
+- **Resend** - Email delivery
+- **Twilio** - SMS notifications
+
+### 🔒 [Security](./security/)
+Security configurations and best practices
+- Firestore security rules
+- Authentication patterns
+- Payment security
+- Data protection
+
+## Technology Stack
+
+### Frontend
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI, shadcn/ui
+- **State Management**: React hooks, Context API
+- **Forms**: React Hook Form + Zod validation
+
+### Backend
+- **Database**: Cloud Firestore
+- **Authentication**: Firebase Auth
+- **Cloud Functions**: Firebase Functions (Node.js)
+- **Hosting**: Vercel (frontend), Firebase (functions)
+
+### External Services
+- **Payment**: PayPal, Stripe (planned)
+- **Sports Data**: ESPN API
+- **Email**: Resend
+- **SMS**: Twilio
+- **Push Notifications**: Firebase Cloud Messaging
+
+## Project Architecture
+
+```
+squarepicks/
+├── src/
+│   ├── app/                  # Next.js app router pages
+│   ├── components/           # React components
+│   ├── hooks/               # Custom React hooks
+│   ├── lib/                 # Utilities and configs
+│   ├── context/             # React context providers
+│   └── types/               # TypeScript types
+├── functions/               # Firebase Cloud Functions (separate repo)
+├── public/                  # Static assets
+├── knowledge/              # This documentation
+└── firestore.rules         # Firestore security rules
+```
+
+## Key Features
+
+### User Features
+- 🎯 Pick squares on NFL game boards
+- 💰 Wallet system for deposits/withdrawals
+- 🏆 Automatic winner determination per quarter
+- 📱 Push notifications for game updates
+- 📧 Email notifications for wins and transactions
+- 📊 Real-time score updates
+- 🎮 Live game tracking
+
+### Technical Features
+- ⚡ Real-time data synchronization
+- 🔒 Secure payment processing
+- 🛡️ Comprehensive security rules
+- 📲 Progressive Web App (PWA) support
+- 🎨 Responsive design
+- ♿ Accessibility features
+- 🚀 Optimized performance
+
+## Quick Links
+
+### Getting Started
+- [Quick Start](./QUICK-START.md)
+- [Environment Setup](./config/environment-variables.md)
+- [Local Development](./config/local-development.md)
 
 ### Core Concepts
+- [Authentication Flow](./hooks/useAuthGuard.md)
+- [Wallet System](./hooks/useWallet.md)
+- [Payment Processing](./integrations/paypal.md)
+- [Security Rules](./security/firestore-rules.md)
 
-**Squares Game**: A 10×10 grid (100 squares) where each square represents a combination of last digits from both teams' scores. Winners determined at end of each quarter.
+### Integration Guides
+- [ESPN API Integration](./integrations/espn-api.md)
+- [PayPal Setup](./integrations/paypal.md)
+- [Firebase Configuration](./integrations/firebase.md)
+- [Email Setup](./integrations/resend.md)
 
-**Board Lifecycle**: open → full → active → closed
+## Development Workflow
 
-**Winner Calculation**: 
-```
-homeLastDigit = score % 10
-awayLastDigit = score % 10
-winningSquare = awayLastDigit + homeLastDigit
-```
-
-**Payout Structure**: 25% per quarter
-- Q1: 25% of pot
-- Q2: 25% of pot  
-- Q3: 25% of pot
-- Final: 25% of pot
-
-**Financial Model**:
-- 80 squares cover prize pool
-- 20 squares are profit (20% margin)
-- Example: $5 board = $400 pot, $100 profit
-
-### Key Integrations
-
-**ESPN API**: Real-time game scores and schedules
-- Polling: Every 15 seconds during live windows
-- Endpoints: Scoreboard, Summary
-- Data: Teams, scores, status, quarter splits
-
-**PayPal**:
-- Deposits: PayPal Checkout SDK
-- Withdrawals: PayPal Payouts API
-- Fees: 2.9% + $0.30 (user pays on deposit)
-
-**Firebase**:
-- Firestore: Database (8 collections)
-- Cloud Functions: Backend logic (40+ functions)
-- Authentication: User management
-- Hosting: Frontend deployment
-- FCM: Push notifications
-
-### Critical Rules
-
-✅ **Atomic Operations**: All financial transactions use Firestore transactions
-✅ **Idempotency**: Safe to retry winner assignments and payouts
-✅ **Immediate Payouts**: Winners paid instantly when quarter ends
-✅ **Balance Consistency**: Every balance change has transaction record
-✅ **Rate Limiting**: Max 3 withdrawals per 24 hours
-
-### Common Queries
-
-**Find open boards for game**:
-```javascript
-db.collection('boards')
-  .where('gameID', '==', gameRef)
-  .where('status', '==', 'open')
-  .get()
-```
-
-**Find winners for period**:
-```javascript
-db.collection('squares')
-  .where('boardId', '==', boardId)
-  .where('square', '==', winningSquare)
-  .get()
-```
-
-**User transaction history**:
-```javascript
-db.collection('transactions')
-  .where('userID', '==', userId)
-  .orderBy('timestamp', 'desc')
-  .limit(50)
-  .get()
-```
-
-## Implementation Guidelines
-
-### Adding New Features
-
-1. **Data Model**: Design Firestore structure
-2. **Business Rules**: Define logic and validation
-3. **Cloud Function**: Implement server-side logic
-4. **Frontend**: Build UI components
-5. **Testing**: Test with Firebase emulators
-6. **Documentation**: Update knowledge base
-
-### Code Organization
-
-```
-functions/
-  └─ index.js           # All Cloud Functions
-
-src/
-  ├─ app/               # Next.js pages
-  ├─ components/        # React components
-  ├─ context/           # React context
-  ├─ hooks/             # Custom hooks
-  └─ lib/               # Utilities
-
-knowledge/
-  ├─ data-models/       # Database docs
-  ├─ business-rules/    # Logic docs
-  ├─ architecture/      # System docs
-  └─ workflows/         # User journey docs
-```
-
-### Security Best Practices
-
-- ✅ All financial operations in Cloud Functions
-- ✅ Firestore Security Rules enforce read/write permissions
-- ✅ Firebase Auth required for all user actions
-- ✅ PayPal credentials in Secret Manager
-- ✅ HTTPS only, no client-side secrets
-- ✅ Input validation on client and server
-
-### Performance Optimization
-
-- 🚀 Diff-based writes (only update if changed)
-- 🚀 Composite indexes for common queries
-- 🚀 Client-side caching for static data
-- 🚀 Batch operations for bulk updates
-- 🚀 Query limits prevent unbounded reads
-
-## Getting Started
-
-### For Developers
-
-1. **Clone repository**
-2. **Install dependencies**: `npm install`
-3. **Set up Firebase**: Configure project credentials
-4. **Run emulators**: `firebase emulators:start`
-5. **Start dev server**: `npm run dev`
-6. **Read docs**: Start with [System Overview](./architecture/system-overview.md)
-
-### For Product Managers
-
-1. Start with [Workflows](./workflows/) to understand user journeys
-2. Review [Business Rules](./business-rules/) for game mechanics
-3. Check [Data Models](./data-models/) for data structure
-
-### For Designers
-
-1. Review [Workflows](./workflows/) for user experience
-2. Check [Notification System](./architecture/notification-system.md) for messaging
-3. See existing components in `src/components/`
-
-## Support & Troubleshooting
-
-### Common Issues
-
-**Winners not assigned**: Check game quarter scores are available
-**Payout incorrect**: Verify board pot/payout values
-**Withdrawal pending**: Check risk assessment flags
-**Board not filling**: Verify game not already live
-
-### Debugging Tools
-
+### 1. Setup
 ```bash
-# Check game status
-node query-live-games.js
+# Clone repository
+git clone https://github.com/your-org/squarepicks
 
-# Verify board structure
-node check-board-structure.js <boardId>
+# Install dependencies
+npm install
 
-# Test winner assignment
-node manually-assign-q1-winner.js <boardId>
+# Setup environment variables
+cp .env.example .env.local
 
-# Verify user balance
-node check-user-wins.js <userId>
+# Start development server
+npm run dev
 ```
 
-### Logs & Monitoring
+### 2. Development
+- Follow [component patterns](./components/)
+- Use [custom hooks](./hooks/) for reusable logic
+- Follow [TypeScript best practices](./types/)
+- Test with [Firebase emulators](./config/firebase-emulators.md)
 
-- Cloud Functions logs: Firebase Console → Functions
-- Firestore operations: Firebase Console → Firestore
-- Error tracking: Search logs for "Error"
-- Performance: Firebase Console → Performance
+### 3. Testing
+- Unit tests with Jest
+- Integration tests with Playwright
+- Firestore rules testing with emulator
+- Manual testing checklist
 
-## Maintenance
+### 4. Deployment
+- Staging: Vercel preview deployments
+- Production: Vercel production + Firebase Functions
+- Database: Firebase Firestore
+- Security rules: Deployed with Firebase CLI
 
-### Weekly Tasks
-- Review pending withdrawals (manual review queue)
-- Check error logs for anomalies
-- Verify ESPN API rate limit usage
-- Monitor Firebase quota usage
+## Common Tasks
 
-### Monthly Tasks
-- Archive old notifications (>90 days)
-- Review conversion metrics
-- Update team data if needed
-- Backup Firestore data
+### Add a New Hook
+1. Create file in `src/hooks/`
+2. Document in `knowledge/hooks/`
+3. Add to `knowledge/hooks/README.md`
+4. Export from `src/hooks/index.ts`
 
-### Quarterly Tasks
-- Security audit
-- Performance review
-- Cost optimization
-- Feature roadmap planning
+### Add a New Integration
+1. Install SDK: `npm install package-name`
+2. Add environment variables
+3. Create API route or service
+4. Document in `knowledge/integrations/`
+5. Update integration README
 
-## Resources
+### Update Security Rules
+1. Edit `firestore.rules`
+2. Test with Firebase emulator
+3. Document in `knowledge/security/firestore-rules.md`
+4. Deploy: `firebase deploy --only firestore:rules`
 
-### External Documentation
-- [Firebase Docs](https://firebase.google.com/docs)
-- [Next.js Docs](https://nextjs.org/docs)
-- [ESPN API](https://gist.github.com/nntrn/ee26cb2a0716de0947a0a4e9a157bc1c)
-- [PayPal API](https://developer.paypal.com/docs/)
-
-### Internal Resources
-- Firebase Console: [console.firebase.google.com](https://console.firebase.google.com)
-- PayPal Developer: [developer.paypal.com](https://developer.paypal.com)
-- Repository: Check Git remote URL
-- Design Files: (Add Figma/design tool link)
+### Add a New Component
+1. Create in `src/components/`
+2. Follow naming conventions
+3. Add TypeScript types
+4. Document props and usage
+5. Add to Storybook (if applicable)
 
 ## Contributing
 
-When adding new documentation:
-1. Follow existing structure and format
-2. Include code examples
-3. Add cross-references to related docs
-4. Update this README with new doc links
-5. Keep docs in sync with implementation
+### Code Style
+- TypeScript for type safety
+- ESLint for code quality
+- Prettier for formatting
+- Conventional commits
+
+### Documentation
+- Update docs with code changes
+- Include examples for new features
+- Document breaking changes
+- Keep README files current
+
+### Pull Request Process
+1. Create feature branch
+2. Make changes with tests
+3. Update documentation
+4. Submit PR with description
+5. Address review feedback
+6. Merge after approval
+
+## Support & Resources
+
+### Internal Resources
+- [Complete Index](./INDEX.md)
+- [Quick Start](./QUICK-START.md)
+- [Architecture Docs](../ARCHITECTURE.md)
+- [Deployment Guide](../DEPLOYMENT_GUIDE.md)
+
+### External Resources
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Firebase Documentation](https://firebase.google.com/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+
+### Getting Help
+- 📧 Email: dev@squarepicks.com
+- 💬 Team Chat: Slack #dev-squarepicks
+- 🐛 Issues: GitHub Issues
+- 📖 Docs: This knowledge base
 
 ## Version History
 
-- **v1.0** (Jan 2025): Initial complete documentation
-  - 8 data models
-  - 7 business rules
-  - 5 architecture docs
-  - 6 workflows
+### Current Version: 1.0.0
+- Initial production release
+- Core features implemented
+- PayPal integration active
+- Firebase backend complete
+
+### Upcoming
+- Stripe integration completion
+- Enhanced analytics
+- Social features
+- Mobile app development
+
+## License
+
+Proprietary - All Rights Reserved
+
+Copyright © 2024 SquarePicks
 
 ---
 
-**Last Updated**: January 2025  
-**Documentation Version**: 1.0  
-**Platform Version**: MVP (Production-ready)
+**Last Updated**: November 9, 2024
 
+**Maintained By**: SquarePicks Development Team
+
+**Documentation Version**: 1.0.0

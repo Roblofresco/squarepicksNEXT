@@ -5,6 +5,11 @@ import dynamic from 'next/dynamic';
 import { motion } from "framer-motion"; // Import framer-motion
 
 import { useRouter } from 'next/navigation'; // Import useRouter
+import { useWallet } from '@/hooks/useWallet';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { getNFLWeekRange } from '@/lib/date-utils';
 
 // Removed StarfieldBackground import
 // const StarfieldBackground = dynamic(() => import('@/components/starfield-background'), { ssr: false });
@@ -14,6 +19,7 @@ const LogoCube = dynamic(() => import('@/components/LogoCube'), { ssr: false });
 
 export default function LoadingPage() {
   const router = useRouter(); // Instantiate router
+  const { userId } = useWallet(); // Get user ID for prefetching
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isInteracting, setIsInteracting] = useState(false);
 
@@ -32,17 +38,88 @@ export default function LoadingPage() {
   // Track if component is mounted to prevent operations after unmount
   const isMountedRef = useRef(true);
 
+  // Prefetch sweepstakes participation and user selections
+  useEffect(() => {
+    if (!userId) return; // Skip if no user logged in
+
+    const prefetchSweepstakesData = async () => {
+      try {
+        // Get current NFL week number
+        const { weekNumber: currentWeekNumber } = getNFLWeekRange();
+
+        // Query active sweepstakes for current week (same query as lobby page)
+        const sweepstakesQuery = query(
+          collection(db, 'sweepstakes'),
+          where("status", "==", "active"),
+          where("week", "==", currentWeekNumber),
+          limit(1)
+        );
+
+        const sweepstakesSnapshot = await getDocs(sweepstakesQuery);
+        if (sweepstakesSnapshot.empty) return;
+
+        const sweepstakesDoc = sweepstakesSnapshot.docs[0];
+        const sweepstakesId = sweepstakesDoc.id;
+        const sweepstakesData = sweepstakesDoc.data();
+        const boardRef = sweepstakesData.boardIDs?.[0];
+
+        if (!boardRef) return;
+        const boardId = typeof boardRef === 'string' ? boardRef : boardRef.id;
+
+        const functions = getFunctions(undefined, "us-east1");
+
+        // Prefetch participation status
+        try {
+          const checkFn = httpsCallable(functions, 'checkSweepstakesParticipation');
+          const participationResult = await checkFn({ sweepstakesID: sweepstakesId });
+          const isParticipant = Boolean((participationResult?.data as any)?.isParticipant);
+
+          sessionStorage.setItem(`sweepstakes_participation_${sweepstakesId}`, JSON.stringify({
+            isParticipant,
+            timestamp: Date.now()
+          }));
+        } catch (err) {
+          // Fail silently - SweepstakesBoardCard will handle the check itself
+          console.log('[LoadingPage] Could not prefetch participation:', err);
+        }
+
+        // Prefetch user selections
+        try {
+          const getSelectionsFn = httpsCallable(functions, 'getBoardUserSelections');
+          const selectionsResult = await getSelectionsFn({ boardID: boardId });
+          const data = selectionsResult.data as { selectedIndexes?: number[] };
+
+          if (data?.selectedIndexes) {
+            sessionStorage.setItem(`board_selections_${boardId}`, JSON.stringify({
+              selectedIndexes: data.selectedIndexes,
+              timestamp: Date.now()
+            }));
+          }
+        } catch (err) {
+          // Fail silently - SweepstakesBoardCard will handle the check itself
+          console.log('[LoadingPage] Could not prefetch selections:', err);
+        }
+      } catch (error) {
+        // Fail silently - components will handle their own data fetching
+        console.log('[LoadingPage] Could not prefetch sweepstakes data:', error);
+      }
+    };
+
+    prefetchSweepstakesData();
+  }, [userId]);
+
   // Added mount effect & navigation timer
   useEffect(() => {
     setIsMounted(true);
     isMountedRef.current = true;
 
-    // 3.5-second timer for auto-navigation to lobby
+    // 5-second timer for auto-navigation to lobby
+    // This gives the lobby page more time to initialize and start loading data
     const autoNavigationTimer = setTimeout(() => {
       if (isMountedRef.current) {
         router.push('/lobby');
       }
-    }, 3500); // 3.5 seconds
+    }, 5000); // 5 seconds - increased to allow lobby initialization
 
     // Cleanup function for auto-navigation timer
     return () => {

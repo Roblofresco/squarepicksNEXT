@@ -207,6 +207,26 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
         return;
       }
 
+      // Check sessionStorage first for prefetched data
+      const cacheKey = `sweepstakes_participation_${sweepId}`;
+      const cached = sessionStorage.getItem(cacheKey);
+      
+      if (cached) {
+        try {
+          const cachedData = JSON.parse(cached);
+          // Use cached data if it's less than 5 minutes old
+          if (Date.now() - cachedData.timestamp < 5 * 60 * 1000) {
+            if (!isCancelled) {
+              setIsCurrentUserParticipant(cachedData.isParticipant);
+              setIsLoadingParticipantStatus(false);
+            }
+            return;
+          }
+        } catch (e) {
+          // Invalid cache, continue to API call
+        }
+      }
+
       try {
         setIsLoadingParticipantStatus(true);
         const functions = getFunctions(undefined, "us-east1");
@@ -215,6 +235,11 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
         const isParticipant = Boolean((result?.data as any)?.isParticipant);
         if (!isCancelled) {
           setIsCurrentUserParticipant(isParticipant);
+          // Update cache
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            isParticipant,
+            timestamp: Date.now()
+          }));
         }
       } catch (_err) {
         // Fail-open: allow entering; just stop loading state
@@ -235,6 +260,24 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
       return;
     }
 
+    // Check sessionStorage first for prefetched data
+    const selectionsCacheKey = `board_selections_${board.id}`;
+    const cachedSelections = sessionStorage.getItem(selectionsCacheKey);
+    
+    if (cachedSelections) {
+      try {
+        const cachedData = JSON.parse(cachedSelections);
+        // Use cached data if it's less than 5 minutes old
+        if (Date.now() - cachedData.timestamp < 5 * 60 * 1000 && cachedData.selectedIndexes) {
+          setCurrentUserSquaresSet(new Set(cachedData.selectedIndexes));
+          setIsLoadingSelections(false);
+          return;
+        }
+      } catch (e) {
+        // Invalid cache, continue to API call
+      }
+    }
+
     const fetchUserSelections = async () => {
       setIsLoadingSelections(true);
       setSelectionError(null);
@@ -247,6 +290,11 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
         const data = result.data as { selectedIndexes?: number[] }; 
         if (data?.selectedIndexes && Array.isArray(data.selectedIndexes)) {
           setCurrentUserSquaresSet(new Set(data.selectedIndexes));
+          // Update cache
+          sessionStorage.setItem(selectionsCacheKey, JSON.stringify({
+            selectedIndexes: data.selectedIndexes,
+            timestamp: Date.now()
+          }));
         } else {
           setCurrentUserSquaresSet(new Set()); 
         }

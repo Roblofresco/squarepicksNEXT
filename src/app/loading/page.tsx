@@ -132,12 +132,17 @@ export default function LoadingPage() {
   useEffect(() => {
     if (isMounted) {
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
       document.documentElement.style.overflow = 'hidden';
 
       // Cleanup function to restore default scroll behavior
+      // Using empty strings removes inline styles and allows computed/default styles to take over
       return () => {
-        document.body.style.overflow = ''; // Reset to default
-        document.documentElement.style.overflow = ''; // Reset to default
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.documentElement.style.overflow = '';
       };
     }
   }, [isMounted]);
@@ -171,12 +176,14 @@ export default function LoadingPage() {
     const handleMouseUp = () => { pointerDownRef.current = false; };
 
     const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault(); // Prevent scroll
       if (e.touches && e.touches.length > 0) {
         const t = e.touches[0];
         updatePointer(t.clientX, t.clientY);
       }
     };
     const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault(); // Prevent scroll
       pointerDownRef.current = true;
       if (e.touches && e.touches.length > 0) {
         const t = e.touches[0];
@@ -194,8 +201,8 @@ export default function LoadingPage() {
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('mousedown', handleMouseDown, { passive: true });
     window.addEventListener('mouseup', handleMouseUp, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
 
@@ -331,9 +338,9 @@ export default function LoadingPage() {
     let animationFrameId: number;
     const stars: Array<{ x: number; y: number; angle: number; speed: number; size: number; opacity: number; dist: number; }> = [];
     const numStars = 120; // Further reduced for better performance on first-time login
-    const baseSpeedFactor = 0.003; // Slightly slower for smoother movement
-    const baseSpeedOffset = 0.03; // Minimum outward speed
-    const maxSpeedPxPerFrame = 2.0; // Reduced clamp for smoother animation
+    const baseSpeedFactor = 0.008; // Increased from 0.003 for faster movement
+    const baseSpeedOffset = 0.08; // Increased from 0.03 for faster movement
+    const maxSpeedPxPerFrame = 4.0; // Increased from 2.0 for faster movement
     let canvasCenterX = window.innerWidth / 2;
     let canvasCenterY = window.innerHeight / 2;
     // Warp parameters (match home/info)
@@ -413,10 +420,10 @@ export default function LoadingPage() {
         const isOffScreen = star.x < -star.size || star.x > canvas.width + star.size || star.y < -star.size || star.y > canvas.height + star.size;
 
         if (isOffScreen) {
-          // Reset within a square area around the center
-          const squareSize = 100; // Size of the square reset area (e.g., 100x100)
-          const resetX = canvasCenterX + (Math.random() * squareSize - squareSize / 2);
-          const resetY = canvasCenterY + (Math.random() * squareSize - squareSize / 2);
+          // Reset stars in a larger area around center (15% of screen dimension)
+          const resetAreaRadius = Math.min(canvas.width, canvas.height) * 0.15;
+          const resetX = canvasCenterX + (Math.random() * resetAreaRadius * 2 - resetAreaRadius);
+          const resetY = canvasCenterY + (Math.random() * resetAreaRadius * 2 - resetAreaRadius);
           
           // Recalculate properties based on new position
           const newDx = resetX - canvasCenterX;
@@ -499,13 +506,15 @@ export default function LoadingPage() {
   return (
     // Add onClick handler to main element
     <main
-      className="relative w-full h-[100dvh] overflow-hidden flex flex-col items-center justify-center bg-background-primary cursor-pointer" // Added cursor-pointer
+      className="relative w-full h-[100dvh] overflow-hidden flex flex-col items-center justify-center bg-background-primary cursor-pointer touch-none"
+      style={{ touchAction: 'none', overscrollBehavior: 'none' }}
       onClick={handleNavigationClick}
     >
       {/* Changed canvas z-index */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 -z-1 pointer-events-none" // Use z-index: -1
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: -1 }}
         id="center-starfield-canvas"
       />
       {/* Cursor/touch spotlight overlay */}

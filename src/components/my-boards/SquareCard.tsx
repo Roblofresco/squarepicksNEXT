@@ -170,6 +170,7 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
           >
             Squares
           </button>
+          <div className="relative group">
           <button 
             onClick={(e) => { e.stopPropagation(); setShowSquares(false); }}
             className={`px-3 py-1 text-xs font-medium transition-colors rounded-none ${
@@ -178,6 +179,13 @@ const SquareCard: React.FC<SquareCardProps> = ({ board, onClick }) => {
           >
             Picks
           </button>
+            {status === 'open' && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-slate-800/95 border border-white/20 rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50">
+                Assigned when board is full
+                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-800/95"></div>
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Grid with individual flip animations */}

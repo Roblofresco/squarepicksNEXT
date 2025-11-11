@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Ticket, X as XIcon } from 'lucide-react';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { toast } from 'react-hot-toast';
+import Link from 'next/link';
 
 // Define EntryInteractionState locally based on expected shape from LobbyPage
 interface EntryInteractionState {
@@ -523,9 +524,19 @@ const SweepstakesBoardCardComponent = (props: SweepstakesBoardCardProps) => {
           )
         ) : (
           // User IS a participant
-          <div className="flex-1 flex justify-center items-center">
+          <div className="flex-1 flex flex-col justify-center items-center gap-2">
+            <div className="flex items-center">
             <Ticket className="h-7 w-7 text-green-400" /> 
             <span className="ml-2 text-green-400 font-semibold">Good Luck!</span>
+            </div>
+            {currentUserSquaresSet.size === 0 && (
+              <div className="text-xs text-white/80 text-center mt-1">
+                <span>Your board has been filled. </span>
+                <Link href="/my-boards" className="text-[#B8860B] hover:text-yellow-400 underline font-semibold">
+                  View My Boards
+                </Link>
+              </div>
+            )}
         </div>
         )}
 

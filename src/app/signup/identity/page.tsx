@@ -91,7 +91,7 @@ export default function IdentityPage() {
             {/* First Name */}
             <div className="relative">
               <label htmlFor="first-name" className="sr-only">First Name</label>
-              <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+              <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none z-10" size={20} />
               <Input
                 id="first-name"
                 type="text"
@@ -99,14 +99,14 @@ export default function IdentityPage() {
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="First Name"
                 required
-                className="w-full appearance-none bg-transparent border border-text-secondary text-white placeholder-gray-400 text-base pl-10 p-3 rounded-lg focus:outline-none focus:border-blue-500 shadow-[0_0_0_1px_rgba(255,255,255,0.5)]"
+                className="w-full appearance-none bg-transparent border border-text-secondary text-white placeholder-gray-400 text-base pl-11 pr-3 py-3 rounded-lg focus:outline-none focus:border-blue-500 shadow-[0_0_0_1px_rgba(255,255,255,0.5)]"
               />
             </div>
 
             {/* Last Name */}
             <div className="relative">
               <label htmlFor="last-name" className="sr-only">Last Name</label>
-              <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+              <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none z-10" size={20} />
               <Input
                 id="last-name"
                 type="text"
@@ -114,14 +114,14 @@ export default function IdentityPage() {
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Last Name"
                 required
-                className="w-full appearance-none bg-transparent border border-text-secondary text-white placeholder-gray-400 text-base pl-10 p-3 rounded-lg focus:outline-none focus:border-blue-500 shadow-[0_0_0_1px_rgba(255,255,255,0.5)]"
+                className="w-full appearance-none bg-transparent border border-text-secondary text-white placeholder-gray-400 text-base pl-11 pr-3 py-3 rounded-lg focus:outline-none focus:border-blue-500 shadow-[0_0_0_1px_rgba(255,255,255,0.5)]"
               />
             </div>
 
             {/* Date of Birth - Text input with MM/DD/YYYY format */}
             <div className="relative">
               <label htmlFor="dob" className="sr-only">Date of Birth</label>
-              <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+              <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none z-10" size={20} />
               <Input
                 id="dob"
                 type="text"
@@ -131,7 +131,7 @@ export default function IdentityPage() {
                 required
                 maxLength={10}
                 inputMode="numeric"
-                className="w-full appearance-none bg-transparent border border-text-secondary text-white placeholder-gray-400 text-base pl-10 p-3 rounded-lg focus:outline-none focus:border-blue-500 shadow-[0_0_0_1px_rgba(255,255,255,0.5)]"
+                className="w-full appearance-none bg-transparent border border-text-secondary text-white placeholder-gray-400 text-base pl-11 pr-3 py-3 rounded-lg focus:outline-none focus:border-blue-500 shadow-[0_0_0_1px_rgba(255,255,255,0.5)]"
               />
             </div>
 
